@@ -3,5 +3,6 @@ RESTRICTION: || (== netcoreapp3.0) (== netstandard2.0) (== netstandard2.1)
 NUGET
   remote: https://api.nuget.org/v3/index.json
     FSharp.Core (4.7)
-    Fuchu (1.1)
-      FSharp.Core (>= 4.3.4)
+GITHUB
+  remote: mausch/Fuchu
+    Fuchu/Fuchu.fs (7747fe1d1fd9f9fca9514b21096e74f89d4bf9f8)

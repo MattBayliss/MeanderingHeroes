@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5CF131A2-50F
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MeanderingHeroes", "src\HeroEngine\MeanderingHeroes.fsproj", "{971A3334-566D-4D40-B07D-DDAB95F44ADF}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "UnitTests", "src\UnitTests\UnitTests.fsproj", "{079B5432-2718-4EED-A042-A44731830E39}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,8 +34,21 @@ Global
 		{971A3334-566D-4D40-B07D-DDAB95F44ADF}.Release|x64.Build.0 = Release|Any CPU
 		{971A3334-566D-4D40-B07D-DDAB95F44ADF}.Release|x86.ActiveCfg = Release|Any CPU
 		{971A3334-566D-4D40-B07D-DDAB95F44ADF}.Release|x86.Build.0 = Release|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Debug|x64.Build.0 = Debug|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Debug|x86.Build.0 = Debug|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Release|x64.ActiveCfg = Release|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Release|x64.Build.0 = Release|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Release|x86.ActiveCfg = Release|Any CPU
+		{079B5432-2718-4EED-A042-A44731830E39}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{971A3334-566D-4D40-B07D-DDAB95F44ADF} = {5CF131A2-50F6-40DF-8019-7FC67912A85D}
+		{079B5432-2718-4EED-A042-A44731830E39} = {5CF131A2-50F6-40DF-8019-7FC67912A85D}
 	EndGlobalSection
 EndGlobal

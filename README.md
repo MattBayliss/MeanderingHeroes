@@ -12,6 +12,19 @@ It is also a vechile to learn some more of the following technologies:
 * F# (for A.I. and queue processing)
 * SAFE stack?
 
+## High level type definitions
+
+
+## High level functions
+
+### WorldTick
+
+`WorldState -> Instruction list -> WorldState`
+
+Each 'tick' of the world will increment time in the *WorldState*. Basic AI will move things along. If there are any actual player instructions this tick, they are added to the World State. I want the WorldTick to be pretty dumb. PCs, NPCs, nations, might all have more complex AIs that generate *Instructions*, that are then passed to the WorldTick function.
+
+
+
 ## Milestones
 
 1. Design basic architecture and get a "move" action unit test to pass
