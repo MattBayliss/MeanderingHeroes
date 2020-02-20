@@ -1,4 +1,5 @@
-﻿open Fuchu
+﻿open System
+open Fuchu
 
 let simpleTest = 
     testCase "A simple test" <|

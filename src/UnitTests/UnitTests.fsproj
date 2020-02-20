@@ -5,6 +5,10 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\paket-files\mausch\Fuchu\Fuchu\Fuchu.fs">
+      <Paket>True</Paket>
+      <Link>paket-files/Fuchu.fs</Link>
+    </Compile>
     <Compile Include="Program.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
