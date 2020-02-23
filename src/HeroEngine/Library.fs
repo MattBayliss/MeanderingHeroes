@@ -48,7 +48,8 @@ module Engine =
     let distance (a, b):double = 
         sqrt (a*a + b*b)    
 
-    let moveInstruction grid agent target =
+    let moveInstruction worldState agentId target =
+        let agent = List.find (fun a -> a.id = agentId ) <| worldState.agents
         let (x, y) = (target.x - agent.position.x, target.y - agent.position.y)
         let d = distance (x, y)
         // identity vector - direction we need to travel, with a length of 1
@@ -56,6 +57,6 @@ module Engine =
         let (ix, iy) = (x/d, y/d)
         { id = agent.id; name = agent.name; position = {x = ix * (double agent.speed); y = iy * (double agent.speed)}; speed = agent.speed; health = agent.health }     
 
-    let WorldTick (currentState : WorldState) (instructions : Instruction list) = 
-        { agents = currentState.agents; tick = currentState.tick + 1; mapGrid = currentState.mapGrid }, 
+    let WorldTick (currentState : WorldState) (instructions : Instruction list) : WorldState * Event list = 
+        { agents = currentState.agents; tick = currentState.tick + 1; mapGrid = currentState.mapGrid }, []
 

@@ -12,7 +12,7 @@ let tests =
             fun _ ->
                 // simulate the ticks we need until target is reached
                 let mover = { id = 1; name = "Sally Walker"; position = { x = 1.0; y = 1.0 }; health = 1.0F; speed = 1.0F }; 
-                let instruction = setDestination mover (10.0, 1.0)
+                let instruction = moveInstruction mover (10.0, 1.0)
                 let moveWorldState = { agents = [ mover ]; tick = 1; mapGrid = testGrid };
 
                 // tick 1
