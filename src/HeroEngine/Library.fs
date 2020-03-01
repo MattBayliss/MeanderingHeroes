@@ -14,6 +14,20 @@ module Engine =
         speed: single;
     }
 
+    type InstructionState =
+    | Pending
+    | Running of int32
+    | Completed of int32
+
+    type InstructionType =
+    | Move of Point // destination
+
+    type AgentInstruction = {
+        agentId : int32;
+        instruction : InstructionType;
+        state: InstructionState;
+    }
+
     type Terrain = Grass=0 | Forest=1
 
     type GridSquare = {
@@ -24,19 +38,18 @@ module Engine =
 
     type WorldState = {
         agents : Agent list;
+        runningInstructions : AgentInstruction list;
         tick : int32;
         mapGrid : GridSquare[,];
     }
 
-    type Instruction = {
-        agentId : int32;
-        command : string;
-    }
+    type EventType =
+    | MoveEvent of from:Point * dest:Point
 
     type Event = {
+        tick : int32;
         agentId : int32;
-        from: Point;
-        dest: Point;
+        eventType: EventType;
     }
 
     let terrainMovementCost terrain =
@@ -57,6 +70,6 @@ module Engine =
         let (ix, iy) = (x/d, y/d)
         { id = agent.id; name = agent.name; position = {x = ix * (double agent.speed); y = iy * (double agent.speed)}; speed = agent.speed; health = agent.health }     
 
-    let WorldTick (currentState : WorldState) (instructions : Instruction list) : WorldState * Event list = 
-        { agents = currentState.agents; tick = currentState.tick + 1; mapGrid = currentState.mapGrid }, []
+    let WorldTick (currentState : WorldState) (newInstructions : AgentInstruction list) : WorldState * Event list = 
+        { agents = currentState.agents; runningInstructions = currentState.runningInstructions @ newInstructions; tick = currentState.tick + 1; mapGrid = currentState.mapGrid }, []
 
