@@ -5,14 +5,14 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HeroEngine\MeanderingHeroes.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="..\..\paket-files\mausch\Fuchu\Fuchu\Fuchu.fs">
       <Paket>True</Paket>
       <Link>paket-files/Fuchu.fs</Link>
     </Compile>
     <Compile Include="Program.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\HeroEngine\MeanderingHeroes.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
