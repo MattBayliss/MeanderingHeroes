@@ -1,4 +1,4 @@
-﻿//#load "C:\git\MeanderingHeroes\paket-files\mausch\Fuchu\Fuchu\Fuchu.fs"
+﻿//#load "..\..\paket-files\mausch\Fuchu\Fuchu\Fuchu.fs"
 //#load @"..\HeroEngine\Library.fs"
 
 open MeanderingHeroes.Engine

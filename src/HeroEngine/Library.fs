@@ -70,6 +70,53 @@ module Engine =
         let (ix, iy) = (x/d, y/d)
         { id = agent.id; name = agent.name; position = {x = ix * (double agent.speed); y = iy * (double agent.speed)}; speed = agent.speed; health = agent.health }     
 
+
     let WorldTick (currentState : WorldState) (newInstructions : AgentInstruction list) : WorldState * Event list = 
+
+        let nextTick = currentState.tick + 1
+        let newinsts = newInstructions 
+                       |> List.map (fun ni -> { 
+                           agentId = ni.agentId; 
+                           instruction = ni.instruction;
+                           state = Running nextTick 
+                           })
+        let instructions = currentState.runningInstructions @ newinsts
+
+        let rec doInstructions instructions agents acc =
+            let (accInsts, accAgents) = acc
+            match agents with
+            | [] -> (accInsts, accAgents @ agents)
+            | agent :: agentsTail ->              
+                let rec getInstructionsForAgent aid ainstructions iaacc =
+                    match ainstructions with
+                    | [] -> iaacc
+                    | ihead :: itail ->
+                        let (ifa, others) = iaacc
+                        if ihead.agentId = aid then
+                            getInstructionsForAgent aid itail (ifa @ ihead, others)
+                        else
+                            getInstructionsForAgent aid itail (ifa, others @ ihead)
+                
+                let (instructionsForAgent, otherInsts) = getInstructionsForAgent agent.id instructions ([], [])
+                
+                // process instructionsForAgent
+
+                acc
+        let (newInsts, newAgents) =  doInstructions instructions currentState.agents ([], [])
+        { agents = newAgents; runningInstructions = newInstructions;  }
+
+
+
+
+        instructions |> List.map (
+            fun i ->
+                let agent = currentState.agents |> List.map (fun a -> a.id = i.agentId)
+                match i.instruction with
+                | Move dest -> 
+        )
+
+        
+
+        currentState.runningInstructions
         { agents = currentState.agents; runningInstructions = currentState.runningInstructions @ newInstructions; tick = currentState.tick + 1; mapGrid = currentState.mapGrid }, []
 
