@@ -71,52 +71,71 @@ module Engine =
         { id = agent.id; name = agent.name; position = {x = ix * (double agent.speed); y = iy * (double agent.speed)}; speed = agent.speed; health = agent.health }     
 
 
-    let WorldTick (currentState : WorldState) (newInstructions : AgentInstruction list) : WorldState * Event list = 
+    let WorldTick (currentState : WorldState) (newInstructions : AgentInstruction list) = 
 
-        let nextTick = currentState.tick + 1
+        let currentTick = currentState.tick + 1
         let newinsts = newInstructions 
                        |> List.map (fun ni -> { 
                            agentId = ni.agentId; 
                            instruction = ni.instruction;
-                           state = Running nextTick 
+                           state = Running currentTick 
                            })
-        let instructions = currentState.runningInstructions @ newinsts
+        let isRunning instruction = match instruction.state with | Running _ -> true | _ -> false
+        let instructions = currentState.runningInstructions @ newinsts |> List.filter isRunning
 
-        let rec doInstructions instructions agents acc =
-            let (accInsts, accAgents) = acc
-            match agents with
-            | [] -> (accInsts, accAgents @ agents)
-            | agent :: agentsTail ->              
-                let rec getInstructionsForAgent aid ainstructions iaacc =
-                    match ainstructions with
-                    | [] -> iaacc
-                    | ihead :: itail ->
-                        let (ifa, others) = iaacc
-                        if ihead.agentId = aid then
-                            getInstructionsForAgent aid itail (ifa @ ihead, others)
-                        else
-                            getInstructionsForAgent aid itail (ifa, others @ ihead)
-                
-                let (instructionsForAgent, otherInsts) = getInstructionsForAgent agent.id instructions ([], [])
-                
-                // process instructionsForAgent
+        let instructionsForAgentId = instructions |> List.groupBy (fun i -> i.agentId)
 
-                acc
-        let (newInsts, newAgents) =  doInstructions instructions currentState.agents ([], [])
-        { agents = newAgents; runningInstructions = newInstructions;  }
+        let processInstructionForAgent agent instruction tick =
+            match instruction.instruction with
+            | Move dest ->            
+                let (x, y) = (dest.x - agent.position.x, dest.y - agent.position.y)
+                let d = distance (x, y)
+                let (np, ni) = match d with
+                                | a when a <= double agent.speed -> 
+                                    (
+                                        dest,
+                                        {agentId = instruction.agentId; instruction = instruction.instruction; state = Completed tick }
+                                    )
+                                | _ ->  ({
+                                            x = agent.position.x + ((double agent.speed) * x/d);
+                                            y = agent.position.y + ((double agent.speed) * y/d)
+                                        }, instruction)
+
+                let updatedAgent = { id = agent.id; name = agent.name; position = np; speed = agent.speed; health = agent.health }
+
+                let event = {agentId = agent.id; tick = tick; eventType = MoveEvent (agent.position, np)}
+
+                (updatedAgent, ni, event)
+
+        let replaceAgentIdWithAgent (id, instructions) =
+            let agentOpt = (currentState.agents |> List.tryFind (fun a -> a.id = id))
+            match agentOpt with
+            | None -> None
+            | Some agent -> Some (agent, instructions)
+
+        let instructionsForAgent = instructionsForAgentId |> List.choose replaceAgentIdWithAgent
+
+        let processInstructionsForAgent agent instructions =
+            let rec recIListForAgent agent instructions acc = 
+                match instructions with
+                | []     -> acc
+                | h :: t -> let (updatedAgent, updatedInstruction, event) = processInstructionForAgent agent h currentTick
+                            let (_, instructions, events) = acc
+                            recIListForAgent updatedAgent t (updatedAgent, instructions @ [updatedInstruction], events @ [event])
+
+            recIListForAgent agent instructions (agent, [], [])
+
+        let processAgents agentInstructionsPairs =
+            let rec recProcessAgents aipairs acc =
+                match aipairs with
+                | [] -> acc
+                | (agent, ilist) :: ailtail -> let (uagent, uinstructions, nevents) = processInstructionsForAgent agent ilist                                 
+                                               let (agents, instructions, events) = acc
+                                               recProcessAgents ailtail (agents @ [uagent], instructions @ uinstructions, events @ nevents)
 
 
+            recProcessAgents instructionsForAgent ([], [], [])
 
-
-        instructions |> List.map (
-            fun i ->
-                let agent = currentState.agents |> List.map (fun a -> a.id = i.agentId)
-                match i.instruction with
-                | Move dest -> 
-        )
-
+        let (agents, instructions, events) = processAgents instructionsForAgent
         
-
-        currentState.runningInstructions
-        { agents = currentState.agents; runningInstructions = currentState.runningInstructions @ newInstructions; tick = currentState.tick + 1; mapGrid = currentState.mapGrid }, []
-
+        ({ agents = agents; runningInstructions = instructions; tick = currentTick; mapGrid = currentState.mapGrid }, events)              
