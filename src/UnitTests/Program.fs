@@ -24,8 +24,6 @@ let tests =
                 let event = List.head events
                 Assert.Equal("Event for agent 1", mover.id, event.agentId)
                 Assert.Equal("Event for tick 1", 1, event.tick)
-                match event.eventType with
-                | MoveEvent (f, t) -> Assert.Equal("Move event from (1,1) to (2,1)", ({x=1.0; y=1.0}, {x=2.0; y=1.0;}), (f, t))
                 let runningInstructionsTick1 = state1.runningInstructions
                 Assert.Equal("1 running instruction", 1, runningInstructionsTick1.Length)
                 let rinstruction1 = List.head runningInstructionsTick1
@@ -51,24 +49,32 @@ let tests =
                 let (moveStates, moveEvents) = runUntilNoEvents state1
 
                 Assert.Equal("last event is at destination", destination, List.last moveEvents |> fun lastEvent -> match lastEvent.eventType with | MoveEvent (a, b) -> b )
+                
+                Assert.Equal("it took 9 moves to get there", 9, moveStates.Length)
 
+                let allStates = moveWorldState :: moveStates
+                allStates |> List.iteri (fun i state -> 
+                                         Assert.Equal("Agent position moving east", 
+                                                      { x = double (i + 1); y = 1.0 },
+                                                      let agent = List.head state.agents
+                                                      agent.position )
+                                         Assert.Equal("Tick has progressed", i, state.tick)
+                                        )
+                let allEvents = events @ moveEvents
+                allEvents |> List.iteri (fun i event ->
+                                            match event.eventType with
+                                            | MoveEvent (f, t) -> Assert.Equal("Move event to +1 east",
+                                                                               ({ x = double (i + 1); y = 1.0 }, { x = double (i + 2); y = 1.0 }),
+                                                                               (f, t))      
+                                            Assert.Equal("Event tick has progressed", i + 1, event.tick)                                                                         
+                                        )
 
-                Assert.Equal("at 4th tick", 4, state4.tick)
-                Assert.Equal("one event", 1, events.Length)
-                let event = List.head events4
-                Assert.Equal("Event for agent 1", mover.id, event.agentId)
-                Assert.Equal("Event for tick 4", 4, event.tick)
-                match event.eventType with
-                | MoveEvent (f, t) -> Assert.Equal("Move event from (4,1) to (5,1)", ({x=4.0; y=1.0}, {x=5.0; y=1.0;}), (f, t))
-                let runningInstructionsTick4 = state4.runningInstructions
-                Assert.Equal("1 running instruction", 1, runningInstructionsTick4.Length)
-                let rinstruction4 = List.head runningInstructionsTick4
-                match rinstruction4.state with
-                | Running tick -> Assert.Equal("instruction started on tick 1", 1, tick);
-                | Completed ct -> Assert.Equal("instruction should not be complete", 0, ct);
-                | Pending -> Assert.Equal("instruction should not be pending", 0, 1);
-                let agenttick4 = List.find (fun agent -> agent.id = mover.id) state4.agents
-                Assert.Equal("WorldState agent has moved to (5, 1)", {x=5.0; y=1.0;}, agenttick4.position)
+                let lastInstruction =
+                    let lastState = moveStates |> List.last
+                    Assert.Equal("last state should only have one instruction", 1, lastState.runningInstructions.Length)
+                    List.head lastState.runningInstructions
+
+                Assert.Equal("Last instruction is completed", true, match lastInstruction.state with | Completed _ -> true | _ -> false)
 
         testCase "another test" <|
             fun _ -> Assert.Equal("3+3", 6, 3+3)
