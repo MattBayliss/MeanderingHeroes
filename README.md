@@ -8,9 +8,9 @@ Well, that's the ultimate goal. It will start a bit less ambitious than that.
 
 It is also a vechile to learn some more of the following technologies:
 
-* Reactive extensions
+* [Reactive extensions][2]
 * F# (for A.I. and queue processing)
-* SAFE stack?
+* UI: [Bolero (Blazor for F# kinda)][1]
 
 ## High level type definitions
 
@@ -25,24 +25,15 @@ Each 'tick' of the world will increment time in the *WorldState*. Basic AI will 
 
 ## Milestones
 
-1. Design basic architecture and get a "move" action unit test to pass
-2. Create Map to show progress of your Hero
+1. ~~Design basic architecture and get a "move" action unit test to pass~~
+1. Make a hunter-prey test - hunter will 'see' prey, chase it, attack it. Considerations:
+	1. Perception distance
+	1. Prey evasion, threat detection, - running - random, always away
+	1. Sprinting + exhaustion
+	1. Attacking + health + wounded
+	1. Hunger? Satiated stat, food supplies
 
-## Dev notes for Milestone 1
-
-* User will give a command, like move my guy to (1, 10)
-* an "intent" will persist for how many ticks, to get that guy to (1, 10)
-* once the destination is reached, the intent is cleared.
-* each tick will generate events for that guy, so that the user can see a report, or a UI can update, etc. An observable for events?
-* If I'm trying to be immutable, then WorldState would be a new instance every time. What does that mean for memory? What if the WorldState is HUGE?
-* Should instructions instead apply to the Agents, or user guided pieces?
-* Every part of the process is mutable it seems. What are the immutable parts?
-	* the map grid
-	* the agent (hero|npc|animals) entities, but not their current state (health, location, certain stats)
-	* events - what happened to agents are snapshots of time
-
-* **Fuck it.** I'm just going to create new copies of agents and worldstates each time for this first cut. Read current state from a database or flat-file, process all instructions, write back to persistent storage. Done. Maybe.
-
+1. Create Map UI
 
 ## Goals / Rainy day ideas / Brain farts
 
@@ -51,11 +42,18 @@ Each 'tick' of the world will increment time in the *WorldState*. Basic AI will 
 
 ## References
 
+### UI development
+
+* [Bolero: F# in WebAssembly][1]
+
 ### Reactive extensions
 
-* https://fsharpforfunandprofit.com/posts/concurrency-reactive/
+* [fsharpforfunandprofit.com/posts/concurrency-reactive/][2]
 
 ### Unit test tools
 
 * https://github.com/mausch/Fuchu
 * https://fscheck.github.io/FsCheck/QuickStart.html
+
+[1]: https://fsbolero.io/
+[2]: https://fsharpforfunandprofit.com/posts/concurrency-reactive/
