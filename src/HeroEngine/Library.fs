@@ -21,10 +21,11 @@ module Engine =
 
     type InstructionType =
     | Move of Point // destination
+    | Catch of agentId : int32
 
     type AgentInstruction = {
         agentId : int32;
-        instruction : InstructionType;
+        instructionType : InstructionType;
         state: InstructionState;
     }
 
@@ -61,6 +62,11 @@ module Engine =
     let distance (a, b):double = 
         sqrt (a*a + b*b)    
 
+    let chaseInstruction worldState agentId targetId =
+        let agent = List.find (fun a -> a.id = agentId ) <| worldState.agents
+        let target = List.find (fun a -> a.id = targetId ) <| worldState.agents
+        target
+
     let moveInstruction worldState agentId target =
         let agent = List.find (fun a -> a.id = agentId ) <| worldState.agents
         let (x, y) = (target.x - agent.position.x, target.y - agent.position.y)
@@ -68,7 +74,7 @@ module Engine =
         // identity vector - direction we need to travel, with a length of 1
         // (one day we'll actually need to find the best path)
         let (ix, iy) = (x/d, y/d)
-        { id = agent.id; name = agent.name; position = {x = ix * (double agent.speed); y = iy * (double agent.speed)}; speed = agent.speed; health = agent.health }     
+        { agent with position = {x = ix * (double agent.speed); y = iy * (double agent.speed)} }     
 
 
     let WorldTick (currentState : WorldState) (newInstructions : AgentInstruction list) = 
@@ -77,7 +83,7 @@ module Engine =
         let newinsts = newInstructions 
                        |> List.map (fun ni -> { 
                            agentId = ni.agentId; 
-                           instruction = ni.instruction;
+                           instructionType = ni.instructionType;
                            state = Running currentTick 
                            })
         let isRunning instruction = match instruction.state with | Running _ -> true | _ -> false
@@ -86,7 +92,7 @@ module Engine =
         let instructionsForAgentId = instructions |> List.groupBy (fun i -> i.agentId)
 
         let processInstructionForAgent agent instruction tick =
-            match instruction.instruction with
+            match instruction.instructionType with
             | Move dest ->            
                 let (x, y) = (dest.x - agent.position.x, dest.y - agent.position.y)
                 let d = distance (x, y)
@@ -94,18 +100,19 @@ module Engine =
                                 | a when a <= double agent.speed -> 
                                     (
                                         dest,
-                                        {agentId = instruction.agentId; instruction = instruction.instruction; state = Completed tick }
+                                        { instruction with state = Completed tick }
                                     )
                                 | _ ->  ({
                                             x = agent.position.x + ((double agent.speed) * x/d);
                                             y = agent.position.y + ((double agent.speed) * y/d)
                                         }, instruction)
 
-                let updatedAgent = { id = agent.id; name = agent.name; position = np; speed = agent.speed; health = agent.health }
+                let updatedAgent = { agent with position = np }
 
                 let event = {agentId = agent.id; tick = tick; eventType = MoveEvent (agent.position, np)}
 
                 (updatedAgent, ni, event)
+            | Catch aid -> (agent, instruction, {agentId = aid; tick = tick; eventType = MoveEvent (agent.position, {x=0.0; y=0.0})}) //dummy output just to compile for now
 
         let replaceAgentIdWithAgent (id, instructions) =
             let agentOpt = (currentState.agents |> List.tryFind (fun a -> a.id = id))

@@ -15,7 +15,7 @@ let tests =
                 let start = { x = 1.0; y = 1.0 }
                 let destination = {x=10.0; y= 1.0}
                 let mover = { id = 1; name = "Sally Walker"; position = start; health = 1.0F; speed = 1.0F }; 
-                let instruction = {agentId = 1; instruction = Move destination; state = Pending}
+                let instruction = {agentId = 1; instructionType = Move destination; state = Pending}
                 let moveWorldState = { agents = [ mover ]; runningInstructions = []; tick = 0; mapGrid = testGrid };
                 // tick 1
                 let (state1, events) = WorldTick moveWorldState [ instruction ]
@@ -75,9 +75,14 @@ let tests =
                     List.head lastState.runningInstructions
 
                 Assert.Equal("Last instruction is completed", true, match lastInstruction.state with | Completed _ -> true | _ -> false)
-
-        testCase "another test" <|
-            fun _ -> Assert.Equal("3+3", 6, 3+3)
+        
+(*         testCase "basic hunt" <|            
+            fun _ ->
+                let hunter = { id = 1; name = "Hunter"; position = {x = 0.0; y = 0.0 }; speed = 2.0; health = 1.0; perceptionRange = 2.0; constitution = 1.0; }
+                let prey = { id = 2; name = "Prey"; position = {x = 2.0; y = 0.0}; speed = 1.0; health = 1.0; perceptionRange = 2.0; constitution = 1.5; }
+                let chaseInstruction = { agentId = 1; targetId = 2; }
+                let fleeDanger = { agentId = 1}
+ *)
     ]
 
 [<EntryPoint>]
