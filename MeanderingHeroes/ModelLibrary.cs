@@ -37,6 +37,15 @@ namespace MeanderingHeroes
                         (s, herointent) =>
                         {
                             var (h, events) = herointent.Intent.HeroComputation(s.State, herointent.Hero);
+
+                            // remove any finished intents
+                            h = h with
+                            {
+                                Intents = h.Intents.RemoveRange(
+                                    events.OfType<EndEvent>().Select(ev => ev.Intent)
+                                )
+                            };
+
                             return (
                                 State: s.State with { Heroes = s.State.Heroes.Replace(herointent.Hero, h) },
                                 Events: s.Events.AddRange(events));

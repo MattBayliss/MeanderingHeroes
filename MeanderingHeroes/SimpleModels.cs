@@ -92,7 +92,7 @@ namespace MeanderingHeroes
         public Event() => DateTimeStamp = DateTime.UtcNow;
     }
     public record ArrivedEvent(int HeroId, Location location) : Event();
-    public record EndEvent(int HeroId, Intent Intent) : Event();
+    public record EndEvent(int HeroId, HeroIntent Intent) : Event();
 
     public enum IntentType
     {
