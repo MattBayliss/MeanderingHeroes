@@ -1,0 +1,1 @@
+Writing my ideas in this [obsidian vault](https://obsidian.md/) - if there's long periods of inactivity on this project, this is where I can hopefully see wtf is going on when I pick it up again.
