@@ -50,14 +50,23 @@ namespace MeanderingHeroes
         public override int GetHashCode() => (HeroId, Id).GetHashCode();
     }
 
-    public record Hero
+    public record Creature
     {
         public int Id { get; init; }
-        public Name Name { get; init; }
         public Location Location { get; init; }
+
+        public Creature(int id, Location location)
+        {
+            Id = id;
+            Location = location;
+        }
+    }
+    public record Hero : Creature
+    {
+        public Name Name { get; init; }
         public HeroIntents Intents { get; init; }
 
-        public Hero(int id, Name name, Location location)
+        public Hero(int id, Name name, Location location) : base(id, location)
         {
             Id = id;
             Name = name;
