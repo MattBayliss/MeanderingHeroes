@@ -1,43 +1,34 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using static MeanderingHeroes.ModelLibrary;
 
 namespace MeanderingHeroes
 {
 
     public class MoveIntent : HeroIntent
     {
-        // 💡path-finding
-        //      `Func<GameState, Hero, IEnumerable<Location>> DetermineWaypoints` 
-        public Location Destination { get; init; }
+        private NextWaypoint _nextWaypoint { get; init; }
+        /// <summary>
+        /// A stateful computation function - takes the GameState and the Hero state, and
+        /// produces a tuple of a new Hero state, and any Events that were triggered
+        /// </summary>
         public override Func<GameState, Hero, (Hero, Events)> HeroComputation { get; init; }
 
-        public static MoveIntent Create(Hero hero, [NotNull] Location destination) =>
-            new MoveIntent(hero.Id, destination);
+        public static MoveIntent Create(Hero hero, NextWaypoint nextWaypoint) =>
+            new MoveIntent(hero.Id, nextWaypoint);
 
-        private MoveIntent(int heroId, Location destination) : base(heroId)
+        private MoveIntent(int heroId, NextWaypoint nextWaypoint) : base(heroId)
         {
-            Destination = destination;
+            _nextWaypoint = nextWaypoint;
             HeroComputation = (state, hero) =>
-                CalculateVector(state, hero) switch
+                nextWaypoint(state.map, hero) switch
                 {
-                    { done: true, vector: var v }
-                        => (hero with { Location = v }, ImmutableList.Create<Event>(new EndEvent(HeroId, this))),
-                    { vector: var v } => (hero with { Location = v }, ImmutableList<Event>.Empty)
+                    Done<Location> d => (hero with { Location = d }, ImmutableList.Create<Event>(ArrivedAtDestination)),
+                    Turn<Location> next 
+                        => (hero with { Location = next }, ImmutableList.Create<Event>(new ArrivedEvent(HeroId, next)))
                 };
         }
-
-        private EndEvent ArrivedAtDestination() => new EndEvent(HeroId, this);
-
-        private (Vector2 vector, bool done) CalculateVector(GameState state, Hero hero)
-        {
-            var speed = 2.0f;
-            var targetVector = Vector2.Subtract(Destination, hero.Location);
-            var calcTravelVector = (float mag) => targetVector.Unit().SetMagnitude(mag) + hero.Location;
-            return (targetVector.Length() < speed)
-                ? (Destination, true)
-                : (calcTravelVector(speed), false);
-        }
+        private EndEvent ArrivedAtDestination => new EndEvent(HeroId, this);
     }
-
 }

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 
 
@@ -19,7 +14,7 @@ namespace MeanderingHeroes
     // heroes -> hero (location, instructions, 
     public readonly record struct GameState(Map map, ImmutableList<Hero> Heroes);
 
-    public static class ModelLibrary
+    public static partial class ModelLibrary
     {
         public static GameState RunGame(GameState initialState, Func<GameState, Events, bool> until)
         {
@@ -72,8 +67,8 @@ namespace MeanderingHeroes
         public static Hero AddIntent(this Hero hero, HeroIntent intent) =>
             hero with { Intents = hero.Intents.Add(intent) };
 
-        public static Hero AddMoveIntent(this Hero hero, [NotNull] Location destination) =>
-            hero with { Intents = hero.Intents.Add(MoveIntent.Create(hero, destination)) };
+        public static Hero AddMoveIntent(this Hero hero, NextWaypoint pathFinder) =>
+            hero with { Intents = hero.Intents.Add(MoveIntent.Create(hero, pathFinder)) };
 
         public static IEnumerable<HerosIntent> ActiveIntents(this GameState state) =>
             state.Heroes

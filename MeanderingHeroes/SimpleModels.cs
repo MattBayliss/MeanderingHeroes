@@ -31,6 +31,24 @@ namespace MeanderingHeroes
         public Intent() => Id = DateTime.UtcNow.Ticks;
     }
 
+    public record Turn<T>
+    {
+        public T Value { get; init; }
+        public Turn(T value) => Value = value;
+        public static implicit operator T (Turn<T> turn) => turn.Value;
+        public static implicit operator Turn<T>(T value) => new Turn<T>(value);
+    }
+    public record Done<T> : Turn<T>
+    {
+        public Done(T value) : base(value) { }
+    }
+
+    public static partial class ModelLibrary
+    {
+        public static Done<T> Done<T>(T value) => new Done<T>(value);
+        public static Turn<T> Turn<T>(T value) => new Turn<T>(value);
+    }
+
     public abstract class HeroIntent : Intent
     {
         public int HeroId { get; init; }
@@ -71,7 +89,7 @@ namespace MeanderingHeroes
             Id = id;
             Name = name;
             Location = location;
-            Intents = ImmutableList<HeroIntent>.Empty;
+            Intents = [];
         }
     }
 
@@ -81,13 +99,6 @@ namespace MeanderingHeroes
         public static implicit operator Name(string name) => new Name(name);
         public static implicit operator string(Name name) => name.Value;
     }
-    public record Location(float X, float Y)
-    {
-        public static implicit operator Location((float x, float y) tuple) => new Location(tuple.x, tuple.y);
-        public static implicit operator Vector2(Location location) => new Vector2(location.X, location.Y);
-        public static implicit operator Location(Vector2 vector) => new Location(vector.X, vector.Y);
-    }
-
     public record Condition(Health Health, Hunger Hunger, Energy Energy);
     public record Health;
     public record Hunger;
@@ -100,7 +111,12 @@ namespace MeanderingHeroes
         public DateTime DateTimeStamp { get; init; }
         public Event() => DateTimeStamp = DateTime.UtcNow;
     }
-    public record ArrivedEvent(int HeroId, Location location) : Event();
+    public abstract record LocationEvent:Event
+    {
+        public Location Location { get; init; }
+        public LocationEvent(Location location) : base() => Location = location;
+    }
+    public record ArrivedEvent(int HeroId, Location location) : LocationEvent(location);
     public record EndEvent(int HeroId, HeroIntent Intent) : Event();
 
     public enum IntentType
