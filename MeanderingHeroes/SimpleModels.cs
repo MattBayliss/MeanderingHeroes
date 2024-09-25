@@ -67,33 +67,49 @@ namespace MeanderingHeroes
 
         public override int GetHashCode() => (HeroId, Id).GetHashCode();
     }
-
-    public record Creature
+    /// <summary>
+    /// Base class for all heroes, monsters, animals, etc
+    /// Hard to think of a name that captures all that.
+    /// Settling on "Doer" for now - something that does things
+    /// </summary>
+    public record Doer
     {
         public int Id { get; init; }
         public Location Location { get; init; }
 
-        public Creature(int id, Location location)
+        public Doer(int id, Location location)
         {
             Id = id;
             Location = location;
         }
     }
-    public record Hero : Creature
+    public record Beast : Doer
+    {
+        public string Species { get; init; }
+        public Beast(int id, string species, Location location) : base(id, location)
+        {
+            Species = species;
+        }
+    }
+    public record Hero : Doer
     {
         public Name Name { get; init; }
         public HeroIntents Intents { get; init; }
 
         public Hero(int id, Name name, Location location) : base(id, location)
         {
-            Id = id;
             Name = name;
-            Location = location;
             Intents = [];
         }
     }
 
     // placeholders while I figure stuff out
+    
+    /// <summary>
+    /// Pretty much a descriptive alias for string, but will
+    /// have validation rules later (because player's input will be weird)
+    /// </summary>
+    /// <param name="Value"></param>
     public record Name(string Value)
     {
         public static implicit operator Name(string name) => new Name(name);

@@ -7,12 +7,22 @@ using System.Numerics;
 namespace MeanderingHeroes
 {
     using HerosIntent = (Hero Hero, HeroIntent Intent);
+    using GameEvents = (GameState State, Events Events);
 
     // need to track:
     // map -> grid -> cell (weather, terrain, travel costs (n,s,e,w))
     // monsters -> monster (location, flags (hungry, scared, wounded, aggressive))
     // heroes -> hero (location, instructions, 
-    public readonly record struct GameState(Map map, ImmutableList<Hero> Heroes);
+    public readonly record struct GameState
+    {
+        public Map Map { get; init; }
+        public ImmutableList<Doer> Doers { get; init; }
+        public GameState(Map map)
+        {
+            Map = map;
+            Doers = [];
+        }
+    }
 
     public static partial class ModelLibrary
     {
@@ -23,7 +33,7 @@ namespace MeanderingHeroes
             var stop = () => aborted;
 
             var finalTuple = IterateUntil(stop).Aggregate(
-                (State: initialState, Events: ImmutableList<Event>.Empty),
+                (State: initialState, Events: Events.Empty),
                 (stateevents, _) =>
                 {
                     var nextTuple = stateevents.State.ActiveIntents()
@@ -37,17 +47,18 @@ namespace MeanderingHeroes
                             h = h with
                             {
                                 Intents = h.Intents.RemoveRange(
-                                    events.OfType<EndEvent>().Select(ev => ev.Intent)
+                                    (IEnumerable<HeroIntent>)events.OfType<EndEvent>().Select(ev => ev.Intent)
                                 )
                             };
 
                             return (
-                                State: s.State with { Heroes = s.State.Heroes.Replace(herointent.Hero, h) },
-                                Events: s.Events.AddRange(events));
+                                State: s.State with { Doers = s.State.Doers.Replace(herointent.Hero, h) },
+                                Events: s.Events.AddRange(events)
+                            );
                         }
                     );
 
-                    aborted = until(nextTuple.State, nextTuple.Events) ? true : aborted;
+                    aborted = until(nextTuple.State, (Events)nextTuple.Events) ? true : aborted;
 
                     return nextTuple;
                 }
@@ -64,6 +75,11 @@ namespace MeanderingHeroes
             );
         }
 
+        public static GameState Add(this GameState state, Doer doer)
+        {
+            return state with { Doers = state.Doers.Add(doer) };
+        }
+
         public static Hero AddIntent(this Hero hero, HeroIntent intent) =>
             hero with { Intents = hero.Intents.Add(intent) };
 
@@ -71,7 +87,7 @@ namespace MeanderingHeroes
             hero with { Intents = hero.Intents.Add(MoveIntent.Create(hero, pathFinder)) };
 
         public static IEnumerable<HerosIntent> ActiveIntents(this GameState state) =>
-            state.Heroes
+            state.Doers.OfType<Hero>()
                 .Select(hero => hero.Intents.Select(intent => new HerosIntent(hero, intent)))
                 .SelectMany(r => r);
 

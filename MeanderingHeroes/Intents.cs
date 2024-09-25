@@ -22,7 +22,7 @@ namespace MeanderingHeroes
         {
             _nextWaypoint = nextWaypoint;
             HeroComputation = (state, hero) =>
-                nextWaypoint(state.map, hero) switch
+                nextWaypoint(state.Map, hero) switch
                 {
                     Done<Location> d => (hero with { Location = d }, ImmutableList.Create<Event>(ArrivedAtDestination)),
                     Turn<Location> next 

@@ -7,21 +7,13 @@ using System.Runtime.CompilerServices;
 using Location = System.Numerics.Vector2;
 
 using static MeanderingHeroes.ModelLibrary;
+using static MeanderingHeroes.Test.Helpers;
 using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Test
 {
     public class MoveTests
     {
-        private Map MakeMap(int tilesX, int tilesY, Func<int, int, Terrain> terrainForCell) {
-            Cell[,] cells = new Cell[tilesX,tilesY];
-            Enumerable.Range(0, tilesX)
-            .Select(x => Enumerable.Range(0, tilesY).Select(y => (x, y))).SelectMany(coords => coords)
-            .ForEach(c => cells[c.x, c.y] = new Cell(terrainForCell(c.x, c.y)));
-
-            return new Map(cells);
-        }
-
         [Fact]
         public void MoveEast()
         {
@@ -45,21 +37,21 @@ namespace MeanderingHeroes.Test
 
             var moveIntent = Assert.IsType<MoveIntent>(addedIntent);
             
-            var initialState = new GameState(map, ImmutableList.Create(hero));
+            var initialState = new GameState(map).Add(hero);
 
             // actual test, full of bad side-effects and whatnot
             int turnLimit = 100;
             int attempt = 0;
 
             EndEvent? endEvent = null;
-            var isTestHero = (Hero h) => h.Id == hero.Id;
+            var isTestHero = (Doer d) => d is Hero h ? h.Id == hero.Id : false;
 
             var testFunc = (GameState state, ImmutableList<Event> events) =>
             {
                 attempt++;
                 if (attempt > turnLimit) return false;
 
-                var turnhero = state.Heroes.FirstOrDefault(isTestHero);
+                var turnhero = state.Doers.FirstOrDefault(isTestHero);
                 Assert.NotNull(turnhero);
 
                 var distanceSoFar = turnhero.Location.Subtract(start).Length();
@@ -92,10 +84,11 @@ namespace MeanderingHeroes.Test
             Assert.Equal(hero.Id, endEvent.HeroId);
             var endedIntent = Assert.IsType<MoveIntent>(endEvent.Intent);
 
-            var finalherostate = finalState.Heroes.Find(h => h.Id == hero.Id);
+            var finalherostate = finalState.Doers.Find(h => h.Id == hero.Id);
             Assert.NotNull(finalherostate);
-            Assert.Equal(finish, finalherostate.Location);
-            Assert.DoesNotContain<HeroIntent>(moveIntent, finalherostate.Intents);
+            var finalhero = Assert.IsType<Hero>(finalherostate);
+            Assert.Equal(finish, finalhero.Location);
+            Assert.DoesNotContain<HeroIntent>(moveIntent, finalhero.Intents);
         }
     }
 }
