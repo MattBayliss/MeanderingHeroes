@@ -88,7 +88,7 @@ namespace MeanderingHeroes.Test
             Assert.NotNull(finalherostate);
             var finalhero = Assert.IsType<Hero>(finalherostate);
             Assert.Equal(finish, finalhero.Location);
-            Assert.DoesNotContain<HeroIntent>(moveIntent, finalhero.Intents);
+            Assert.DoesNotContain(moveIntent, finalhero.Intents);
         }
     }
 }

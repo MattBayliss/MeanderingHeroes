@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using LaYumba.Functional;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 
@@ -6,7 +7,7 @@ using System.Numerics;
 
 namespace MeanderingHeroes
 {
-    using HerosIntent = (Hero Hero, HeroIntent Intent);
+    using DoersIntent = (Doer Doer, Intent Intent);
     using GameEvents = (GameState State, Events Events);
 
     // need to track:
@@ -39,20 +40,20 @@ namespace MeanderingHeroes
                     var nextTuple = stateevents.State.ActiveIntents()
                     .Aggregate(
                         (State: stateevents.State, Events: stateevents.Events),
-                        (s, herointent) =>
+                        (s, doerintent) =>
                         {
-                            var (h, events) = herointent.Intent.HeroComputation(s.State, herointent.Hero);
+                            var (d, events) = doerintent.Intent.ProcessIntent(s.State, doerintent.Doer);
 
                             // remove any finished intents
-                            h = h with
+                            d = d with
                             {
-                                Intents = h.Intents.RemoveRange(
-                                    (IEnumerable<HeroIntent>)events.OfType<EndEvent>().Select(ev => ev.Intent)
+                                Intents = d.Intents.RemoveRange(
+                                    events.OfType<EndEvent>().Select(ev => ev.Intent)
                                 )
                             };
 
                             return (
-                                State: s.State with { Doers = s.State.Doers.Replace(herointent.Hero, h) },
+                                State: s.State with { Doers = s.State.Doers.Replace(doerintent.Doer, d) },
                                 Events: s.Events.AddRange(events)
                             );
                         }
@@ -86,10 +87,10 @@ namespace MeanderingHeroes
         public static Hero AddMoveIntent(this Hero hero, NextWaypoint pathFinder) =>
             hero with { Intents = hero.Intents.Add(MoveIntent.Create(hero, pathFinder)) };
 
-        public static IEnumerable<HerosIntent> ActiveIntents(this GameState state) =>
-            state.Doers.OfType<Hero>()
-                .Select(hero => hero.Intents.Select(intent => new HerosIntent(hero, intent)))
-                .SelectMany(r => r);
+        public static IEnumerable<DoersIntent> ActiveIntents(this GameState state) =>
+            state.Doers
+                .Select(doer => doer.Intents.Select(intent => new DoersIntent(doer, intent)))
+                .Flatten();
 
         // vector stuff
         public static Vector2 Subtract(this Vector2 vector, Vector2 other) => Vector2.Subtract(vector, other);

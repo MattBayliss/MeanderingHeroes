@@ -18,8 +18,8 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void HeroHuntDeerTest()
         {
+            Assert.Fail();
             var map = MakeMap(20, 20, (x, y) => Terrain.Grass);
-
         }
     }
 }

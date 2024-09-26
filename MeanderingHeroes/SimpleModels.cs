@@ -22,15 +22,44 @@ namespace MeanderingHeroes
     public record TravelCost;
     public enum Direction { North, South, East, West }
 
-    public abstract class Intent : IEqualityComparer<Intent>
+    public class Intent : IEqualityComparer<Intent>
     {
         public virtual bool Equals(Intent? x, Intent? y) => x?.Id == y?.Id;
         public virtual int GetHashCode([DisallowNull] Intent obj) => obj.Id.GetHashCode();
+        public virtual Func<GameState, Doer, (Doer, Events)> ProcessIntent { get; init; }
 
         public long Id { get; init; }
-        public Intent() => Id = DateTime.UtcNow.Ticks;
+        public Intent()
+        {
+            Id = DateTime.UtcNow.Ticks;
+            ProcessIntent = (_, d) => (d, []);
+        }
     }
 
+    // (GameState, Event) => (GameState, Event)
+    // 
+    public abstract record Trigger(float Threshold);
+    public record ProximityTrigger(float Threshold, float Range) : Trigger(Threshold);
+
+    public abstract record Reaction
+    {
+        //public abstract Trigger Trigger { get; set; }
+    }
+
+    public record Flee : Reaction;
+    public record Attack : Reaction;
+    public record Rob : Reaction;
+    public record Defend : Reaction;
+    public record Gossip : Reaction;
+
+
+
+    /// <summary>
+    /// Simple discriminated union Turn <typeparamref name="T"/> | Done <typeparamref name="T"/>
+    /// Turn : Updated State of the Intent.
+    /// Done : Final State of the Intent, signaling that the Intent is over.
+    /// </summary>
+    /// <typeparam name="T">The type of the state of the Intent i.e. `Location` for a MoveIntent</typeparam>
     public record Turn<T>
     {
         public T Value { get; init; }
@@ -52,7 +81,6 @@ namespace MeanderingHeroes
     public abstract class HeroIntent : Intent
     {
         public int HeroId { get; init; }
-        public abstract Func<GameState, Hero, (Hero, Events)> HeroComputation { get; init; }
         public HeroIntent(int heroId) : base()
         {
             HeroId = heroId;
@@ -76,11 +104,15 @@ namespace MeanderingHeroes
     {
         public int Id { get; init; }
         public Location Location { get; init; }
+        public ImmutableList<Reaction> Reactions { get; init; }
+        public Intents Intents { get; init; }
 
         public Doer(int id, Location location)
         {
             Id = id;
             Location = location;
+            Intents = [];
+            Reactions = [];
         }
     }
     public record Beast : Doer
@@ -94,12 +126,10 @@ namespace MeanderingHeroes
     public record Hero : Doer
     {
         public Name Name { get; init; }
-        public HeroIntents Intents { get; init; }
 
         public Hero(int id, Name name, Location location) : base(id, location)
         {
             Name = name;
-            Intents = [];
         }
     }
 

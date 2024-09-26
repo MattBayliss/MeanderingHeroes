@@ -17,18 +17,18 @@ As the Game processes Intents, it produces [[Events]]. Example Events:
 - Hero arrived at their destination
 - Prey spotted in the map cell you're passing through
 
-[[Events]] then lead to [[Interrupts]]
+[[Events]] then lead to [[Reactions]]
 
 1. If Hero passes into Monster's area (Event)
-2. Monster will try to eat them (Interrupt)
+2. Monster will try to eat them (Reaction)
 
 1. If a blizzard occurs (Event)
-2. Hero looks for shelter (Interrupt)
+2. Hero looks for shelter (Reaction)
 
-Interrupts may cause an Intent to be thwarted for this turn.
+[[Reactions]] may cause an Intent to be thwarted for this turn.
 
 There will be Player defined Interrupts in the GUI - maybe like:
-- IF `Event meets Condition` THEN `Interrupt`
+- IF `Event meets Condition` THEN `Reaction`
 - IF `Hero sees someone in distress` THEN `assist them`
 
 And game engine defined ones

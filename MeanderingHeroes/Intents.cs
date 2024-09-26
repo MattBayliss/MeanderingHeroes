@@ -10,10 +10,10 @@ namespace MeanderingHeroes
     {
         private NextWaypoint _nextWaypoint { get; init; }
         /// <summary>
-        /// A stateful computation function - takes the GameState and the Hero state, and
-        /// produces a tuple of a new Hero state, and any Events that were triggered
+        /// A stateful computation function - takes the GameState and the Doer state, and
+        /// produces a tuple of a new Doer state, and any Events that were triggered
         /// </summary>
-        public override Func<GameState, Hero, (Hero, Events)> HeroComputation { get; init; }
+        public override Func<GameState, Doer, (Doer, Events)> ProcessIntent { get; init; }
 
         public static MoveIntent Create(Hero hero, NextWaypoint nextWaypoint) =>
             new MoveIntent(hero.Id, nextWaypoint);
@@ -21,7 +21,7 @@ namespace MeanderingHeroes
         private MoveIntent(int heroId, NextWaypoint nextWaypoint) : base(heroId)
         {
             _nextWaypoint = nextWaypoint;
-            HeroComputation = (state, hero) =>
+            ProcessIntent = (state, hero) =>
                 nextWaypoint(state.Map, hero) switch
                 {
                     Done<Location> d => (hero with { Location = d }, ImmutableList.Create<Event>(ArrivedAtDestination)),

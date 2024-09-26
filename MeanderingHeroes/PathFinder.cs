@@ -5,7 +5,7 @@ namespace MeanderingHeroes
 {
     public static partial class ModelLibrary
     {
-        public delegate Turn<Location> NextWaypoint(Map map, Hero hero);
+        public delegate Turn<Location> NextWaypoint(Map map, Doer doer);
 
         public static NextWaypoint StraightLinePath(float speed, [NotNull]Location destination)
         {
@@ -14,10 +14,10 @@ namespace MeanderingHeroes
                 throw new ArgumentOutOfRangeException("speed", "speed must be > 0");
             }
 
-            return (Map map, Hero hero) =>
+            return (Map map, Doer doer) =>
             {
-                var targetVector = Vector2.Subtract(destination, hero.Location);
-                var calcTravelVector = (float mag) => targetVector.Unit().SetMagnitude(mag) + hero.Location;
+                var targetVector = Vector2.Subtract(destination, doer.Location);
+                var calcTravelVector = (float mag) => targetVector.Unit().SetMagnitude(mag) + doer.Location;
                 return (targetVector.Length() < speed)
                     ? Done(destination)
                     : Turn((Location)calcTravelVector(speed));
