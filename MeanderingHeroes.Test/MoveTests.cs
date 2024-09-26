@@ -58,7 +58,7 @@ namespace MeanderingHeroes.Test
 
                 var matchedEvent = events.FirstOrDefault(
                     ev => 
-                        ev is EndEvent endev && endev.HeroId == hero.Id
+                        ev is EndEvent endev && endev.DoerId == hero.Id
                         && endev.Intent is MoveIntent mi
                 );
 
@@ -81,7 +81,7 @@ namespace MeanderingHeroes.Test
             Assert.True(attempt < turnLimit);
             Assert.Equal(Math.Ceiling(distance / speed), attempt);
             Assert.NotNull(endEvent);
-            Assert.Equal(hero.Id, endEvent.HeroId);
+            Assert.Equal(hero.Id, endEvent.DoerId);
             var endedIntent = Assert.IsType<MoveIntent>(endEvent.Intent);
 
             var finalherostate = finalState.Doers.Find(h => h.Id == hero.Id);

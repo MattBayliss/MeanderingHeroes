@@ -162,8 +162,8 @@ namespace MeanderingHeroes
         public Location Location { get; init; }
         public LocationEvent(Location location) : base() => Location = location;
     }
-    public record ArrivedEvent(int HeroId, Location location) : LocationEvent(location);
-    public record EndEvent(int HeroId, HeroIntent Intent) : Event();
+    public record ArrivedEvent(int DoerId, Location location) : LocationEvent(location);
+    public record EndEvent(int DoerId, Intent Intent) : Event();
 
     public enum IntentType
     {
