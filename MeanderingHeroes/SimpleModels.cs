@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace MeanderingHeroes
 {
+    public delegate (Doers, Events) EventAction(Event sourceEvent);
     public record Map(Cell[,] Cells);
 
     public record Cell(Terrain Terrain); //, Weather CurrentWeather, ReadOnlyDictionary<Direction, TravelCost> TravelCosts);
@@ -26,7 +27,7 @@ namespace MeanderingHeroes
     {
         public virtual bool Equals(Intent? x, Intent? y) => x?.Id == y?.Id;
         public virtual int GetHashCode([DisallowNull] Intent obj) => obj.Id.GetHashCode();
-        public virtual Func<GameState, Doer, (Doer, Events)> ProcessIntent { get; init; }
+        public virtual Func<GameState, Doer, (Doer Doer, Events Events)> ProcessIntent { get; init; }
 
         public long Id { get; init; }
         public Intent()
@@ -38,19 +39,20 @@ namespace MeanderingHeroes
 
     // (GameState, Event) => (GameState, Event)
     // 
-    public abstract record Trigger(float Threshold);
-    public record ProximityTrigger(float Threshold, float Range) : Trigger(Threshold);
-
-    public abstract record Reaction
+    public abstract record Trigger
     {
-        //public abstract Trigger Trigger { get; set; }
+        public required virtual float Threshold { get; init; }
+    }
+    public record ProximityTrigger : Trigger;
+    public record ThreatTrigger : Trigger;
+    public record Reaction
+    {
+        public required virtual Triggers Triggers { get; init; }
+        public required virtual EventAction Action { get; init; }
     }
 
     public record Flee : Reaction;
-    public record Attack : Reaction;
-    public record Rob : Reaction;
-    public record Defend : Reaction;
-    public record Gossip : Reaction;
+    
 
 
 
@@ -78,22 +80,22 @@ namespace MeanderingHeroes
         public static Turn<T> Turn<T>(T value) => new Turn<T>(value);
     }
 
-    public abstract class HeroIntent : Intent
+    public abstract class DoerIntent : Intent
     {
-        public int HeroId { get; init; }
-        public HeroIntent(int heroId) : base()
+        public int DoerId { get; init; }
+        public DoerIntent(int doerId) : base()
         {
-            HeroId = heroId;
+            DoerId = doerId;
         }
         public override bool Equals(Intent? x, Intent? y) =>
             (x, y) switch
             {
                 (null, null) => true, (null, _) => false, (_, null) => false,
-                (HeroIntent hx, HeroIntent hy) => (hx.HeroId, hx.Id) == (hy.HeroId, hy.Id),
+                (DoerIntent hx, DoerIntent hy) => (hx.DoerId, hx.DoerId) == (hy.DoerId, hy.DoerId),
                 _ => false
             };
 
-        public override int GetHashCode() => (HeroId, Id).GetHashCode();
+        public override int GetHashCode() => (DoerId, DoerId).GetHashCode();
     }
     /// <summary>
     /// Base class for all heroes, monsters, animals, etc
@@ -105,7 +107,7 @@ namespace MeanderingHeroes
         public int Id { get; init; }
         public Location Location { get; init; }
         public ImmutableList<Reaction> Reactions { get; init; }
-        public Intents Intents { get; init; }
+        public IntentList Intents { get; init; }
 
         public Doer(int id, Location location)
         {
@@ -157,23 +159,31 @@ namespace MeanderingHeroes
         public DateTime DateTimeStamp { get; init; }
         public Event() => DateTimeStamp = DateTime.UtcNow;
     }
-    public abstract record LocationEvent:Event
+    public record DoerEvent : Event
     {
-        public Location Location { get; init; }
-        public LocationEvent(Location location) : base() => Location = location;
+        public required int DoerId { get; init; }
     }
-    public record ArrivedEvent(int DoerId, Location location) : LocationEvent(location);
-    public record EndEvent(int DoerId, Intent Intent) : Event();
-
-    public enum IntentType
+    public abstract record LocationEvent : DoerEvent
     {
-        Rest,
-        Forage,
-        Hunt,
-        Goto,
-        Fight,
-        Flight,
-        Recuperate,
-        Hide
+        public required Location Location { get; init; }
+    }
+    public record ArrivedEvent : LocationEvent
+    {
+        public static ArrivedEvent Create(int doerId, Location location)
+            => new()
+            {
+                DoerId = doerId,
+                Location = location
+            };
+    }
+    public record EndEvent : DoerEvent
+    {
+        public required Intent Intent { get; init; }
+        public static EndEvent Create(int doerId, Intent intent)
+            => new()
+            {
+                DoerId = doerId,
+                Intent = intent
+            };
     }
 }

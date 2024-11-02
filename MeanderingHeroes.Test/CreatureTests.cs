@@ -20,6 +20,11 @@ namespace MeanderingHeroes.Test
         {
             Assert.Fail();
             var map = MakeMap(20, 20, (x, y) => Terrain.Grass);
+
+            var deer = new Beast(1, "deer", new Location(4.0f, 5.0f))
+                .AddFleeReaction(0.3f);
+
+            var hunter = new Hero(2, "Pete", new Location(0.0f, 5.0f));
         }
     }
 }

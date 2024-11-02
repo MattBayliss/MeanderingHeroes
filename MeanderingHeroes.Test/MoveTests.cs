@@ -9,11 +9,34 @@ using Location = System.Numerics.Vector2;
 using static MeanderingHeroes.ModelLibrary;
 using static MeanderingHeroes.Test.Helpers;
 using static LaYumba.Functional.F;
+using MeanderingHeroes.Intents;
 
 namespace MeanderingHeroes.Test
 {
     public class MoveTests
     {
+        [Fact]
+        public void OneTickTest()
+        {
+            var rnd = new Random();
+            var distance = rnd.NextSingle() + 1f;
+            var hero = new Hero(1, "bob", new Location(0f, 0f));
+            hero = hero.AddMoveIntent(StraightLinePath(distance, new Location(10f, 0f)));
+            Assert.Single(hero.Intents);
+            var moveIntent = Assert.IsType<MoveIntent>(hero.Intents.Single());
+
+            var state = new GameState(MakeMap(10, 10, (_,_) => Terrain.Grass));
+
+            var intentResult = moveIntent.ProcessIntent(state, hero);
+
+            Assert.Equal(distance, intentResult.Doer.Location.X - hero.Location.X);
+            Assert.Equal(hero.Location.Y, intentResult.Doer.Location.Y);
+
+            Assert.Single(intentResult.Events);
+            var movedEvent = Assert.IsType<ArrivedEvent>(intentResult.Events.Single());
+            Assert.Equal(intentResult.Doer.Location, movedEvent.Location);
+
+        }
         [Fact]
         public void MoveEast()
         {
@@ -48,7 +71,6 @@ namespace MeanderingHeroes.Test
 
             var testFunc = (GameState state, ImmutableList<Event> events) =>
             {
-                attempt++;
                 if (attempt > turnLimit) return false;
 
                 var turnhero = state.Doers.FirstOrDefault(isTestHero);
@@ -70,7 +92,9 @@ namespace MeanderingHeroes.Test
                 var expectedDistance = atEnd ? distance : speed * attempt;
 
                 Assert.Equal(expectedDistance, distanceSoFar);
-                
+
+                attempt++;
+
                 return atEnd;
             };
 

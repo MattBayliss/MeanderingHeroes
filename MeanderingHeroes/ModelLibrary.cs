@@ -1,4 +1,5 @@
 ﻿using LaYumba.Functional;
+using MeanderingHeroes.Intents;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
@@ -33,9 +34,12 @@ namespace MeanderingHeroes
 
             var stop = () => aborted;
 
-            var finalTuple = IterateUntil(stop).Aggregate(
-                (State: initialState, Events: Events.Empty),
-                (stateevents, _) =>
+            var initialTuple = (State: initialState, Events: Events.Empty);
+
+            var finalTuple = initialTuple.IterateUntil(
+                stateTuple => until(stateTuple.State, stateTuple.Events),
+                
+                stateevents =>
                 {
                     var nextTuple = stateevents.State.ActiveIntents()
                     .Aggregate(
@@ -81,11 +85,25 @@ namespace MeanderingHeroes
             return state with { Doers = state.Doers.Add(doer) };
         }
 
-        public static Hero AddIntent(this Hero hero, HeroIntent intent) =>
-            hero with { Intents = hero.Intents.Add(intent) };
+        public static T AddFleeReaction<T>(this T @this, float threshold) where T : Doer
+        {
+            return @this with
+            {
+                Reactions = @this.Reactions.Add(
+                    new Flee
+                    {
+                        Triggers = [
+                            new ProximityTrigger { Threshold = threshold },
+                            new ThreatTrigger { Threshold = threshold }
+                        ],
+                        Action = source => ([], [])
+                    }
+                )
+            };
+        }
 
-        public static Hero AddMoveIntent(this Hero hero, NextWaypoint pathFinder) =>
-            hero with { Intents = hero.Intents.Add(MoveIntent.Create(hero, pathFinder)) };
+        public static Hero AddIntent(this Hero hero, DoerIntent intent) =>
+            hero with { Intents = hero.Intents.Add(intent) };
 
         public static IEnumerable<DoersIntent> ActiveIntents(this GameState state) =>
             state.Doers
@@ -100,13 +118,16 @@ namespace MeanderingHeroes
             vector.Unit().Multiply(magnitude);
 
 
-        public static IEnumerable<int> IterateUntil(Func<bool> endCondition)
+        public static TState IterateUntil<TState>(
+            this TState state, 
+            Func<TState, bool> endCondition, 
+            Func<TState, TState> updateFunc)
         {
-            int turn = 0;
-            while (!endCondition())
+            while (!endCondition(state))
             {
-                yield return turn++;
+                state = updateFunc(state);
             }
+            return state;
         }
     }
 }
