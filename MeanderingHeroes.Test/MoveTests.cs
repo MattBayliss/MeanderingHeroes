@@ -9,7 +9,7 @@ using Location = System.Numerics.Vector2;
 using static MeanderingHeroes.ModelLibrary;
 using static MeanderingHeroes.Test.Helpers;
 using static LaYumba.Functional.F;
-using MeanderingHeroes.Intents;
+using MeanderingHeroes.Models.Intents;
 
 namespace MeanderingHeroes.Test
 {

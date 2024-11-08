@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MeanderingHeroes.Models.Commands;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -22,20 +23,6 @@ namespace MeanderingHeroes
     };
     public record TravelCost;
     public enum Direction { North, South, East, West }
-
-    public class Intent : IEqualityComparer<Intent>
-    {
-        public virtual bool Equals(Intent? x, Intent? y) => x?.Id == y?.Id;
-        public virtual int GetHashCode([DisallowNull] Intent obj) => obj.Id.GetHashCode();
-        public virtual Func<GameState, Doer, (Doer Doer, Events Events)> ProcessIntent { get; init; }
-
-        public long Id { get; init; }
-        public Intent()
-        {
-            Id = DateTime.UtcNow.Ticks;
-            ProcessIntent = (_, d) => (d, []);
-        }
-    }
 
     // (GameState, Event) => (GameState, Event)
     // 
@@ -78,61 +65,6 @@ namespace MeanderingHeroes
     {
         public static Done<T> Done<T>(T value) => new Done<T>(value);
         public static Turn<T> Turn<T>(T value) => new Turn<T>(value);
-    }
-
-    public abstract class DoerIntent : Intent
-    {
-        public int DoerId { get; init; }
-        public DoerIntent(int doerId) : base()
-        {
-            DoerId = doerId;
-        }
-        public override bool Equals(Intent? x, Intent? y) =>
-            (x, y) switch
-            {
-                (null, null) => true, (null, _) => false, (_, null) => false,
-                (DoerIntent hx, DoerIntent hy) => (hx.DoerId, hx.DoerId) == (hy.DoerId, hy.DoerId),
-                _ => false
-            };
-
-        public override int GetHashCode() => (DoerId, DoerId).GetHashCode();
-    }
-    /// <summary>
-    /// Base class for all heroes, monsters, animals, etc
-    /// Hard to think of a name that captures all that.
-    /// Settling on "Doer" for now - something that does things
-    /// </summary>
-    public record Doer
-    {
-        public int Id { get; init; }
-        public Location Location { get; init; }
-        public ImmutableList<Reaction> Reactions { get; init; }
-        public IntentList Intents { get; init; }
-
-        public Doer(int id, Location location)
-        {
-            Id = id;
-            Location = location;
-            Intents = [];
-            Reactions = [];
-        }
-    }
-    public record Beast : Doer
-    {
-        public string Species { get; init; }
-        public Beast(int id, string species, Location location) : base(id, location)
-        {
-            Species = species;
-        }
-    }
-    public record Hero : Doer
-    {
-        public Name Name { get; init; }
-
-        public Hero(int id, Name name, Location location) : base(id, location)
-        {
-            Name = name;
-        }
     }
 
     // placeholders while I figure stuff out
@@ -178,8 +110,8 @@ namespace MeanderingHeroes
     }
     public record EndEvent : DoerEvent
     {
-        public required Intent Intent { get; init; }
-        public static EndEvent Create(int doerId, Intent intent)
+        public required Command Intent { get; init; }
+        public static EndEvent Create(int doerId, Command intent)
             => new()
             {
                 DoerId = doerId,

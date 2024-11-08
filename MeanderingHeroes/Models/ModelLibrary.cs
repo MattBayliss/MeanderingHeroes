@@ -1,5 +1,6 @@
 ﻿using LaYumba.Functional;
-using MeanderingHeroes.Intents;
+using MeanderingHeroes.Models.Commands;
+using MeanderingHeroes.Models.Doers;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
@@ -8,7 +9,7 @@ using System.Numerics;
 
 namespace MeanderingHeroes
 {
-    using DoersIntent = (Doer Doer, Intent Intent);
+    using DoersIntent = (Doer Doer, Command Intent);
     using GameEvents = (GameState State, Events Events);
 
     // need to track:

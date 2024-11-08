@@ -1,9 +1,10 @@
-﻿using System.Collections.Immutable;
+﻿using MeanderingHeroes.Models.Doers;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using static MeanderingHeroes.ModelLibrary;
 
-namespace MeanderingHeroes.Intents
+namespace MeanderingHeroes.Models.Commands
 {
     public class FleeDangerIntent : DoerIntent
     {
