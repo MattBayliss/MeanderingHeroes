@@ -1,6 +1,6 @@
 ﻿global using Location = System.Numerics.Vector2;
-global using Doers = System.Collections.Immutable.ImmutableList<MeanderingHeroes.Models.Doers.Doer>;
+global using Doers = System.Collections.Immutable.ImmutableList<MeanderingHeroes.Types.Doers.Doer>;
 global using Triggers = System.Collections.Immutable.ImmutableList<MeanderingHeroes.Trigger>;
 global using Events = System.Collections.Immutable.ImmutableList<MeanderingHeroes.Event>;
-global using IntentList = System.Collections.Immutable.ImmutableList<MeanderingHeroes.Models.Commands.Command>;
+global using IntentList = System.Collections.Immutable.ImmutableList<MeanderingHeroes.Types.Commands.Command>;
 

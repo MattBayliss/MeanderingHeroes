@@ -1,6 +1,6 @@
 ﻿using LaYumba.Functional;
-using MeanderingHeroes.Models.Commands;
-using MeanderingHeroes.Models.Doers;
+using MeanderingHeroes.Types.Commands;
+using MeanderingHeroes.Types.Doers;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
@@ -20,10 +20,12 @@ namespace MeanderingHeroes
     {
         public Map Map { get; init; }
         public ImmutableList<Doer> Doers { get; init; }
+        public ImmutableList<Command> Commands { get; init; }
         public GameState(Map map)
         {
             Map = map;
             Doers = [];
+            Commands = [];
         }
     }
 
@@ -41,32 +43,27 @@ namespace MeanderingHeroes
                 endCondition: stateTuple => until(stateTuple.State, stateTuple.Events),
                 updateFunc: stateevents =>
                 {
-                    var nextTuple = stateevents.State.ActiveIntents()
+                    var nextTuple = stateevents.State.Commands
                         .Aggregate(
                             seed: (State: stateevents.State, Events: stateevents.Events),
-                            func: (gameEvents, doerintent) =>
+                            func: (gameEvents, command) =>
                                 {
-                                    var (newstate, events) = doerintent.Intent.ProcessIntent(gameEvents.State);
+                                    var (newstate, events) = command.ProcessIntent(gameEvents.State);
 
-                                // remove any finished intents
-                                events
-                                    .OfType<EndEvent>()
-                                    .GroupBy(
-                                        keySelector: ee => ee.DoerId,
-                                        elementSelector: ee => ee.Intent,
-                                        resultSelector: (doerId, endEvents) => d.GetDoer<Doer>(doerId)
-                                        );
+                                    var commandsCompleted = events
+                                        .OfType<EndEvent>()
+                                        .Select(ee => ee.Intent);
 
-                                    d = d with
+                                    // remove any finished intents
+                                    var prunedstate = newstate with
                                     {
-                                        Intents = d.Intents.RemoveRange(
-                                            events.OfType<EndEvent>().Select(ev => ev.Intent)
-                                        )
+                                        Commands = newstate.Commands.RemoveRange(commandsCompleted)
                                     };
+                                
 
                                     return (
-                                        State: s.State with { Doers = s.State.Doers.Replace(doerintent.Doer, d) },
-                                        Events: s.Events.AddRange(events)
+                                        State: prunedstate,
+                                        Events: gameEvents.Events.AddRange(events)
                                     );
                                 }
                         );
@@ -114,17 +111,6 @@ namespace MeanderingHeroes
         {
             return state.Doers.OfType<T>().Find(d => d.Id == id);
         }
-
-        public static Hero AddIntent(this Hero hero, DoerIntent intent) =>
-            hero with { Intents = hero.Intents.Add(intent) };
-
-        public static Doer RemoveCommand(this Doer doer, Command command) =>
-            doer with { Intents = doer.Intents.Remove(command) };
-
-        public static IEnumerable<DoersIntent> ActiveIntents(this GameState state) =>
-            state.Doers
-                .Select(doer => doer.Intents.Select(intent => new DoersIntent(doer, intent)))
-                .Flatten();
 
         // vector stuff
         public static Vector2 Subtract(this Vector2 vector, Vector2 other) => Vector2.Subtract(vector, other);

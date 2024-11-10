@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MeanderingHeroes.Models.Commands
+namespace MeanderingHeroes.Types.Commands
 {
-    public class HuntIntent : DoerIntent
+    public record HuntIntent : DoerIntent
     {
         public HuntIntent(int doerId) : base(doerId)
         {

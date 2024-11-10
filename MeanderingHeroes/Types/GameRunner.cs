@@ -1,4 +1,4 @@
-﻿using MeanderingHeroes.Models.Commands;
+﻿using MeanderingHeroes.Types.Commands;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MeanderingHeroes.Models
+namespace MeanderingHeroes.Types
 {
     public class GameRunner : IDisposable
     {
@@ -18,7 +18,7 @@ namespace MeanderingHeroes.Models
 
         public (GameState, Events) RunTurn(GameState state, ImmutableList<Command> commands)
         {
-
+            return (state, []);
         }
 
 

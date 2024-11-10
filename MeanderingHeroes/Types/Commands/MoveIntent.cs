@@ -1,17 +1,17 @@
 ﻿using LaYumba.Functional;
-using MeanderingHeroes.Models.Doers;
+using MeanderingHeroes.Types.Doers;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using static MeanderingHeroes.ModelLibrary;
 
-namespace MeanderingHeroes.Models.Commands
+namespace MeanderingHeroes.Types.Commands
 {
-    public class FleeDangerIntent : DoerIntent
+    public record FleeDangerIntent : DoerIntent
     {
         public FleeDangerIntent(int id) : base(id) { }
     }
-    public class MoveIntent : DoerIntent
+    public record MoveIntent : DoerIntent
     {
         private NextWaypoint _nextWaypoint { get; init; }
 
@@ -41,11 +41,11 @@ namespace MeanderingHeroes.Models.Commands
                     Some: hle => (updateHero(state, hle.hero, hle.location), hle.events)
                 );
         }
-        private EndEvent ArrivedAtDestination => EndEvent.Create(DoerId, this);
+        private EndEvent ArrivedAtDestination => EndEvent.Create(this);
     }
     public static partial class ModelLibrary
     {
-        public static Hero AddMoveIntent(this Hero hero, NextWaypoint pathFinder) =>
-            hero with { Intents = hero.Intents.Add(MoveIntent.Create(hero, pathFinder)) };
+        public static GameState AddMoveIntent(this GameState state, Hero hero, NextWaypoint pathFinder) =>
+            state with { Commands = state.Commands.Add(MoveIntent.Create(hero, pathFinder)) };
     }
 }

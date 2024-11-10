@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using static LaYumba.Functional.F;
+
 namespace MeanderingHeroes.Test
 {
     internal static class Helpers
@@ -17,6 +19,15 @@ namespace MeanderingHeroes.Test
             .ForEach(c => cells[c.x, c.y] = new Cell(terrainForCell(c.x, c.y)));
 
             return new Map(cells);
+        }
+
+        internal static T AssertIsSome<T>(Option<T> value)
+        {            
+            if(value == None)
+            {
+                throw new ArgumentException($"Expected value to be Some, but was None");
+            }
+            return value.AsEnumerable().Single();
         }
     }
 }

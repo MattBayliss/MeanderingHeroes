@@ -1,4 +1,4 @@
-﻿using MeanderingHeroes.Models.Commands;
+﻿using MeanderingHeroes.Types.Commands;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -108,13 +108,12 @@ namespace MeanderingHeroes
                 Location = location
             };
     }
-    public record EndEvent : DoerEvent
+    public record EndEvent : Event
     {
         public required Command Intent { get; init; }
-        public static EndEvent Create(int doerId, Command intent)
+        public static EndEvent Create(Command intent)
             => new()
             {
-                DoerId = doerId,
                 Intent = intent
             };
     }
