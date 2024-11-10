@@ -38,31 +38,38 @@ namespace MeanderingHeroes
             var initialTuple = (State: initialState, Events: Events.Empty);
 
             var finalTuple = initialTuple.IterateUntil(
-                stateTuple => until(stateTuple.State, stateTuple.Events),
-                
-                stateevents =>
+                endCondition: stateTuple => until(stateTuple.State, stateTuple.Events),
+                updateFunc: stateevents =>
                 {
                     var nextTuple = stateevents.State.ActiveIntents()
-                    .Aggregate(
-                        (State: stateevents.State, Events: stateevents.Events),
-                        (s, doerintent) =>
-                        {
-                            var (d, events) = doerintent.Intent.ProcessIntent(s.State, doerintent.Doer);
+                        .Aggregate(
+                            seed: (State: stateevents.State, Events: stateevents.Events),
+                            func: (gameEvents, doerintent) =>
+                                {
+                                    var (newstate, events) = doerintent.Intent.ProcessIntent(gameEvents.State);
 
-                            // remove any finished intents
-                            d = d with
-                            {
-                                Intents = d.Intents.RemoveRange(
-                                    events.OfType<EndEvent>().Select(ev => ev.Intent)
-                                )
-                            };
+                                // remove any finished intents
+                                events
+                                    .OfType<EndEvent>()
+                                    .GroupBy(
+                                        keySelector: ee => ee.DoerId,
+                                        elementSelector: ee => ee.Intent,
+                                        resultSelector: (doerId, endEvents) => d.GetDoer<Doer>(doerId)
+                                        );
 
-                            return (
-                                State: s.State with { Doers = s.State.Doers.Replace(doerintent.Doer, d) },
-                                Events: s.Events.AddRange(events)
-                            );
-                        }
-                    );
+                                    d = d with
+                                    {
+                                        Intents = d.Intents.RemoveRange(
+                                            events.OfType<EndEvent>().Select(ev => ev.Intent)
+                                        )
+                                    };
+
+                                    return (
+                                        State: s.State with { Doers = s.State.Doers.Replace(doerintent.Doer, d) },
+                                        Events: s.Events.AddRange(events)
+                                    );
+                                }
+                        );
 
                     aborted = until(nextTuple.State, (Events)nextTuple.Events) ? true : aborted;
 
@@ -103,8 +110,16 @@ namespace MeanderingHeroes
             };
         }
 
+        public static Option<T> GetDoer<T>(this GameState state, int id) where T : Doer
+        {
+            return state.Doers.OfType<T>().Find(d => d.Id == id);
+        }
+
         public static Hero AddIntent(this Hero hero, DoerIntent intent) =>
             hero with { Intents = hero.Intents.Add(intent) };
+
+        public static Doer RemoveCommand(this Doer doer, Command command) =>
+            doer with { Intents = doer.Intents.Remove(command) };
 
         public static IEnumerable<DoersIntent> ActiveIntents(this GameState state) =>
             state.Doers

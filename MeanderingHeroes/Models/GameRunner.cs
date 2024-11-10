@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MeanderingHeroes.Models.Commands;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -10,12 +11,15 @@ namespace MeanderingHeroes.Models
     public class GameRunner : IDisposable
     {
         private ImmutableList<Action<Event>> _eventListeners;
-        private Queue<Action<Event>> _newListeners;
         public GameRunner()
         {
             _eventListeners = [];
         }
 
+        public (GameState, Events) RunTurn(GameState state, ImmutableList<Command> commands)
+        {
+
+        }
 
 
         public void Dispose()

@@ -1,6 +1,6 @@
 Should inherit from a base class, that is shared by monsters, NPCs, anything with some agency.
 
-Heroes have [[Intents]] - a [[Player]] can add an Intent in some future GUI. Or the simulation will add some automatically.
+Heroes have [[Commands]] - a [[Player]] can add an Intent in some future GUI. Or the simulation will add some automatically.
 
 Player examples:
 - specific

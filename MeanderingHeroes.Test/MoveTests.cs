@@ -10,6 +10,7 @@ using static MeanderingHeroes.ModelLibrary;
 using static MeanderingHeroes.Test.Helpers;
 using static LaYumba.Functional.F;
 using MeanderingHeroes.Models.Intents;
+using MeanderingHeroes.Models.Commands;
 
 namespace MeanderingHeroes.Test
 {

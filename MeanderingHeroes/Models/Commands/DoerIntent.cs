@@ -19,10 +19,10 @@ namespace MeanderingHeroes.Models.Commands
                 (null, null) => true,
                 (null, _) => false,
                 (_, null) => false,
-                (DoerIntent hx, DoerIntent hy) => (hx.DoerId, hx.DoerId) == (hy.DoerId, hy.DoerId),
+                (DoerIntent dx, DoerIntent dy) => (dx.DoerId, dx.Id) == (dy.DoerId, dy.Id),
                 _ => false
             };
 
-        public override int GetHashCode() => (DoerId, DoerId).GetHashCode();
+        public override int GetHashCode() => (DoerId, Id).GetHashCode();
     }
 }

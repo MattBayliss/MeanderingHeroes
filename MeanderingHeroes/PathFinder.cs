@@ -15,7 +15,8 @@ namespace MeanderingHeroes
                 throw new ArgumentOutOfRangeException("speed", "speed must be > 0");
             }
 
-            return (Map map, Doer doer) =>
+            // map is currently unused - but will be used to calculate terrain costs at some point
+            return (map, doer) =>
             {
                 var targetVector = Vector2.Subtract(destination, doer.Location);
                 var calcTravelVector = (float mag) => targetVector.Unit().SetMagnitude(mag) + doer.Location;

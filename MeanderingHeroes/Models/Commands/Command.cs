@@ -12,13 +12,13 @@ namespace MeanderingHeroes.Models.Commands
     {
         public virtual bool Equals(Command? x, Command? y) => x?.Id == y?.Id;
         public virtual int GetHashCode([DisallowNull] Command obj) => obj.Id.GetHashCode();
-        public virtual Func<GameState, Doer, (Doer Doer, Events Events)> ProcessIntent { get; init; }
+        public virtual Func<GameState, (GameState State, Events Events)> ProcessIntent { get; init; }
 
-        public long Id { get; init; }
+        public virtual long Id { get; init; }
         public Command()
         {
             Id = DateTime.UtcNow.Ticks;
-            ProcessIntent = (_, d) => (d, []);
+            ProcessIntent = s => (s, []);
         }
     }
 }
