@@ -11,6 +11,7 @@ using static MeanderingHeroes.ModelLibrary;
 using static MeanderingHeroes.Test.Helpers;
 using static LaYumba.Functional.F;
 using MeanderingHeroes.Types.Doers;
+using MeanderingHeroes.Types;
 
 namespace MeanderingHeroes.Test
 {
@@ -32,12 +33,12 @@ namespace MeanderingHeroes.Test
             Assert.Single(state.Commands);
             var moveIntent = Assert.IsType<MoveIntent>(state.Commands.Single());
 
-            var intentResult = moveIntent.ProcessIntent(state);
+            var (postTurnState, events) = GameRunner.RunTurn(state);
 
-            var updatedDoer = Assert.Single(intentResult.State.Doers);
+            var updatedDoer = Assert.Single(postTurnState.Doers);
             var updatedHero = Assert.IsType<Hero>(updatedDoer);
 
-            var optionheroByGet = intentResult.State.GetDoer<Hero>(hero.Id);
+            var optionheroByGet = postTurnState.GetDoer<Hero>(hero.Id);
             var heroByGet = AssertIsSome(optionheroByGet);
 
             Assert.Equal(updatedHero, heroByGet);
@@ -45,8 +46,8 @@ namespace MeanderingHeroes.Test
             Assert.Equal(distance, heroByGet.Location.X - hero.Location.X);
             Assert.Equal(hero.Location.Y, heroByGet.Location.Y);
             
-            Assert.Single(intentResult.Events);
-            var movedEvent = Assert.IsType<ArrivedEvent>(intentResult.Events.Single());
+            Assert.Single(events);
+            var movedEvent = Assert.IsType<ArrivedEvent>(events.Single());
             Assert.Equal(heroByGet.Id, movedEvent.DoerId);
             Assert.Equal(heroByGet.Location, movedEvent.Location);
 

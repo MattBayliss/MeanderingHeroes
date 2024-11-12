@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace MeanderingHeroes.Types
 {
+    using GameEvents = (GameState State, Events Events);
+
     public class GameRunner : IDisposable
     {
         private ImmutableList<Action<Event>> _eventListeners;
@@ -16,9 +18,19 @@ namespace MeanderingHeroes.Types
             _eventListeners = [];
         }
 
-        public (GameState, Events) RunTurn(GameState state, ImmutableList<Command> commands)
+        public static GameEvents RunTurn(GameState state)
         {
-            return (state, []);
+            return state.Commands.Aggregate(
+                seed: (state, []),
+                func: (GameEvents gameevents, Command command) =>
+                {
+                    var commandresult = command.ProcessIntent(gameevents.State);
+                    return commandresult with
+                    {
+                        Events = gameevents.Events.AddRange(commandresult.Events)
+                    };
+                }
+            );
         }
 
 
