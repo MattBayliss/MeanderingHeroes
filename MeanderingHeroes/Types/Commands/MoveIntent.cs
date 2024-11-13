@@ -29,7 +29,7 @@ namespace MeanderingHeroes.Types.Commands
                 map => hero => _nextWaypoint(map, hero) switch
                     {
                         Done<Location> d
-                            => (hero, d, ImmutableList.Create<Event>(ArrivedAtDestination)),
+                            => (hero, d, ImmutableList.Create<Event>(ArrivedEvent.Create(DoerId, d), ArrivedAtDestination)),
                         Turn<Location> next
                             => (hero, next, ImmutableList.Create<Event>(ArrivedEvent.Create(DoerId, next)))
                     };

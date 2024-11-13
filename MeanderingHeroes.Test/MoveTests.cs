@@ -52,82 +52,83 @@ namespace MeanderingHeroes.Test
             Assert.Equal(heroByGet.Location, movedEvent.Location);
 
         }
-        //[Fact]
-        //public void MoveEast()
-        //{
-        //    // make a map 10 tiles wide, 3 tiles high
-        //    var map = MakeMap(10, 3, (x,y) => Terrain.Grass);
+        [Fact]
+        public void MoveEast()
+        {
+            // make a map 10 tiles wide, 3 tiles high
+            var map = MakeMap(10, 3, (x, y) => Terrain.Grass);
 
-        //    var start = new Location(0f, 1f);
-        //    var finish = new Location(9f, 1f);
-        //    var distance = finish.Subtract(start).Length();
-        //    var speed = 2.0f;
+            var start = new Location(0f, 1f);
+            var finish = new Location(9f, 1f);
+            var distance = finish.Subtract(start).Length();
+            var speed = 2.0f;
 
-        //    // make a hero that starts at the west/left-most tile, middle row
-        //    var hero = new Hero("Testo", start);
+            // make a hero that starts at the west/left-most tile, middle row
+            var hero = new Hero("Testo", start);
 
-        //    var speed2StraightLinePath = StraightLinePath(speed, finish);
+            var speed2StraightLinePath = StraightLinePath(speed, finish);
 
-        //    // make an intent to move to the east/right most tile, middle row
-        //    hero = hero.AddMoveIntent(speed2StraightLinePath);
 
-        //    var addedIntent = Assert.Single(hero.Intents);
+            var initialState = new GameState(map)
+                .Add(hero)
+                .AddMoveIntent(hero, speed2StraightLinePath);
 
-        //    var moveIntent = Assert.IsType<MoveIntent>(addedIntent);
-            
-        //    var initialState = new GameState(map).Add(hero);
+            var addedIntent = Assert.Single(initialState.Commands);
+            var moveIntent = Assert.IsType<MoveIntent>(addedIntent);
 
-        //    // actual test, full of bad side-effects and whatnot
-        //    int turnLimit = 100;
-        //    int attempt = 0;
+            // actual test, full of bad side-effects and whatnot
+            int turnLimit = 10;
+            int attempt = 0;
 
-        //    EndEvent? endEvent = null;
-        //    var isTestHero = (Doer d) => d is Hero h ? h.Id == hero.Id : false;
+            ImmutableList<Event> events = [];
 
-        //    var testFunc = (GameState state, ImmutableList<Event> events) =>
-        //    {
-        //        if (attempt > turnLimit) return false;
+            GameState state = initialState;
 
-        //        var turnhero = state.Doers.FirstOrDefault(isTestHero);
-        //        Assert.NotNull(turnhero);
 
-        //        var distanceSoFar = turnhero.Location.Subtract(start).Length();
 
-        //        var matchedEvent = events.FirstOrDefault(
-        //            ev => 
-        //                ev is EndEvent endev && endev.DoerId == hero.Id
-        //                && endev.Intent is MoveIntent mi
-        //        );
+            Range(1, 10).ForEach(
+                _ =>
+                {
+                    var gameevents = GameRunner.RunTurn(state);
+                    events = events.AddRange(gameevents.Events);
+                    state = gameevents.State;
+                    attempt++;
+                }
+            );
+            Assert.True(events.Count > 2);
+            var endEvent = Assert.IsType<EndEvent>(events.Last());
+            var endEventIntent = Assert.IsType<MoveIntent>(endEvent.Intent);
 
-        //        endEvent = (matchedEvent is EndEvent endev) ? endev : endEvent;
+            Assert.Equal(hero.Id, endEventIntent.DoerId);
 
-        //        var atEnd = endEvent != null;
+            var arrivedEvents = events.OfType<ArrivedEvent>().ToArray();
+            Assert.NotEmpty(arrivedEvents);
+            var lastArrivedEvent = events.OfType<ArrivedEvent>().Last();
 
-        //        // should have travelled a distance equal to speed x turn number
-        //        var expectedDistance = atEnd ? distance : speed * attempt;
+            Assert.Equal(finish, lastArrivedEvent.Location);
+            Assert.Equal(hero.Id, lastArrivedEvent.DoerId);
 
-        //        Assert.Equal(expectedDistance, distanceSoFar);
+            // every turn the hero should have moved a distance equal to speed,
+            // except for the last turn, which will be the remainder
+            var arrivedCount = arrivedEvents.Length;
 
-        //        attempt++;
+            var turnLocations = arrivedEvents
+                .Select(ae => ae.Location)
+                .Prepend(start)
+                .ToArray();
 
-        //        return atEnd;
-        //    };
+            Assert.Equal(distance, turnLocations.Last().Subtract(turnLocations.First()).Length());
 
-        //    // one line to run the whole game, with the testFunc above controlling
-        //    // when it stops
-        //    var finalState = RunGame(initialState, testFunc);
+            for(int i = 0; i < turnLocations.Length - 2; i++)
+            {
+                var loc1 = turnLocations[i];
+                var loc2 = turnLocations[i + 1];
+                Assert.Equal(speed, loc2.Subtract(loc1).Length());
+            }
 
-        //    Assert.True(attempt < turnLimit);
-        //    Assert.Equal(Math.Ceiling(distance / speed), attempt);
-        //    Assert.NotNull(endEvent);
-        //    Assert.Equal(hero.Id, endEvent.DoerId);
-        //    var endedIntent = Assert.IsType<MoveIntent>(endEvent.Intent);
-
-        //    var finalherostate = finalState.Doers.Find(h => h.Id == hero.Id);
-        //    Assert.NotNull(finalherostate);
-        //    var finalhero = Assert.IsType<Hero>(finalherostate);
-        //    Assert.Equal(finish, finalhero.Location);
-        //    Assert.DoesNotContain(moveIntent, finalhero.Intents);
-        //}
+            var finalhero = AssertIsSome(state.GetDoer<Hero>(hero.Id));
+            Assert.Equal(finish, finalhero.Location);
+            Assert.DoesNotContain(moveIntent, state.Commands);
+        }
     }
 }
