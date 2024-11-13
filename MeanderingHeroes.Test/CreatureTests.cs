@@ -10,6 +10,7 @@ using static MeanderingHeroes.ModelLibrary;
 using static MeanderingHeroes.Test.Helpers;
 using static LaYumba.Functional.F;
 using MeanderingHeroes.Types.Doers;
+using MeanderingHeroes.Types.Commands;
 
 
 namespace MeanderingHeroes.Test
@@ -19,13 +20,19 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void HeroHuntDeerTest()
         {
-            Assert.Fail();
             var map = MakeMap(20, 20, (x, y) => Terrain.Grass);
 
             var deer = new Beast("deer", new Location(4.0f, 5.0f))
                 .AddFleeReaction(0.3f);
 
             var hunter = new Hero("Pete", new Location(0.0f, 5.0f));
+
+            var initialState = new GameState(map)
+                .Add(hunter)
+                .Add(deer)
+                .AddHuntIntent(hunter);
+
+            Assert.Fail();
         }
     }
 }

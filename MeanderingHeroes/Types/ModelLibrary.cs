@@ -89,6 +89,10 @@ namespace MeanderingHeroes
         {
             return state with { Doers = state.Doers.Add(doer) };
         }
+        public static GameState Add(this GameState state, Command command)
+        {
+            return state with { Commands = state.Commands.Add(command) };
+        }
 
         public static T AddFleeReaction<T>(this T @this, float threshold) where T : Doer
         {
