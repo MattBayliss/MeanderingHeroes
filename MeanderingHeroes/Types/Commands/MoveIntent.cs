@@ -34,7 +34,7 @@ namespace MeanderingHeroes.Types.Commands
                             => (hero, next, ImmutableList.Create<Event>(ArrivedEvent.Create(DoerId, next)))
                     };
 
-            ProcessIntent = (GameState state) => state.GetDoer<Hero>(heroId)
+            _runCommand = (GameState state) => state.GetDoer<Hero>(heroId)
                 .Map(nextWaypointResult(state.Map))
                 .Match(
                     None: () => (state, []),

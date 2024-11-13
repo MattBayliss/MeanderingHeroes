@@ -24,7 +24,7 @@ namespace MeanderingHeroes.Types
                 seed: (state, []),
                 func: (GameEvents gameevents, Command command) =>
                 {
-                    var commandresult = command.ProcessIntent(gameevents.State);
+                    var commandresult = command.ProcessCommand(gameevents.State);
                     return commandresult with
                     {
                         Events = gameevents.Events.AddRange(commandresult.Events)

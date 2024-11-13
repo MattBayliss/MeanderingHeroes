@@ -48,7 +48,7 @@ namespace MeanderingHeroes
                             seed: (State: stateevents.State, Events: stateevents.Events),
                             func: (gameEvents, command) =>
                                 {
-                                    var (newstate, events) = command.ProcessIntent(gameEvents.State);
+                                    var (newstate, events) = command.ProcessCommand(gameEvents.State);
 
                                     var commandsCompleted = events
                                         .OfType<EndEvent>()
