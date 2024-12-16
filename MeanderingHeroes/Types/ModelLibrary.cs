@@ -94,6 +94,17 @@ namespace MeanderingHeroes
             return state with { Commands = state.Commands.Add(command) };
         }
 
+        public static IEnumerable<Trigger> ReactionTriggers(this GameState state)
+        {
+            return state.Doers
+                .Select
+                (
+                    doer => doer.Reactions
+                        .Select(reaction => reaction.Triggers)
+                        .Flatten()
+                ).Flatten();
+        }
+
         public static T AddFleeReaction<T>(this T @this, float threshold) where T : Doer
         {
             return @this with

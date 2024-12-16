@@ -30,17 +30,18 @@ Each Doer's Command may trigger an Event - allow other Doers to respond to Event
 
 OR
 
-Allow all Doers to act in a turn, then process all Reactions, then rollback a Doer's Events if they were interupted... no.. too messy
+Allow all Doers to act in a turn, then process all Reactions, then rollback a Doer's Events if they were interrupted... no.. too messy
 
 Make a turn = 1 hour in game world 
 
 Order of processing in a Turn:
 
-- Movement
+- Movement Commands
 - Arrived Reactions
 - Resulting Commands (flee, fight)
+- Other Commands
 - Conflict Resolution
-- Outcome Events
+- Outcome Events 
 
 Does a Command like Movement get broken down into turn-sized chunks for events to occur?
 
@@ -50,3 +51,5 @@ Does a Command like Movement get broken down into turn-sized chunks for events t
 
 
 ```
+
+Perhaps a Hex is everything not a Hero (it's monsters, creatures, dungeons etc) - and heroes only act and react to Hexes?

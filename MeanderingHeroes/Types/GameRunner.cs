@@ -20,11 +20,30 @@ namespace MeanderingHeroes.Types
 
         public static GameEvents RunTurn(GameState state)
         {
+            // Commands => Events
+            // Events => Reactions
+            // Reactions => Interrupts
+            // If an Event isn't interupted, the new State is accepted
+
+            var reactions = state
+                .Doers
+                .SelectMany(doer => doer.Reactions)
+                .SelectMany(reaction => reaction.Triggers)
+                .Select<Trigger, Func<GameState, Event, GameEvents>>(trigger => (GameState gs, Event ev) => trigger switch
+                {
+                    ProximityTrigger pt => (gs, []),
+                    _ => (gs, [])
+                });
+
             return state.Commands.Aggregate(
                 seed: (state, []),
                 func: (GameEvents gameevents, Command command) =>
                 {
                     var commandresult = command.ProcessCommand(gameevents.State);
+
+                    reactions.Select(rf => )
+
+
                     return commandresult with
                     {
                         Events = gameevents.Events.AddRange(commandresult.Events)
