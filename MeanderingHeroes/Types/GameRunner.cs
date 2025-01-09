@@ -41,8 +41,7 @@ namespace MeanderingHeroes.Types
                 {
                     var commandresult = command.ProcessCommand(gameevents.State);
 
-                    reactions.Select(rf => )
-
+                    // TODO: process reactions
 
                     return commandresult with
                     {

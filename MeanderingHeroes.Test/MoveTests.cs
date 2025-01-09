@@ -86,7 +86,7 @@ namespace MeanderingHeroes.Test
 
 
 
-            Range(1, 10).ForEach(
+            Range(1, turnLimit).ForEach(
                 _ =>
                 {
                     var gameevents = GameRunner.RunTurn(state);

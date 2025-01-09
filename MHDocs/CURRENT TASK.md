@@ -3,3 +3,8 @@
 	- *Hunter* vs *Deer* becomes *Hunter* vs *Hex.Prey*
 
 [[Hero vs Hex]]
+
+
+Investigating:
+- http://www.redblobgames.com/grids/hexagons/
+- https://github.com/antouhou/HexCore/

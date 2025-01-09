@@ -11,6 +11,7 @@ using static MeanderingHeroes.Test.Helpers;
 using static LaYumba.Functional.F;
 using MeanderingHeroes.Types.Doers;
 using MeanderingHeroes.Types.Commands;
+using MeanderingHeroes.Types;
 
 
 namespace MeanderingHeroes.Test
