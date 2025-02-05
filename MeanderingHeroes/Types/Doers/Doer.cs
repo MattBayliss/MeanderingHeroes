@@ -17,10 +17,10 @@ namespace MeanderingHeroes.Types.Doers
     public record Doer
     {
         public int Id { get; init; }
-        public Location Location { get; init; }
+        public HexCoordinates Location { get; init; }
         public ImmutableList<Reaction> Reactions { get; init; }
 
-        public Doer(Location location)
+        public Doer(HexCoordinates location)
         {
             Id = UniqueIds.NextDoerId;
             Location = location;
@@ -30,7 +30,7 @@ namespace MeanderingHeroes.Types.Doers
     public record Beast : Doer
     {
         public string Species { get; init; }
-        public Beast(string species, Location location) : base(location)
+        public Beast(string species, HexCoordinates location) : base(location)
         {
             Species = species;
         }
@@ -38,8 +38,11 @@ namespace MeanderingHeroes.Types.Doers
     public record Hero : Doer
     {
         public Name Name { get; init; }
+        public Strength Strength { get; init; }
+        public Dexterity Dexterity { get; init; }
+        public Willpower Willpower { get; init; }
 
-        public Hero(Name name, Location location) : base(location)
+        public Hero(Name name, HexCoordinates location) : base(location)
         {
             Name = name;
         }
