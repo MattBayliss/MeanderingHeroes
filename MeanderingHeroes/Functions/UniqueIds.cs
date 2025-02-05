@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HexCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,4 +15,5 @@ namespace MeanderingHeroes.Functions
         public static int NextDoerId => _doerId++;
         public static long NextCommandId => _commandId++;
     }
+
 }

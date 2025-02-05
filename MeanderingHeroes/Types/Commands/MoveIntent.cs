@@ -22,15 +22,15 @@ namespace MeanderingHeroes.Types.Commands
         {
             _nextWaypoint = nextWaypoint;
 
-            var updateHero = (GameState state, Hero hero, Location locn)
+            var updateHero = (GameState state, Hero hero, HexCoordinates locn)
                 => state with { Doers = state.Doers.Replace(hero, hero with { Location = locn }) };
 
-            Func<Map, Func<Hero, (Hero hero, Location location, Events events)>> nextWaypointResult =
+            Func<Graph, Func<Hero, (Hero hero, HexCoordinates location, Events events)>> nextWaypointResult =
                 map => hero => _nextWaypoint(map, hero) switch
                     {
-                        Done<Location> d
+                        Done<HexCoordinates> d
                             => (hero, d, ImmutableList.Create<Event>(ArrivedEvent.Create(DoerId, d), ArrivedAtDestination)),
-                        Turn<Location> next
+                        Turn<HexCoordinates> next
                             => (hero, next, ImmutableList.Create<Event>(ArrivedEvent.Create(DoerId, next)))
                     };
 

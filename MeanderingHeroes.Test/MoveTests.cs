@@ -12,6 +12,7 @@ using static MeanderingHeroes.Test.Helpers;
 using static LaYumba.Functional.F;
 using MeanderingHeroes.Types.Doers;
 using MeanderingHeroes.Types;
+using HexCore;
 
 namespace MeanderingHeroes.Test
 {
@@ -20,15 +21,14 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void OneTickTest()
         {
-            var rnd = new Random();
-            var distance = rnd.NextSingle() + 1f;
-            var hero = new Hero("bob", new Location(0f, 0f));
+            var hero = new Hero("bob", new HexCoordinates(0, 0));
 
-            var state = new GameState(MakeMap(10, 10, (_,_) => Terrain.Grass));
+            var state = new GameState(MakeHexMap(10, 10, (_,_) => Constants.GrassTerrain));
             Assert.Empty(state.Doers);
             state = state.Add(hero);
             Assert.Single(state.Doers);
-            state = state.AddMoveIntent(hero, StraightLinePath(distance, new Location(10f, 0f)));
+            var destination = new HexCoordinates(1, 0);
+            state = state.AddMoveIntent(hero, FastestPath(Constants.Walking, destination));
 
             Assert.Single(state.Commands);
             var moveIntent = Assert.IsType<MoveIntent>(state.Commands.Single());
@@ -43,11 +43,10 @@ namespace MeanderingHeroes.Test
 
             Assert.Equal(updatedHero, heroByGet);
 
-            Assert.Equal(distance, heroByGet.Location.X - hero.Location.X);
-            Assert.Equal(hero.Location.Y, heroByGet.Location.Y);
+            Assert.Equal(destination, heroByGet.Location);
             
-            Assert.Single(events);
-            var movedEvent = Assert.IsType<ArrivedEvent>(events.Single());
+            Assert.Equal(2, events.Count);
+            var movedEvent = Assert.IsType<ArrivedEvent>(events.First());
             Assert.Equal(heroByGet.Id, movedEvent.DoerId);
             Assert.Equal(heroByGet.Location, movedEvent.Location);
 
@@ -56,18 +55,15 @@ namespace MeanderingHeroes.Test
         public void MoveEast()
         {
             // make a map 10 tiles wide, 3 tiles high
-            var map = MakeMap(10, 3, (x, y) => Terrain.Grass);
+            var map = MakeHexMap(10, 3, (x, y) => Constants.GrassTerrain);
 
-            var start = new Location(0f, 1f);
-            var finish = new Location(9f, 1f);
-            var distance = finish.Subtract(start).Length();
-            var speed = 2.0f;
+            var start = new HexCoordinates(0, 1);
+            var finish = new HexCoordinates(9, 1);
 
             // make a hero that starts at the west/left-most tile, middle row
             var hero = new Hero("Testo", start);
 
-            var speed2StraightLinePath = StraightLinePath(speed, finish);
-
+            var speed2StraightLinePath = FastestPath(Constants.Walking, finish);
 
             var initialState = new GameState(map)
                 .Add(hero)
@@ -84,8 +80,6 @@ namespace MeanderingHeroes.Test
 
             GameState state = initialState;
 
-
-
             Range(1, turnLimit).ForEach(
                 _ =>
                 {
@@ -95,7 +89,6 @@ namespace MeanderingHeroes.Test
                     attempt++;
                 }
             );
-            Assert.True(events.Count > 2);
             var endEvent = Assert.IsType<EndEvent>(events.Last());
             var endEventIntent = Assert.IsType<MoveIntent>(endEvent.Intent);
 
@@ -117,14 +110,14 @@ namespace MeanderingHeroes.Test
                 .Prepend(start)
                 .ToArray();
 
-            Assert.Equal(distance, turnLocations.Last().Subtract(turnLocations.First()).Length());
+            //Assert.Equal(distance, turnLocations.Last().Subtract(turnLocations.First()).Length());
 
-            for(int i = 0; i < turnLocations.Length - 2; i++)
-            {
-                var loc1 = turnLocations[i];
-                var loc2 = turnLocations[i + 1];
-                Assert.Equal(speed, loc2.Subtract(loc1).Length());
-            }
+            //for(int i = 0; i < turnLocations.Length - 2; i++)
+            //{
+            //    var loc1 = turnLocations[i];
+            //    var loc2 = turnLocations[i + 1];
+            //    Assert.Equal(speed, loc2.Subtract(loc1).Length());
+            //}
 
             var finalhero = AssertIsSome(state.GetDoer<Hero>(hero.Id));
             Assert.Equal(finish, finalhero.Location);

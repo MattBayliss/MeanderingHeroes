@@ -1,4 +1,5 @@
-﻿using MeanderingHeroes.Types.Commands;
+﻿using MeanderingHeroes.Types;
+using MeanderingHeroes.Types.Commands;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -97,11 +98,11 @@ namespace MeanderingHeroes
     }
     public abstract record LocationEvent : DoerEvent
     {
-        public required Location Location { get; init; }
+        public required HexCoordinates Location { get; init; }
     }
     public record ArrivedEvent : LocationEvent
     {
-        public static ArrivedEvent Create(int doerId, Location location)
+        public static ArrivedEvent Create(int doerId, HexCoordinates location)
             => new()
             {
                 DoerId = doerId,

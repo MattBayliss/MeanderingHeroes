@@ -1,4 +1,5 @@
-﻿using LaYumba.Functional;
+﻿using HexCore;
+using LaYumba.Functional;
 using MeanderingHeroes.Types.Commands;
 using MeanderingHeroes.Types.Doers;
 using System;
@@ -16,10 +17,10 @@ namespace MeanderingHeroes.Types
     // heroes -> hero (location, instructions, 
     public readonly record struct GameState
     {
-        public Map Map { get; init; }
+        public Graph Map { get; init; }
         public ImmutableList<Doer> Doers { get; init; }
         public ImmutableList<Command> Commands { get; init; }
-        public GameState(Map map)
+        public GameState(Graph map)
         {
             Map = map;
             Doers = [];

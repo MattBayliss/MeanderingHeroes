@@ -1,4 +1,5 @@
-﻿using MeanderingHeroes.Types.Doers;
+﻿using MeanderingHeroes.Types;
+using MeanderingHeroes.Types.Doers;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 
@@ -6,23 +7,17 @@ namespace MeanderingHeroes
 {
     public static partial class ModelLibrary
     {
-        public delegate Turn<Location> NextWaypoint(Map map, Doer doer);
+        public delegate Turn<HexCoordinates> NextWaypoint(Graph map, Doer doer);
 
-        public static NextWaypoint StraightLinePath(float speed, [NotNull]Location destination)
+        public static NextWaypoint FastestPath(MovementType movementType, HexCoordinates destination)
         {
-            if(speed <= 0)
-            {
-                throw new ArgumentOutOfRangeException("speed", "speed must be > 0");
-            }
-
-            // map is currently unused - but will be used to calculate terrain costs at some point
             return (map, doer) =>
             {
-                var targetVector = Vector2.Subtract(destination, doer.Location);
-                var calcTravelVector = (float mag) => targetVector.Unit().SetMagnitude(mag) + doer.Location;
-                return (targetVector.Length() < speed)
+                HexCoordinates nextHex = map.GetShortestPath(doer.Location, (Coordinate3D)destination, movementType).FirstOrDefault(destination);
+
+                return (nextHex == destination)
                     ? Done(destination)
-                    : Turn((Location)calcTravelVector(speed));
+                    : Turn((HexCoordinates)nextHex);
             };
         }
     }
