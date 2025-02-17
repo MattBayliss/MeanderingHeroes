@@ -5,8 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MeanderingHeroes.Functions
+namespace MeanderingHeroes
 {
+    
     public static class UniqueIds
     {
         private static long _commandId = 0;
