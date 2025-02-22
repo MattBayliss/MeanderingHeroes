@@ -14,8 +14,8 @@ namespace MeanderingHeroes.Types
 
     public record MoveGoal : Goal
     {
-        public Location Destination { get; init; }
-        public MoveGoal(Location destination)
+        public Point Destination { get; init; }
+        public MoveGoal(Point destination)
         {
             Destination = destination;
         }

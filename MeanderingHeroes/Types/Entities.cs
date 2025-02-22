@@ -7,7 +7,7 @@ using Xunit;
 
 namespace MeanderingHeroes.Types
 {
-    public abstract record Entity(Location Location)
+    public abstract record Entity(Point Location)
     {
         public float Speed { get; init; } = 0F;
         public IImmutableList<Goal> Goals { get; init; } = [];
@@ -16,7 +16,7 @@ namespace MeanderingHeroes.Types
 
     public record Hero : Entity
     {
-        public Hero(Location location, float speed) : base(location)
+        public Hero(Point location, float speed) : base(location)
         {
             Assert.True(speed >= 0);
 
