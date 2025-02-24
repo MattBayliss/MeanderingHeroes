@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MeanderingHeroes.Types
@@ -22,14 +23,18 @@ namespace MeanderingHeroes.Types
 
         public override T Update<T>(T entity)
         {
-            return entity switch
-            {
-                { Speed: <= 0 } => entity,
-                { Speed: var s, Location: var loc } => entity with 
-                    { 
-                        Location = Vector2.Multiply(Vector2.Normalize(Vector2.Subtract(Destination, loc)), s) 
-                    }
-            };
+            if (entity.Speed <= 0) return entity;
+
+            var vectorToDestination = Vector2.Subtract(Destination, entity.Location);
+            var distanceToDestination = vectorToDestination.Length();
+
+            Point nextPoint = (distanceToDestination > entity.Speed)
+                ? entity.Location + Vector2.Multiply(
+                    vectorToDestination,
+                    entity.Speed / distanceToDestination)
+                : Destination;
+
+            return entity with { Location = nextPoint };
         }
     }
 }
