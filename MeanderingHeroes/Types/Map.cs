@@ -9,20 +9,47 @@ using System.Threading.Tasks;
 
 namespace MeanderingHeroes.Types
 {
+    public abstract record Terrain(string Name, float MovementCost);
+    public record LandTerrain : Terrain
+    {
+        public LandTerrain(string Name, float MovementCost) : base(Name, MovementCost) { }
+    }
+    public record WaterTerrain : Terrain
+    {
+        public WaterTerrain(string Name, float MovementCost) : base(Name, MovementCost) { }
+    }
+
     /// <summary>
     /// A HexGrid for holding all the entities on the map.
     /// </summary>
     /// <param name="Width">How many hex columns</param>
     /// <param name="Height">How many hex rows</param>
-    public record Grid(int Width, int Height)
+    public record Grid
     {
         // trialling spatial partition https://gameprogrammingpatterns.com/spatial-partition.html
         // Starting with hexes being pretty big, and all entities within being able to interact,
         // and special cases with neighbour hexes too. If hexes get smaller, might use quadtrees,
         // or hextrees rather.
+        public int Width { get; init; }
+        public int Height { get; init; }
+        public ImmutableList<Entity>[,] Entities { get; init; }
+        public Terrain[,] Terrain { get; init; }
 
-        public Entity[,] Hexes = new Entity[Height, Width];
+        public Grid(int width, int height, Func<int, int, Terrain> terrainForHex)
+        {
+            Width = width;
+            Height = height;
+            Entities = new ImmutableList<Entity>[Width, Height];
+            Terrain = new Terrain[Width, Height];
 
+            // populate terrain array
+            F.Range(0, Width - 1)
+                .Select(
+                    q => F.Range(0, Height - 1)
+                        .Select(r => (Q: q, R: r))
+                ).Flatten()
+                .ForEach(qr => Terrain[qr.Q, qr.R] = terrainForHex(qr.Q, qr.R));
+        }
     }
     /// <summary>
     /// Points are standard X, Y cartesian coordinates, that map to Hex Q, R "pointy top - odd-r"

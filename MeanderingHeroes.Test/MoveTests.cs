@@ -9,7 +9,7 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void OneTickTest()
         {
-            var grid = new Grid(10, 10);
+            var grid = new Grid(10, 10, (_, _) => new LandTerrain("grass", 1f));
 
             var hexStart = new Hex(1, 0);
             var hexDestination = new Hex(3, 0); // 2nd hex to the east
@@ -35,9 +35,9 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void PathToDestinationOnUniformTerrainTest()
         {
-            var grid = new Grid(10, 10);
+            var grid = new Grid(10, 10, (_, _) => new LandTerrain("grass", 1f));
 
-            var hexStart = new Hex(0, 0); // centre of map
+            var hexStart = new Hex(0, 0); // top left of map
             var hexDestination = new Hex(3, 3); // 3 hexes to the SE
 
             // in cartesian
@@ -77,6 +77,21 @@ namespace MeanderingHeroes.Test
 
             // Assert there are no cases where the 2nd point is futher away than the first
             Assert.DoesNotContain(false, distanceToEndForCurrentAndNext.Select(tuple => tuple.First > tuple.Second));            
+        }
+
+        [Fact]
+        public void PathGoesAroundObstactle()
+        {
+            // make a 10x10 map where a mountain range blocks 0,4 to 6,4
+            var terrainLayout = (int q, int r) =>
+            {
+                return (q, r) switch
+                {
+                    (var qq, var rr) when (rr == 4 && qq <= 6)  => new LandTerrain("Mountain", 10f),
+                    _                                           => new LandTerrain("grass", 1f)
+                };
+            };
+            var grid = new Grid(10, 10, terrainLayout);
         }
     }
 }
