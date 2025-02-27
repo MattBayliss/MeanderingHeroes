@@ -94,20 +94,25 @@ namespace MeanderingHeroes.Test
             };
             var grid = new Grid(10, 10, terrainLayout);
 
-            // so if we start at 7,0, and try to end at 3,5, the hex route should be:
-            // (7,0) => (7,1) => (7,2) => (7,3) => (7,4)  [just right of the mountain range]
-            // => (7,5) => (6,5) => (5,5) => (4,5) => (3,5)
-
             var start = new Hex(7, 0);
-            var end = new Hex(3, 5);
+            var end = new Hex(0, 5);
+
+            //   0 1 2 3 4 5 6 7 8 9
+            // 0 _ _ _ _ _ _ _ s _ _
+            // 1 _ _ _ _ _ _ _ | _ _
+            // 2 _ _ _ _ _ _ _ | _ _
+            // 3 _ _ _ _ _ _ _ | _ _
+            // 4 M M M M M M M | _ _
+            // 5 e - - - - - - / _ _
+            // 6 _ _ _ _ _ _ _ _ _ _
 
             Hex[] expectedRoute = [
-                // heading down to 7,4, just east of the mountain range
+                // heading down/south to 7,4, just east of the mountain range
                 new Hex(7,1), new Hex(7,2), new Hex(7,3), new Hex(7,4), 
                 // then diagonal / SW to 6,5
                 new Hex(6,5),
-                // then "west" to 3,5
-                new Hex(5,5), new Hex(4,5), new Hex(3,5)
+                // then "west" to 0,5
+                new Hex(5,5), new Hex(4,5), new Hex(3,5), new Hex(2,5), new Hex(1,5), new Hex(0,5)
                 ];
 
             var aStarRoute = grid.AStarPath(start, end).ToArray();
