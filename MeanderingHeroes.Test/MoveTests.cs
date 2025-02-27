@@ -1,3 +1,4 @@
+using LaYumba.Functional;
 using MeanderingHeroes.Functions;
 using MeanderingHeroes.Types;
 using System.Numerics;
@@ -55,7 +56,7 @@ namespace MeanderingHeroes.Test
             int quitAfterTick = 1000;
             int attempt = 1;
 
-            while(hero.Location != endAt && attempt < quitAfterTick)
+            while (hero.Location != endAt && attempt < quitAfterTick)
             {
                 hero = hero.Update();
                 pathTaken = pathTaken.Append(hero.Location);
@@ -76,7 +77,7 @@ namespace MeanderingHeroes.Test
             var distanceToEndForCurrentAndNext = distancesToEnd.Zip(distancesToEnd.Skip(1));
 
             // Assert there are no cases where the 2nd point is futher away than the first
-            Assert.DoesNotContain(false, distanceToEndForCurrentAndNext.Select(tuple => tuple.First > tuple.Second));            
+            Assert.DoesNotContain(false, distanceToEndForCurrentAndNext.Select(tuple => tuple.First > tuple.Second));
         }
 
         [Fact]
@@ -87,11 +88,31 @@ namespace MeanderingHeroes.Test
             {
                 return (q, r) switch
                 {
-                    (var qq, var rr) when (rr == 4 && qq <= 6)  => new LandTerrain("Mountain", 10f),
-                    _                                           => new LandTerrain("grass", 1f)
+                    (var qq, var rr) when (rr == 4 && qq <= 6) => new LandTerrain("Mountain", 10f),
+                    _ => new LandTerrain("grass", 1f)
                 };
             };
             var grid = new Grid(10, 10, terrainLayout);
+
+            // so if we start at 7,0, and try to end at 3,5, the hex route should be:
+            // (7,0) => (7,1) => (7,2) => (7,3) => (7,4)  [just right of the mountain range]
+            // => (7,5) => (6,5) => (5,5) => (4,5) => (3,5)
+
+            var start = new Hex(7, 0);
+            var end = new Hex(3, 5);
+
+            Hex[] expectedRoute = [
+                // heading down to 7,4, just east of the mountain range
+                new Hex(7,1), new Hex(7,2), new Hex(7,3), new Hex(7,4), 
+                // then diagonal / SW to 6,5
+                new Hex(6,5),
+                // then "west" to 3,5
+                new Hex(5,5), new Hex(4,5), new Hex(3,5)
+                ];
+
+            var aStarRoute = grid.AStarPath(start, end).ToArray();
+
+            Assert.Equal(expectedRoute, aStarRoute);
         }
     }
 }

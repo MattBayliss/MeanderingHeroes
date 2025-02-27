@@ -39,6 +39,9 @@ namespace MeanderingHeroes.Functions
                 X: UnitsPerHex * (hex.Q + hex.R / 2f),
                 Y: HexRadius * 1.5f * hex.R
             );
+
+        public static IEnumerable<Hex> Neighbours(this Hex current) 
+            => Hex.Directions.Select(dir => current + dir);
     }
 
     public static partial class Core
