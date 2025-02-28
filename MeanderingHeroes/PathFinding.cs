@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace MeanderingHeroes
 {
-    public record PathSegment(Hex From, Hex To);
     public static class PathFinding
     {
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp
