@@ -1,5 +1,4 @@
-﻿using MeanderingHeroes.Functions;
-using MeanderingHeroes.Types;
+﻿using MeanderingHeroes.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +18,7 @@ namespace MeanderingHeroes.Test
             var start = new Hex(4, 16);
             // and head to the top right
             var end = new Hex(28, 4);
-            var speed = 1f;
+            var speed = Functions.UnitsPerHex;
 
             var gamestate = new GameState([
                 new Hero(start.Centre(), speed).AddGoal(new MoveGoal(end.Centre()))

@@ -1,5 +1,4 @@
 ﻿using LaYumba.Functional;
-using MeanderingHeroes.Functions;
 using MeanderingHeroes.Types;
 using System;
 using System.Collections.Generic;

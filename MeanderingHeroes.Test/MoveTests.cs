@@ -1,7 +1,8 @@
 using LaYumba.Functional;
-using MeanderingHeroes.Functions;
 using MeanderingHeroes.Types;
 using System.Numerics;
+
+using static MeanderingHeroes.Functions;
 
 namespace MeanderingHeroes.Test
 {
@@ -12,14 +13,14 @@ namespace MeanderingHeroes.Test
         {
             var grid = Helpers.MakeGrass10x10MapGrid();
 
-            var hexStart = new Hex(1, 0);
-            var hexDestination = new Hex(3, 0); // 2nd hex to the east
+            var hexStart = Hex(1, 0);
+            var hexDestination = Hex(3, 0); // 2nd hex to the east
 
             // in cartesian
             var startAt = hexStart.Centre();
             var endAt = hexDestination.Centre();
 
-            Assert.Equal(2f * Functions.Map.UnitsPerHex, endAt.X - startAt.X, 0.01f);
+            Assert.Equal(2f * UnitsPerHex, endAt.X - startAt.X, 0.01f);
             Assert.Equal(0f, endAt.Y);
             Assert.Equal(0f, startAt.Y);
 
@@ -38,8 +39,8 @@ namespace MeanderingHeroes.Test
         {
             var grid = Helpers.MakeGrass10x10MapGrid();
 
-            var hexStart = new Hex(0, 0); // top left of map
-            var hexDestination = new Hex(3, 3); // 3 hexes to the SE
+            var hexStart = Hex(0, 0); // top left of map
+            var hexDestination = Hex(3, 3); // 3 hexes to the SE
 
             // in cartesian
             var startAt = hexStart.Centre();
@@ -96,16 +97,16 @@ namespace MeanderingHeroes.Test
                 """;
             var grid = Helpers.GenerateMapFromAsciiMess(smallMountainRangeAscii);
 
-            var start = new Hex(7, 0);
-            var end = new Hex(0, 5);
+            var start = Hex(7, 0);
+            var end = Hex(0, 5);
 
             Hex[] expectedRoute = [
                 // heading down/south to 7,4, just east of the mountain range
-                new Hex(7,1), new Hex(7,2), new Hex(7,3), new Hex(7,4), 
+                Hex(7,1), Hex(7,2), Hex(7,3), Hex(7,4), 
                 // then diagonal / SW to 6,5
-                new Hex(6,5),
+                Hex(6,5),
                 // then "west" to 0,5
-                new Hex(5,5), new Hex(4,5), new Hex(3,5), new Hex(2,5), new Hex(1,5), new Hex(0,5)
+                Hex(5,5), Hex(4,5), Hex(3,5), Hex(2,5), Hex(1,5), Hex(0,5)
                 ];
 
             var aStarRoute = grid.AStarPath(start, end).ToArray();

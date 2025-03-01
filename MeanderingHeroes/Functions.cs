@@ -1,12 +1,15 @@
 ﻿using MeanderingHeroes.Types;
 
-namespace MeanderingHeroes.Functions
+namespace MeanderingHeroes
 {
-    public static partial class Map
+    public static partial class Functions
     {
         public static float UnitsPerHex = 10;
         private static float Sqrt3 = MathF.Sqrt(3);
         private static float HexRadius = UnitsPerHex / Sqrt3;
+
+        public static Hex Hex(int q, int r) => new Hex(q, r);
+
         public static Hex InHex(this Point p)
         {
             float q = (p.X * Sqrt3 / 3f - p.Y / 3f) / HexRadius;
@@ -41,7 +44,7 @@ namespace MeanderingHeroes.Functions
             );
 
         public static IEnumerable<Hex> Neighbours(this Hex current) 
-            => Hex.Directions.Select(dir => current + dir);
+            => Types.Hex.Directions.Select(dir => current + dir);
        
     }
 
