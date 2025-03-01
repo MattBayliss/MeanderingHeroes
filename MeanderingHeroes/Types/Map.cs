@@ -88,6 +88,9 @@ namespace MeanderingHeroes.Types
             return (this - b).Length();
         }
 
+        public static implicit operator Hex((int, int) tuple) => new Hex(tuple.Item1, tuple.Item2);
+        public static implicit operator (int Q, int R)(Hex hex) => (hex.Q, hex.R);
+
         public Hex RotateLeft() => new Hex(-S, -Q, -R);
         public Hex RotateRight() => new Hex(-R, -S, -Q);
         public Hex Neighbour(int direction) => this + Hex.Directions[direction];

@@ -13,8 +13,8 @@ namespace MeanderingHeroes.Test
         {
             var grid = Helpers.MakeGrass10x10MapGrid();
 
-            var hexStart = Hex(1, 0);
-            var hexDestination = Hex(3, 0); // 2nd hex to the east
+            Hex hexStart = (1, 0);
+            Hex hexDestination = (3, 0); // 2nd hex to the east
 
             // in cartesian
             var startAt = hexStart.Centre();
@@ -39,8 +39,8 @@ namespace MeanderingHeroes.Test
         {
             var grid = Helpers.MakeGrass10x10MapGrid();
 
-            var hexStart = Hex(0, 0); // top left of map
-            var hexDestination = Hex(3, 3); // 3 hexes to the SE
+            Hex hexStart = (0, 0); // top left of map
+            Hex hexDestination = (3, 3); // 3 hexes to the SE
 
             // in cartesian
             var startAt = hexStart.Centre();
@@ -97,16 +97,16 @@ namespace MeanderingHeroes.Test
                 """;
             var grid = Helpers.GenerateMapFromAsciiMess(smallMountainRangeAscii);
 
-            var start = Hex(7, 0);
-            var end = Hex(0, 5);
+            Hex start = (7, 0);
+            Hex end = (0, 5);
 
             Hex[] expectedRoute = [
                 // heading down/south to 7,4, just east of the mountain range
-                Hex(7,1), Hex(7,2), Hex(7,3), Hex(7,4), 
+                (7,1), (7,2), (7,3), (7,4), 
                 // then diagonal / SW to 6,5
-                Hex(6,5),
+                (6,5),
                 // then "west" to 0,5
-                Hex(5,5), Hex(4,5), Hex(3,5), Hex(2,5), Hex(1,5), Hex(0,5)
+                (5,5), (4,5), (3,5), (2,5), (1,5), (0,5)
                 ];
 
             var aStarRoute = grid.AStarPath(start, end).ToArray();
