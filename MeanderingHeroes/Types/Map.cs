@@ -30,25 +30,13 @@ namespace MeanderingHeroes.Types
         // Starting with hexes being pretty big, and all entities within being able to interact,
         // and special cases with neighbour hexes too. If hexes get smaller, might use quadtrees,
         // or hextrees rather.
-        public int Width { get; init; }
-        public int Height { get; init; }
-        public ImmutableList<Entity>[,] Entities { get; init; }
+        public int Width => Terrain.GetLength(0);
+        public int Height => Terrain.GetLength(1);
         public Terrain[,] Terrain { get; init; }
 
-        public Grid(int width, int height, Func<int, int, Terrain> terrainForHex)
+        public Grid(Terrain[,] terrainForHex)
         {
-            Width = width;
-            Height = height;
-            Entities = new ImmutableList<Entity>[Width, Height];
-            Terrain = new Terrain[Width, Height];
-
-            // populate terrain array
-            F.Range(0, Width - 1)
-                .Select(
-                    q => F.Range(0, Height - 1)
-                        .Select(r => (Q: q, R: r))
-                ).Flatten()
-                .ForEach(qr => Terrain[qr.Q, qr.R] = terrainForHex(qr.Q, qr.R));
+            Terrain = terrainForHex;
         }
     }
     /// <summary>

@@ -10,7 +10,7 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void OneTickTest()
         {
-            var grid = new Grid(10, 10, (_, _) => new LandTerrain("grass", 1f));
+            var grid = Helpers.MakeGrass10x10MapGrid();
 
             var hexStart = new Hex(1, 0);
             var hexDestination = new Hex(3, 0); // 2nd hex to the east
@@ -36,7 +36,7 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void PathToDestinationOnUniformTerrainTest()
         {
-            var grid = new Grid(10, 10, (_, _) => new LandTerrain("grass", 1f));
+            var grid = Helpers.MakeGrass10x10MapGrid();
 
             var hexStart = new Hex(0, 0); // top left of map
             var hexDestination = new Hex(3, 3); // 3 hexes to the SE
@@ -83,28 +83,21 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void PathGoesAroundObstactle()
         {
-            // make a 10x10 map where a mountain range blocks 0,4 to 6,4
-            var terrainLayout = (int q, int r) =>
-            {
-                return (q, r) switch
-                {
-                    (var qq, var rr) when (rr == 4 && qq <= 6) => new LandTerrain("Mountain", 10f),
-                    _ => new LandTerrain("grass", 1f)
-                };
-            };
-            var grid = new Grid(10, 10, terrainLayout);
+            string smallMountainRangeAscii =
+            //  0 1 2 3 4 5 6 7 8 9
+                """
+                _ _ _ _ _ _ _ _ _ _
+                _ _ _ _ _ _ _ _ _ _
+                _ _ _ _ _ _ _ _ _ _
+                _ _ _ _ _ _ _ _ _ _
+                M M M M M M M _ _ _
+                _ _ _ _ _ _ _ _ _ _
+                _ _ _ _ _ _ _ _ _ _
+                """;
+            var grid = Helpers.GenerateMapFromAsciiMess(smallMountainRangeAscii);
 
             var start = new Hex(7, 0);
             var end = new Hex(0, 5);
-
-            //   0 1 2 3 4 5 6 7 8 9
-            // 0 _ _ _ _ _ _ _ s _ _
-            // 1 _ _ _ _ _ _ _ | _ _
-            // 2 _ _ _ _ _ _ _ | _ _
-            // 3 _ _ _ _ _ _ _ | _ _
-            // 4 M M M M M M M | _ _
-            // 5 e - - - - - - / _ _
-            // 6 _ _ _ _ _ _ _ _ _ _
 
             Hex[] expectedRoute = [
                 // heading down/south to 7,4, just east of the mountain range

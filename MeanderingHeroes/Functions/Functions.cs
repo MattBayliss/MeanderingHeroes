@@ -42,6 +42,7 @@ namespace MeanderingHeroes.Functions
 
         public static IEnumerable<Hex> Neighbours(this Hex current) 
             => Hex.Directions.Select(dir => current + dir);
+       
     }
 
     public static partial class Core
