@@ -3,6 +3,7 @@ using MeanderingHeroes.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -55,5 +56,21 @@ namespace MeanderingHeroes
 
             return result;
         }
+
+        public static Func<Entity, Entity> GenerateDestinationUpdater(Point destination) => entity =>
+        {
+            if (entity.Speed <= 0) return entity;
+
+            var vectorToDestination = Vector2.Subtract(destination, entity.Location);
+            var distanceToDestination = vectorToDestination.Length();
+
+            Point nextPoint = (distanceToDestination > entity.Speed)
+                ? entity.Location + Vector2.Multiply(
+                    vectorToDestination,
+                    entity.Speed / distanceToDestination)
+                : destination;
+
+            return entity with { Location = nextPoint };
+        };
     }
 }

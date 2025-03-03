@@ -1,4 +1,5 @@
-﻿using MeanderingHeroes.Types;
+﻿using MeanderingHeroes.Components;
+using MeanderingHeroes.Types;
 
 namespace MeanderingHeroes
 {
@@ -7,8 +8,6 @@ namespace MeanderingHeroes
         public static float UnitsPerHex = 10;
         private static float Sqrt3 = MathF.Sqrt(3);
         private static float HexRadius = UnitsPerHex / Sqrt3;
-
-        public static Hex Hex(int q, int r) => new Hex(q, r);
 
         public static Hex InHex(this Point p)
         {
@@ -50,6 +49,9 @@ namespace MeanderingHeroes
 
     public static partial class Core
     {
-        public static Hero AddGoal(this Hero hero, Goal goal) => hero with { Goals = hero.Goals.Add(goal) };
+        public static Entity AddConsideration(this Entity entity, Consideration consideration) 
+            => entity with { 
+                Considerations = entity.Considerations.Add(consideration)
+            };
     }
 }

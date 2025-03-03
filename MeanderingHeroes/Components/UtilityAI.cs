@@ -1,4 +1,5 @@
-﻿using MeanderingHeroes.Types;
+﻿using LaYumba.Functional;
+using MeanderingHeroes.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,18 +8,35 @@ using System.Threading.Tasks;
 
 namespace MeanderingHeroes.Components
 {
-    // using terminology from https://youtu.be/H6QEpc2SQiY - and plan to implement some
-    // of the fuzzy logic ideas presented in that presentation
-    public record Consideration;
-    public record Curve;
-    public record Evaluator(Consideration Considerations, Curve Curve);
-    public record Aggregator(ImmutableList<Evaluator> Evalutators, Func<ImmutableList<Evaluator>> AggregateFunc);
+    public record Consideration(
+        // to give considerations "stickiness"
+        long RunningTicks,
+        Func<Grid, GameState, long, Entity, float> CalculateUtility, 
+        Func<Entity, Entity> UpdateEntity
+    );
 
-    public class UtilityAIComponent
+
+    public class UtilityAIComponent(Grid Grid)
     {
-        public void Update(Entity entity)
+        public Entity Update(GameState gameState, Entity entity)
         {
-            
+            // you should take the top 3 and randomly choose from those - depending
+            // on the deviation of results
+
+            // BUT this early on, just return the highest result every time
+            var winner = entity.Considerations
+                .Select(c =>
+                    (
+                        Utility: c.CalculateUtility(Grid, gameState, c.RunningTicks, entity),
+                        UpdateFunc: c.UpdateEntity
+                    )
+                ).OrderByDescending(cc => cc.Utility)
+                .Head(); // returns an Option<(float, Func<Entity, Entity>)
+
+            return winner.Match(
+                None: () => entity,
+                Some: cns => cns.UpdateFunc(entity)
+            );
         }
     }
 }

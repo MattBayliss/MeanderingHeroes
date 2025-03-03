@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MeanderingHeroes.Components;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,25 +8,17 @@ using Xunit;
 
 namespace MeanderingHeroes.Types
 {
-    public abstract record Entity(Point Location)
+    public record Entity
     {
+        public Point Location { get; init; }
         public float Speed { get; init; } = 0F;
-        public IImmutableList<Goal> Goals { get; init; } = [];
-        public abstract Entity Update();
-    }
-
-    public record Hero : Entity
-    {
-        public Hero(Point location, float speed) : base(location)
+        public IImmutableList<Consideration> Considerations { get; init; } = [];
+        public Entity(Point location, float speed)
         {
             Assert.True(speed >= 0);
 
             Location = location;
             Speed = speed;
-        }
-        public override Hero Update()
-        {
-            return Goals.Aggregate(this, (hero, goal) => goal.Update(hero));
         }
     }
 }

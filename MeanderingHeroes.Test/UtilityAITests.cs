@@ -22,7 +22,7 @@ namespace MeanderingHeroes.Test
             var speed = UnitsPerHex;
 
             var gamestate = new GameState([
-                new Hero(start.Centre(), speed).AddGoal(new MoveGoal(end.Centre()))
+                new Entity(start.Centre(), speed)
             ]);
         }
     }

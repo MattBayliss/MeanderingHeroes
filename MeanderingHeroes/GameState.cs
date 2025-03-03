@@ -19,10 +19,5 @@ namespace MeanderingHeroes
         {
             Entities = entities.ToImmutableList();
         }
-
-        public GameState Update()
-        {
-            return this with { Entities = Entities.Select(entity => entity.Update()).ToImmutableList() };
-        }
     }
 }

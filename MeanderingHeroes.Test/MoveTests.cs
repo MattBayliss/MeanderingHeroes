@@ -1,4 +1,5 @@
 using LaYumba.Functional;
+using MeanderingHeroes.Components;
 using MeanderingHeroes.Types;
 using System.Numerics;
 
@@ -27,10 +28,17 @@ namespace MeanderingHeroes.Test
             // speed relative to hex centres
             var speed = 1f;
 
-            var hero = new Hero(startAt, speed).AddGoal(new MoveGoal(endAt));
+            var moveConsideration = new Consideration(
+                RunningTicks: 0,
+                CalculateUtility: (_, _, _, _) => 0.3f,
+                UpdateEntity: PathFinding.GenerateDestinationUpdater(endAt));
+
+            var hero = new Entity(startAt, speed).AddConsideration(moveConsideration);
+            
             Assert.Equal(startAt, hero.Location);
 
-            hero = hero.Update();
+            var utilityAI = new UtilityAIComponent(grid);
+            hero = utilityAI.Update(new GameState([]), hero);
 
             Assert.Equal(startAt with { X = startAt.X + speed }, hero.Location);
         }
@@ -49,7 +57,13 @@ namespace MeanderingHeroes.Test
             // speed relative to hex centres
             var speed = 1f;
 
-            var hero = new Hero(startAt, speed).AddGoal(new MoveGoal(endAt));
+            var moveConsideration = new Consideration(
+                RunningTicks: 0,
+                CalculateUtility: (_, _, _, _) => 0.3f,
+                UpdateEntity: PathFinding.GenerateDestinationUpdater(endAt));
+
+            var hero = new Entity(startAt, speed).AddConsideration(moveConsideration);
+
             Assert.Equal(startAt, hero.Location);
 
             IEnumerable<Point> pathTaken = [];
@@ -57,9 +71,10 @@ namespace MeanderingHeroes.Test
             int quitAfterTick = 1000;
             int attempt = 1;
 
+            var utilityAI = new UtilityAIComponent(grid);
             while (hero.Location != endAt && attempt < quitAfterTick)
             {
-                hero = hero.Update();
+                hero = utilityAI.Update(new GameState([]), hero);
                 pathTaken = pathTaken.Append(hero.Location);
                 attempt++;
             }
