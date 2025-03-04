@@ -7,7 +7,10 @@ using static MeanderingHeroes.Functions;
 
 namespace MeanderingHeroes.Test
 {
-    public class MoveTests
+    /// <summary>
+    /// Testing path-finding and Move related Considerations for the UtilityAI
+    /// </summary>
+    public class MoveAITests
     {
         [Fact]
         public void OneTickTest()
@@ -28,10 +31,7 @@ namespace MeanderingHeroes.Test
             // speed relative to hex centres
             var speed = 1f;
 
-            var moveConsideration = new Consideration(
-                RunningTicks: 0,
-                CalculateUtility: (_, _, _, _) => 0.3f,
-                UpdateEntity: PathFinding.GenerateDestinationUpdater(endAt));
+            var moveConsideration = PathFinding.GeneratePathGoalConsideration(grid, hexStart, hexDestination);
 
             var hero = new Entity(startAt, speed).AddConsideration(moveConsideration);
             
@@ -54,13 +54,10 @@ namespace MeanderingHeroes.Test
             var startAt = hexStart.Centre();
             var endAt = hexDestination.Centre();
 
-            // speed relative to hex centres
-            var speed = 1f;
+            // distance relative to hex centres, per tick
+            var speed = 0.3f;
 
-            var moveConsideration = new Consideration(
-                RunningTicks: 0,
-                CalculateUtility: (_, _, _, _) => 0.3f,
-                UpdateEntity: PathFinding.GenerateDestinationUpdater(endAt));
+            var moveConsideration = PathFinding.GeneratePathGoalConsideration(grid, hexStart, hexDestination);
 
             var hero = new Entity(startAt, speed).AddConsideration(moveConsideration);
 
@@ -81,7 +78,7 @@ namespace MeanderingHeroes.Test
 
             Assert.True(attempt < quitAfterTick);
             Assert.Equal(endAt, hero.Location);
-            Assert.Equal(hexDestination, hero.Location.InHex());
+            Assert.Equal(hexDestination, hero.Location.ToHex());
 
             var distancesToEnd = pathTaken
                 .Select(p => Vector2.Subtract(endAt, p).Length());

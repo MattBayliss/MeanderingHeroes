@@ -12,7 +12,7 @@ namespace MeanderingHeroes.Types
     {
         public Point Location { get; init; }
         public float Speed { get; init; } = 0F;
-        public IImmutableList<Consideration> Considerations { get; init; } = [];
+        public IImmutableList<IConsideration> Considerations { get; init; } = [];
         public Entity(Point location, float speed)
         {
             Assert.True(speed >= 0);
