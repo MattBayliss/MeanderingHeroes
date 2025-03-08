@@ -91,6 +91,8 @@ namespace MeanderingHeroes.Test
 
             // Assert there are no cases where the 2nd point is futher away than the first
             Assert.DoesNotContain(false, distanceToEndForCurrentAndNext.Select(tuple => tuple.First > tuple.Second));
+
+            Assert.Empty(hero.Considerations);
         }
 
         [Fact]

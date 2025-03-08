@@ -61,7 +61,8 @@ namespace MeanderingHeroes
                 c11nState: AStarPath(grid, start, end).ToImmutableList(),
                 // hardcoded for now
                 utilityFunc: (_, _, _, entity) => entity.Location == endPoint ? 0 : 0.3f,
-                updateFunc: (path, entity) => moveAlongPath(path, entity)
+                updateFunc: (path, entity) => moveAlongPath(path, entity),
+                toRemove: (entity) => (entity.Location == endPoint)
             );
         }
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp

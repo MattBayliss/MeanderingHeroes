@@ -16,18 +16,22 @@ namespace MeanderingHeroes.Components
     {
         float CalculateUtility(Grid grid, GameState state, Entity entity);
         Entity Update(Entity entity);
+        bool ToRemove(Entity entity);
     }
     public record StatefulConsideration<T> : IConsideration
     {
         public T C11nState { get; init; }
+        protected Func<Entity, bool> _toRemove { get; init; }
         protected UtilityDelegate<T> _utilityFunc { get; init; }
         protected UpdateDelegate<T> _updateFunc { get; init; }
-        public StatefulConsideration(T c11nState, UtilityDelegate<T> utilityFunc, UpdateDelegate<T> updateFunc)
+        public StatefulConsideration(T c11nState, UtilityDelegate<T> utilityFunc, UpdateDelegate<T> updateFunc, Func<Entity, bool> toRemove)
         {
             C11nState = c11nState;
             _utilityFunc = utilityFunc;
             _updateFunc = updateFunc;
+            _toRemove = toRemove;
         }
+        public bool ToRemove(Entity entity) => _toRemove(entity);
         public float CalculateUtility(Grid grid, GameState state, Entity entity) => _utilityFunc(grid, state, C11nState, entity);
 
         public Entity Update(Entity entity)
@@ -39,6 +43,7 @@ namespace MeanderingHeroes.Components
 
     public class UtilityAIComponent(Grid Grid)
     {
+
         public Entity Update(GameState gameState, Entity entity)
         {
             // you should take the top 3 and randomly choose from those - depending
@@ -58,6 +63,8 @@ namespace MeanderingHeroes.Components
             return winner.Match(
                 None: () => entity,
                 Some: cns => cns.C11n.Update(entity)
+            ).Pipe(updated => updated with 
+                { Considerations = updated.Considerations.Where(c11n => !c11n.ToRemove(updated)).ToImmutableList() }
             );
         }
     }
