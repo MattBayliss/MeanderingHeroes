@@ -46,10 +46,12 @@ namespace MeanderingHeroes
                 var vectorToDestination = Vector2.Subtract(destination, entity.Location);
                 var distanceToDestination = vectorToDestination.Length();
 
-                Point nextPoint = (distanceToDestination > entity.Speed)
+                var distanceCovered = entity.Speed / grid.TerrainForHex(entityhex).MovementCost;
+
+                Point nextPoint = (distanceToDestination > distanceCovered)
                     ? entity.Location + Vector2.Multiply(
                         vectorToDestination,
-                        entity.Speed / distanceToDestination)
+                        distanceCovered / distanceToDestination)
                     : destination;
 
 

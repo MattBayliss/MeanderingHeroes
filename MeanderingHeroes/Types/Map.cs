@@ -39,6 +39,7 @@ namespace MeanderingHeroes.Types
         {
             Terrain = terrainForHex;
         }
+        public Terrain TerrainForHex(Hex hex) => Terrain[hex.Q, hex.R];
     }
     /// <summary>
     /// Points are standard X, Y cartesian coordinates, that map to Hex Q, R "pointy top - odd-r"
