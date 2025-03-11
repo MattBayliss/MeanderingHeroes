@@ -1,6 +1,6 @@
 ﻿using LaYumba.Functional;
-using MeanderingHeroes.Components;
-using MeanderingHeroes.Types;
+using MeanderingHeroes.Engine.Components;
+using MeanderingHeroes.Engine.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MeanderingHeroes
+namespace MeanderingHeroes.Engine
 {
     public static class PathFinding
     {
@@ -36,7 +36,7 @@ namespace MeanderingHeroes
                     // two or more hexes left on the path, and we've made it to the next hex,
                     // remove the current hex from the path, and start veering towards next hex
                     [var p1, var p2, ..]
-                        when p1 == entityhex    => (true, (Point)(Vector2.Divide(Vector2.Add(p1.Centre(), p2.Centre()), 2))),
+                        when p1 == entityhex    => (true, (Point)Vector2.Divide(Vector2.Add(p1.Centre(), p2.Centre()), 2)),
 
                     // two or more hexes left on the path, and we're not at the first hex yet -
                     // mark it as the destination
@@ -48,7 +48,7 @@ namespace MeanderingHeroes
 
                 var distanceCovered = entity.Speed / grid.TerrainForHex(entityhex).MovementCost;
 
-                Point nextPoint = (distanceToDestination > distanceCovered)
+                Point nextPoint = distanceToDestination > distanceCovered
                     ? entity.Location + Vector2.Multiply(
                         vectorToDestination,
                         distanceCovered / distanceToDestination)
@@ -60,11 +60,11 @@ namespace MeanderingHeroes
 
             };
             return new StatefulConsideration<ImmutableList<Hex>>(
-                c11nState: AStarPath(grid, start, end).ToImmutableList(),
+                c11nState: grid.AStarPath(start, end).ToImmutableList(),
                 // hardcoded for now
                 utilityFunc: (_, _, _, entity) => entity.Location == endPoint ? 0 : 0.3f,
                 updateFunc: (path, entity) => moveAlongPath(path, entity),
-                toRemove: (entity) => (entity.Location == endPoint)
+                toRemove: (entity) => entity.Location == endPoint
             );
         }
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp
@@ -91,7 +91,7 @@ namespace MeanderingHeroes
                 {
                     var newCost = costSoFar[current] + grid.Terrain[next.Q, next.R].MovementCost;
 
-                    if (!costSoFar.ContainsKey(next) || (newCost < costSoFar[next]))
+                    if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
                     {
                         costSoFar.AddOrUpdate(next, newCost);
                         var priority = newCost + end.Distance(next);
@@ -120,7 +120,7 @@ namespace MeanderingHeroes
             var vectorToDestination = Vector2.Subtract(destination, entity.Location);
             var distanceToDestination = vectorToDestination.Length();
 
-            Point nextPoint = (distanceToDestination > entity.Speed)
+            Point nextPoint = distanceToDestination > entity.Speed
                 ? entity.Location + Vector2.Multiply(
                     vectorToDestination,
                     entity.Speed / distanceToDestination)

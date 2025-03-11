@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace MeanderingHeroes.Types
+namespace MeanderingHeroes.Engine.Types
 {
     public abstract record Terrain(string Name, float MovementCost);
     public record LandTerrain : Terrain
@@ -49,12 +49,12 @@ namespace MeanderingHeroes.Types
     /// <param name="Y"></param>
     public record Point(float X, float Y)
     {
-        public static implicit operator Vector2(Point location) => new Vector2((float)(location.X), (float)(location.Y));
+        public static implicit operator Vector2(Point location) => new Vector2((float)location.X, (float)location.Y);
         public static implicit operator Point(Vector2 vector) => new(vector.X, vector.Y);
         public bool Equals(Point other, float margin)
         {
             Assert.True(margin > 0);
-            return (MathF.Abs(X - other.X) + MathF.Abs(Y - other.Y)) < margin;
+            return MathF.Abs(X - other.X) + MathF.Abs(Y - other.Y) < margin;
         }
     }
 
@@ -87,7 +87,7 @@ namespace MeanderingHeroes.Types
 
         public int Length()
         {
-            return (int)((Math.Abs(Q) + Math.Abs(R) + Math.Abs(S)) / 2);
+            return (Math.Abs(Q) + Math.Abs(R) + Math.Abs(S)) / 2;
         }
 
         public int Distance(Hex b)
@@ -100,8 +100,8 @@ namespace MeanderingHeroes.Types
 
         public Hex RotateLeft() => new Hex(-S, -Q, -R);
         public Hex RotateRight() => new Hex(-R, -S, -Q);
-        public Hex Neighbour(int direction) => this + Hex.Directions[direction];
-        public Hex DiagonalNeighbour(int direction) => this + Hex.Diagonals[direction];
+        public Hex Neighbour(int direction) => this + Directions[direction];
+        public Hex DiagonalNeighbour(int direction) => this + Diagonals[direction];
 
         public static Hex operator +(Hex a, Hex b) => new Hex(a.Q + b.Q, a.R + b.R, a.S + b.S);
         public static Hex operator -(Hex a, Hex b) => new Hex(a.Q - b.Q, a.R - b.R, a.S - b.S);

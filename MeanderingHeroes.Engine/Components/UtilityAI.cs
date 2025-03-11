@@ -1,5 +1,5 @@
 ﻿using LaYumba.Functional;
-using MeanderingHeroes.Types;
+using MeanderingHeroes.Engine.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MeanderingHeroes.Components
+namespace MeanderingHeroes.Engine.Components
 {
     // c11n shorthand for consideration
     public delegate float UtilityDelegate<T>(Grid grid, GameState state, T c11nState, Entity entity);

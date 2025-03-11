@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MeanderingHeroes
+namespace MeanderingHeroes.Engine
 {
     public static partial class Extensions
     {

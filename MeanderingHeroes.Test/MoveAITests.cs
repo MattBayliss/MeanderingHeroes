@@ -1,9 +1,10 @@
 using LaYumba.Functional;
 using MeanderingHeroes.Components;
-using MeanderingHeroes.Types;
+using MeanderingHeroes.Engine;
+using MeanderingHeroes.Engine.Types;
 using System.Numerics;
 
-using static MeanderingHeroes.Functions;
+using static MeanderingHeroes.Engine.Functions;
 
 namespace MeanderingHeroes.Test
 {

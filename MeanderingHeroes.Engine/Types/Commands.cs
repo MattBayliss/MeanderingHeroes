@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MeanderingHeroes.Types
+namespace MeanderingHeroes.Engine.Types
 {
     public abstract record Goal
     {
@@ -28,7 +28,7 @@ namespace MeanderingHeroes.Types
             var vectorToDestination = Vector2.Subtract(Destination, entity.Location);
             var distanceToDestination = vectorToDestination.Length();
 
-            Point nextPoint = (distanceToDestination > entity.Speed)
+            Point nextPoint = distanceToDestination > entity.Speed
                 ? entity.Location + Vector2.Multiply(
                     vectorToDestination,
                     entity.Speed / distanceToDestination)

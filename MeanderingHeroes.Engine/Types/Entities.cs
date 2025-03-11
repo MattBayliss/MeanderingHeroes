@@ -1,4 +1,4 @@
-﻿using MeanderingHeroes.Components;
+﻿using MeanderingHeroes.Engine.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace MeanderingHeroes.Types
+namespace MeanderingHeroes.Engine.Types
 {
     public record Entity
     {

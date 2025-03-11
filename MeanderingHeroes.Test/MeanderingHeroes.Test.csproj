@@ -16,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\MeanderingHeroes\MeanderingHeroes.csproj" />
+	  <ProjectReference Include="..\MeanderingHeroes.Engine\MeanderingHeroes.Engine.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

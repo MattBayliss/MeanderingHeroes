@@ -1,11 +1,11 @@
-﻿using MeanderingHeroes.Types;
+﻿using MeanderingHeroes.Engine.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MeanderingHeroes
+namespace MeanderingHeroes.Engine
 {
     /// <summary>
     /// contains the data that can change each tick 

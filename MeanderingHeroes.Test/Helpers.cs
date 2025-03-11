@@ -1,5 +1,5 @@
 ﻿using LaYumba.Functional;
-using MeanderingHeroes.Types;
+using MeanderingHeroes.Engine.Types;
 using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Test
