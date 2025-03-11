@@ -1,9 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://dq0b88q3dosu7"]
+[gd_scene load_steps=3 format=3 uid="uid://dq0b88q3dosu7"]
 
-[sub_resource type="QuadMesh" id="QuadMesh_w65ag"]
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_w65ag"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_p7vva"]
 
 [node name="HexTiles" type="Node2D"]
 
 [node name="MeshInstance2D" type="MeshInstance2D" parent="."]
-position = Vector2(113, 107)
-mesh = SubResource("QuadMesh_w65ag")
+material = SubResource("CanvasItemMaterial_w65ag")
+mesh = SubResource("BoxMesh_p7vva")
