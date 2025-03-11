@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://dq0b88q3dosu7"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_w65ag"]
+
+[node name="HexTiles" type="Node2D"]
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="."]
+position = Vector2(113, 107)
+mesh = SubResource("QuadMesh_w65ag")
