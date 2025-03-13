@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35828.75 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeanderingHeroes.Godot", "MeanderingHeroes.Godot.csproj", "{4D60DD24-3A45-4F6D-B28A-59DFB15CE368}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeanderingHeroes.Engine", "..\MeanderingHeroes.Engine\MeanderingHeroes.Engine.csproj", "{2D307C28-B1FF-51B7-D577-7CFE4C93B3B4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		ExportDebug|Any CPU = ExportDebug|Any CPU
+		ExportRelease|Any CPU = ExportRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4D60DD24-3A45-4F6D-B28A-59DFB15CE368}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D60DD24-3A45-4F6D-B28A-59DFB15CE368}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D60DD24-3A45-4F6D-B28A-59DFB15CE368}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{4D60DD24-3A45-4F6D-B28A-59DFB15CE368}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{4D60DD24-3A45-4F6D-B28A-59DFB15CE368}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{4D60DD24-3A45-4F6D-B28A-59DFB15CE368}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+		{2D307C28-B1FF-51B7-D577-7CFE4C93B3B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D307C28-B1FF-51B7-D577-7CFE4C93B3B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D307C28-B1FF-51B7-D577-7CFE4C93B3B4}.ExportDebug|Any CPU.ActiveCfg = Release|Any CPU
+		{2D307C28-B1FF-51B7-D577-7CFE4C93B3B4}.ExportDebug|Any CPU.Build.0 = Release|Any CPU
+		{2D307C28-B1FF-51B7-D577-7CFE4C93B3B4}.ExportRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{2D307C28-B1FF-51B7-D577-7CFE4C93B3B4}.ExportRelease|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

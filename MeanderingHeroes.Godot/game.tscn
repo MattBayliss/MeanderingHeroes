@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=4 uid="uid://6l2ma85avet8"]
 
 [ext_resource type="Texture2D" uid="uid://cgh07kdlbxpte" path="res://assets/HexTilesetv3.png" id="1_80nbo"]
-[ext_resource type="Script" uid="uid://m4kntlg5lio1" path="res://game.gd" id="1_e2o6t"]
+[ext_resource type="Script" uid="uid://3bgh76c0wb3s" path="res://Game.cs" id="1_e2o6t"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_e2o6t"]
 texture = ExtResource("1_80nbo")
