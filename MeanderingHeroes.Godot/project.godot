@@ -12,9 +12,13 @@ config_version=5
 
 config/name="MeanderingHeroes.Godot"
 run/main_scene="uid://6l2ma85avet8"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [dotnet]
 
 project/assembly_name="MeanderingHeroes.Godot"
+
+[rendering]
+
+textures/default_filters/use_nearest_mipmap_filter=true

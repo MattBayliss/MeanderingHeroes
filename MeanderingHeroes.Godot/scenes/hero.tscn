@@ -1,0 +1,107 @@
+[gd_scene load_steps=15 format=3 uid="uid://c7t8w7s8nk6vl"]
+
+[ext_resource type="Texture2D" uid="uid://dt8x0s4rfnfbv" path="res://assets/pixelfrog-tinyswords-warriorblue.png" id="1_3uyx6"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yvbpl"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(0, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_06baw"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(192, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mv13s"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(384, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w7pyx"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(576, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y2sko"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(768, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mo806"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(960, 0, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n40cg"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(0, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_txblw"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(192, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n5qna"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(384, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d6xj2"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(576, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sryfu"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(768, 192, 192, 192)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6mqrs"]
+atlas = ExtResource("1_3uyx6")
+region = Rect2(960, 192, 192, 192)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_k8rms"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yvbpl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_06baw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mv13s")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w7pyx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y2sko")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mo806")
+}],
+"loop": true,
+"name": &"default",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n40cg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_txblw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n5qna")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d6xj2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sryfu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6mqrs")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 10.0
+}]
+
+[node name="Hero" type="Node2D"]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_k8rms")
+animation = &"walk"
+frame_progress = 0.617406
