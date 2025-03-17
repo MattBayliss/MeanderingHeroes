@@ -1,9 +1,12 @@
 using Godot;
+using LaYumba.Functional;
 using MeanderingHeroes.Engine.Types;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using static Godot.GD;
+using static LaYumba.Functional.F;
+using static MeanderingHeroes.Godot.GodotObjectHelpers;
 
 namespace MeanderingHeroes.Godot
 {
@@ -11,47 +14,28 @@ namespace MeanderingHeroes.Godot
     {
         [Export]
         public float HeroSpeed { get; set; } = 50f;
-        private TileMapLayer _tileMap;
-        private Vector2? _destination;
-        private Node2D _hero;
-        public override void _Input(InputEvent @event)
-        {
-            switch (@event)
-            {
-                case InputEventMouseButton { Pressed: true, Position: var pos }:
-                    var aniSprite = _hero.GetChild<AnimatedSprite2D>(0);
-                    aniSprite.Play("walk");
-                    _destination = _tileMap.MapToLocal(_tileMap.LocalToMap(pos));
-                    Print($"clicked: {_tileMap.LocalToMap(pos).ToHex()}");
-                    break;
-            }
-        }
-        public override void _PhysicsProcess(double delta)
-        {
-            if(_destination == null) return;
 
+        private Option<TileMapLayer> _tileMap;
+        private Option<Hero> _hero;
 
-            var heroPos = _hero.Position;
-            if(heroPos == _destination)
-            {
-                _destination = null;
-                return;
-            }
-
-            var vector = (Vector2)_destination - heroPos;
-            vector = vector.LimitLength(HeroSpeed * (float)delta);
-
-            _hero.Position = heroPos + vector;
-        }
-        [MemberNotNull(nameof(_hero), nameof(_tileMap))]
         public override void _Ready()
         {
-            _hero = GetNode<Node2D>("Hero");
+            _hero = GetNode<Hero>("Hero").ToOption();
+            _tileMap = GetNode<TileMapLayer>("TileMapLayer").ToOption();
 
-            _tileMap = GetNode<TileMapLayer>("TileMapLayer");
-
-            var hex = new Hex(1, 2);
-            Print($"hex: {hex}");
         }
+        public override void _Input(InputEvent @event)
+        {
+            _hero.Bind(hero => _tileMap.Map(tm => @event switch
+                    {
+                        InputEventMouseButton { Pressed: true, Position: var pos }
+                            => SetDestinationForHero(hero, pos),
+                        _ => () => { }
+                    })
+            ).Do(handler => handler());
+        }
+
+        private Action SetDestinationForHero(Hero hero, Vector2 destination) => () => hero.SetDestination(destination);
     }
 }
+
