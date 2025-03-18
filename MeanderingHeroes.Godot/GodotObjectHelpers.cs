@@ -18,4 +18,19 @@ namespace MeanderingHeroes.Godot
         public static Option<T> ToOption<T>(this T node) where T : Node => node == null ? None : Some(node);
         public static void Do<T>(this Option<T> @this, Action<T> action) => @this.ForEach(action);
     }
+
+    public class OnReady<T> where T : Node
+    {
+        private T? _value = null;
+
+        public static implicit operator T(OnReady<T> onready)
+        {
+            if (onready._value == null)
+            {
+                throw new NullReferenceException("Attempted to access an OnReady variable before the OnReady method");
+            }
+
+            return onready._value;
+        }
+    }
 }

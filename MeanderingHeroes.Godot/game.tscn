@@ -711,7 +711,6 @@ sources/2 = SubResource("TileSetAtlasSource_e2o6t")
 sources/0 = SubResource("TileSetAtlasSource_fc0e3")
 
 [node name="Game" type="Node2D"]
-texture_filter = 1
 script = ExtResource("1_e2o6t")
 
 [node name="TileMapLayer" type="TileMapLayer" parent="."]

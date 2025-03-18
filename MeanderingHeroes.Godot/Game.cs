@@ -22,17 +22,26 @@ namespace MeanderingHeroes.Godot
         {
             _hero = GetNode<Hero>("Hero").ToOption();
             _tileMap = GetNode<TileMapLayer>("TileMapLayer").ToOption();
-
         }
         public override void _Input(InputEvent @event)
         {
+
             _hero.Bind(hero => _tileMap.Map(tm => @event switch
                     {
-                        InputEventMouseButton { Pressed: true, Position: var pos }
-                            => SetDestinationForHero(hero, pos),
+                        InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true, Position: var pos }
+                            => SetDestinationForHero(hero, PositionToHexCentre(tm, pos)),
+                        InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true, Position: var pos }
+                            => () => AttemptTileWrite(tm, pos),
                         _ => () => { }
                     })
             ).Do(handler => handler());
+        }
+        private static Vector2 PositionToHexCentre(TileMapLayer tileMap, Vector2 position) 
+            => tileMap.MapToLocal(tileMap.LocalToMap(position));
+
+        private void AttemptTileWrite(TileMapLayer tileMap, Vector2 position)
+        {
+            tileMap.SetCell(tileMap.LocalToMap(position), 2, new Vector2I(0, 1));
         }
 
         private Action SetDestinationForHero(Hero hero, Vector2 destination) => () => hero.SetDestination(destination);

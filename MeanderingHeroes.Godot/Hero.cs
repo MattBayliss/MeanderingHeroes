@@ -20,12 +20,14 @@ public partial class Hero : Node2D
     }
     public void SetDestination(Vector2 destination)
     {
-        if(destination == Position)
+        var currentPos = Position;
+        if(destination == currentPos)
         {
             Destination = None;
         }
         else
         {
+            Animator.Do(a => a.FlipH = currentPos.X > destination.X);
             Destination = Some(destination);
             PlayWalking();
         }
