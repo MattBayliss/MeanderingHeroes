@@ -1,6 +1,6 @@
 using LaYumba.Functional;
-using MeanderingHeroes.Components;
 using MeanderingHeroes.Engine;
+using MeanderingHeroes.Engine.Components;
 using MeanderingHeroes.Engine.Types;
 using System.Numerics;
 

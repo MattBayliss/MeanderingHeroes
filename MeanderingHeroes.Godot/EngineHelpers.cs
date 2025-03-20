@@ -8,12 +8,5 @@ using System.Threading.Tasks;
 
 namespace MeanderingHeroes.Godot
 {
-    public static class EngineHelpers
-    {
-        public static Hex ToHex(this Vector2I v) => 
-            (
-                v.X - (v.Y - (v.Y & 1)) / 2,    // q
-                v.Y                             // r
-            );
-    }
+
 }

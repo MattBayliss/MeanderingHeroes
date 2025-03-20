@@ -41,6 +41,7 @@ namespace MeanderingHeroes.Godot
 
         private void AttemptTileWrite(TileMapLayer tileMap, Vector2 position)
         {
+            Print(tileMap.LocalToMap(position));
             tileMap.SetCell(tileMap.LocalToMap(position), 2, new Vector2I(0, 1));
         }
 
