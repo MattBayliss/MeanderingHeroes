@@ -720,3 +720,6 @@ tile_set = SubResource("TileSet_mwb40")
 
 [node name="Hero" parent="." instance=ExtResource("4_fc0e3")]
 scale = Vector2(0.25, 0.25)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(2.315, 2.315)

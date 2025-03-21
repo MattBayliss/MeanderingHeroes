@@ -25,24 +25,24 @@ namespace MeanderingHeroes.Godot
         }
         public override void _Input(InputEvent @event)
         {
-
-            _hero.Bind(hero => _tileMap.Map(tm => @event switch
-                    {
-                        InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true, Position: var pos }
-                            => SetDestinationForHero(hero, PositionToHexCentre(tm, pos)),
-                        InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true, Position: var pos }
-                            => () => AttemptTileWrite(tm, pos),
-                        _ => () => { }
+            _hero.Bind(hero => _tileMap.Map(tm => @event switch {
+                InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true, Position: var pos }
+                    => SetDestinationForHero(hero, PositionToHexCentre(tm, pos)),
+                InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true, Position: var pos }
+                    => () => AttemptTileWrite(tm, pos),
+                _ => () => { }
                     })
             ).Do(handler => handler());
         }
+
+
+
         private static Vector2 PositionToHexCentre(TileMapLayer tileMap, Vector2 position) 
-            => tileMap.MapToLocal(tileMap.LocalToMap(position));
+            => tileMap.MapToLocal(tileMap.HexForViewport(position));
 
         private void AttemptTileWrite(TileMapLayer tileMap, Vector2 position)
         {
-            Print(tileMap.LocalToMap(position));
-            tileMap.SetCell(tileMap.LocalToMap(position), 2, new Vector2I(0, 1));
+            tileMap.SetCell(tileMap.HexForViewport(position), 2, new Vector2I(0, 1));
         }
 
         private Action SetDestinationForHero(Hero hero, Vector2 destination) => () => hero.SetDestination(destination);
