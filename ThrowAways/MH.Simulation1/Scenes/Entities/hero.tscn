@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://hva7po7cytfs"]
+
+[ext_resource type="Script" uid="uid://wux50jmyw2be" path="res://Scripts/Entities/Hero.cs" id="1_qc0q0"]
+
+[node name="Hero" type="Polygon2D"]
+polygon = PackedVector2Array(-5, -5, 5, -5, 5, 5, -5, 5)
+script = ExtResource("1_qc0q0")

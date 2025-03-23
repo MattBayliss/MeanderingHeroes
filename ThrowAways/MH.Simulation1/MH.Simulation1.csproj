@@ -1,0 +1,10 @@
+﻿<Project Sdk="Godot.NET.Sdk/4.4.0">
+  <PropertyGroup>
+	  <TargetFramework>net9.0</TargetFramework>
+	  <LangVersion>latest</LangVersion>
+	  <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\MeanderingHeroes.Engine\MeanderingHeroes.Engine.csproj" />
+  </ItemGroup>
+</Project>
