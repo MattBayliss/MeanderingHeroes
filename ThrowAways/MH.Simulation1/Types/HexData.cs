@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace MH.Simulation1.Types
 {
-    public record struct HexData(Hex Hex, Godot.Vector2 Offset, float MovementCost);
+    public record struct HexData(Hex Hex, Godot.Vector2 Offset, Terrain Terrain);
 }

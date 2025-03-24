@@ -31,15 +31,15 @@ namespace MeanderingHeroes.Engine.Types
         // Starting with hexes being pretty big, and all entities within being able to interact,
         // and special cases with neighbour hexes too. If hexes get smaller, might use quadtrees,
         // or hextrees rather.
-        public int Width => Terrain.GetLength(0);
-        public int Height => Terrain.GetLength(1);
-        public Terrain[,] Terrain { get; init; }
+        public ImmutableDictionary<Hex, Terrain> Terrain { get; init; }
 
-        public Grid(Terrain[,] terrainForHex)
+        public Grid(IEnumerable<(Hex Hex, Terrain Terrain)> terrainForHex)
         {
-            Terrain = terrainForHex;
+            // allow any duplicate keys to throw an error here
+            Terrain = terrainForHex.ToImmutableDictionary(ht => ht.Hex, ht => ht.Terrain);
         }
-        public Terrain TerrainForHex(Hex hex) => Terrain[hex.Q, hex.R];
+        public Option<Terrain> TerrainForHex(Hex hex) => Terrain.Lookup(hex);
+        public bool InBounds(Hex hex) => Terrain.ContainsKey(hex);
     }
     /// <summary>
     /// Points are standard X, Y cartesian coordinates, that map to Hex Q, R "pointy top - odd-r"

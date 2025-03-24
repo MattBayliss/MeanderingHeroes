@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -43,10 +44,15 @@ namespace MeanderingHeroes.Engine
                     [var p1, var p2, ..]        => (false, p1.Centre())
                 };
 
+                // TODO: don't calculate distanceCovered if we're already at destination
+
                 var vectorToDestination = Vector2.Subtract(destination, entity.Location);
                 var distanceToDestination = vectorToDestination.Length();
 
-                var distanceCovered = entity.Speed / grid.TerrainForHex(entityhex).MovementCost;
+                // Assuming entityhex exists on the grid - it should do!
+                // The grid's hexes were used to make the path, and even
+                // if the entity starts off the grid, the path would be empty
+                var distanceCovered = entity.Speed / grid.Terrain[entityhex].MovementCost;
 
                 Point nextPoint = distanceToDestination > distanceCovered
                     ? entity.Location + Vector2.Multiply(
@@ -86,10 +92,10 @@ namespace MeanderingHeroes.Engine
                 }
                 current.Neighbours()
                     .Where(nhex => nhex.Q >= 0 && nhex.R >= 0)
-                    .Where(nhex => nhex.Q < grid.Width && nhex.R < grid.Height)
+                    .Where(grid.InBounds)
                     .ForEach(next =>
                 {
-                    var newCost = costSoFar[current] + grid.Terrain[next.Q, next.R].MovementCost;
+                    var newCost = costSoFar[current] + grid.Terrain[next].MovementCost;
 
                     if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
                     {
