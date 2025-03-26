@@ -1,4 +1,5 @@
 using Godot;
+using MeanderingHeroes.Engine;
 using MeanderingHeroes.Engine.Components;
 using MeanderingHeroes.Engine.Types;
 using MH.Simulation1.Types;
@@ -10,7 +11,10 @@ using System.Timers;
 
 public partial class Game : Node2D
 {
-    private Hero _hero;
+    [Export]
+    public float HeroSpeed = 50f;
+
+    private Polygon2D _hero;
     private Dictionary<Hex, HexData> _hexData;
     private TileMapLayer _hexMap;
     private Hex _destination;
@@ -20,16 +24,30 @@ public partial class Game : Node2D
     private static Terrain _forest = new LandTerrain("forest", 3f);
     private static Terrain _hills = new LandTerrain("hills", 2f);
     private static Terrain _sea = new WaterTerrain("sea", 50f);
+    private Entity _heroEntity;
+    private GameState _gameState;
 
     public override void _Ready()
     {
-        _hero = GetNode<Hero>("Hero");
+        _hero = GetNode<Polygon2D>("Hero");
         _hexMap = GetNode<TileMapLayer>("%HexMap");
-        _hero.Position = _hexMap.MapToLocal(new Vector2I(3, 2));
+        var startingPos = _hexMap.MapToLocal(new Vector2I(3, 2));
+        _hero.Position = startingPos;
         _hexData = LoadMapData(_hexMap);
         Print($"Hexes loaded: {_hexData.Count}");
 
         _utilityAI = new UtilityAIComponent(_hexData.ToGrid());
+        _heroEntity = new Entity(new Point(startingPos.X, startingPos.Y), HeroSpeed);
+        _gameState = new GameState([_heroEntity]);
+    }
+
+    public void Update()
+    {
+        var updatedEntity = _utilityAI.Update(_gameState, _heroEntity);
+        _gameState = _gameState with { Entities = _gameState.Entities.Replace(_heroEntity, updatedEntity) };
+        _heroEntity = updatedEntity;
+        var newPosition = new Vector2(_heroEntity.Location.X, _heroEntity.Location.Y);
+        _hero.Position = newPosition;
     }
 
     public override void _Input(InputEvent @event)
@@ -43,11 +61,6 @@ public partial class Game : Node2D
         handler();
     }
 
-    public override void _Process(double delta)
-    {
-        base._Process(delta);
-    }
-
     private void SetDestination(Vector2I tileCoords)
     {
         var hex = new Hex(tileCoords.X, tileCoords.Y);
@@ -58,7 +71,18 @@ public partial class Game : Node2D
 
         _destination = hex;
 
-        Print($"Destination: {_destination}");
+        var moveConsideration = PathFinding.GeneratePathGoalConsideration(
+            _utilityAI.Grid, 
+            _heroEntity.Location.ToHex(), 
+            _destination);
+
+        var updatedEntity = _heroEntity with { Considerations = [moveConsideration] };
+
+        _gameState = _gameState with { Entities = [updatedEntity] };
+
+        _heroEntity = updatedEntity;
+
+        Print($"Destination: {_destination}, _heroEntity: {_heroEntity}");
     }
 
     private Dictionary<Hex, HexData> LoadMapData(TileMapLayer hexMap) =>

@@ -1,0 +1,12 @@
+.vs/
+obj/
+bin/
+.godot/
+/android/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+mono_crash.*

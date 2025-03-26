@@ -5,6 +5,7 @@ using MeanderingHeroes.Engine.Types;
 using System.Numerics;
 
 using static MeanderingHeroes.Engine.Functions;
+using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Test
 {
@@ -138,7 +139,12 @@ namespace MeanderingHeroes.Test
             {
                 terrain[r, 0] = r < 5 ? new LandTerrain("grass", 1) : new LandTerrain("forest", 3);
             }
-            var grid = new Grid(terrain);
+            var grid = new Grid(
+                Range(0,9)
+                    .Select(r => (
+                        Hex: new Hex(r,0), 
+                        Terrain: (Terrain)(r < 5 ? new LandTerrain("grass", 1) : new LandTerrain("forest", 3))))
+                );
 
             Hex hexStart = (0, 0); // left-most
             Hex hexDestination = (9, 0); // right-most
@@ -190,16 +196,19 @@ namespace MeanderingHeroes.Test
 
             hexesAndDistanceTravelled.ForEach(had =>
             {
+                var fromTerrain = Helpers.AssertIsSome(had.FromTerrain);
+                var toTerrain = Helpers.AssertIsSome(had.ToTerrain);
+
                 // if travelling through the same terrain type, the distance travelled is a simple calculation
                 // of speed / movement cost
-                if(had.FromTerrain == had.ToTerrain)
+                if(fromTerrain == toTerrain)
                 {
-                    Assert.Equal(speed / had.FromTerrain.MovementCost, had.DistanceTravelled, 0.001);
+                    Assert.Equal(speed / fromTerrain.MovementCost, had.DistanceTravelled, 0.001);
                 }
                 else
                 {
                     // because we made a map where movement cost increases, we don't need to sort from/to movement costs
-                    Assert.InRange(had.DistanceTravelled, speed / had.ToTerrain.MovementCost, speed / had.FromTerrain.MovementCost);
+                    Assert.InRange(had.DistanceTravelled, speed /toTerrain.MovementCost, speed / fromTerrain.MovementCost);
                 }
             });
         }

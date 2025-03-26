@@ -7,4 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\MeanderingHeroes.Engine\MeanderingHeroes.Engine.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Scripts\Entities\" />
+  </ItemGroup>
 </Project>

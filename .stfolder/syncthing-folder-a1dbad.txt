@@ -1,0 +1,5 @@
+# This directory is a Syncthing folder marker.
+# Do not delete.
+
+folderID: sgppk-sg5hk
+created: 2025-03-25T13:54:55+11:00

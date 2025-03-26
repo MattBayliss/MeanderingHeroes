@@ -41,9 +41,9 @@ namespace MeanderingHeroes.Engine.Components
         }
     }
 
-    public class UtilityAIComponent(Grid Grid)
+    public class UtilityAIComponent(Grid grid)
     {
-
+        public Grid Grid { get; } = grid;
         public Entity Update(GameState gameState, Entity entity)
         {
             // you should take the top 3 and randomly choose from those - depending

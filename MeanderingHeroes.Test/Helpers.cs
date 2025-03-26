@@ -8,14 +8,10 @@ namespace MeanderingHeroes.Test
     {
         internal static Grid MakeGrass10x10MapGrid()
         {
-            var terrain = new LandTerrain[10, 10];
-            for (int q = 0; q < 10; q++)
-            {
-                for (int r = 0; r < 10; r++)
-                {
-                    terrain[q, r] = new LandTerrain("grass", 1);
-                }
-            }
+            var terrain = Range(0, 9)
+                .SelectMany(q => Range(0, 9)
+                    .Select(r => (Hex: new Hex(q, r), Terrain: (Terrain)(new LandTerrain("grass", 1)))));
+
             return new Grid(terrain);
         }
         internal static Grid GenerateMapFromAsciiMess(string asciiMap)
@@ -28,24 +24,23 @@ namespace MeanderingHeroes.Test
             var width = mapCodes.Min(line => line.Length);
             var height = mapCodes.Count();
 
-            var terrain = new Terrain[width, height];
-
-            for (int q = 0; q < width; q++)
-            {
-                for (int r = 0; r < height; r++)
-                {
-                    terrain[q, r] = mapCodes[r][q] switch
-                    {
-                        "~" => new WaterTerrain("ocean", 10),
-                        "_" => new LandTerrain("grass", 1),
-                        "^" => new LandTerrain("hill", 2),
-                        "M" => new LandTerrain("mountain", 10),
-                        "v" => new LandTerrain("swamp", 5),
-                        "T" => new LandTerrain("forest", 3),
-                        _ => new LandTerrain("UNEXPECTED", 9999)
-                    };
-                }
-            }
+            var terrain = Range(0, width - 1)
+                .SelectMany(q =>
+                    Range(0, height - 1)
+                        .Select(r => (
+                            Hex: new Hex(q, r),
+                            Terrain: (Terrain)(mapCodes[r][q] switch
+                            {
+                                "~" => new WaterTerrain("ocean", 10),
+                                "_" => new LandTerrain("grass", 1),
+                                "^" => new LandTerrain("hill", 2),
+                                "M" => new LandTerrain("mountain", 10),
+                                "v" => new LandTerrain("swamp", 5),
+                                "T" => new LandTerrain("forest", 3),
+                                _ => new LandTerrain("UNEXPECTED", 9999)
+                            }))
+                            )
+                        );
 
             return new Grid(terrain);
         }
