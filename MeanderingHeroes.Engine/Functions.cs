@@ -6,14 +6,27 @@ namespace MeanderingHeroes.Engine
 {
     public static partial class Functions
     {
-        public static float UnitsPerHex = 10;
-        private static float Sqrt3 = MathF.Sqrt(3);
-        private static float HexRadius = UnitsPerHex / Sqrt3;
-
+        private readonly static float Sqrt3 = MathF.Sqrt(3);
+        private static float _hexWidth = 10;
+        private static float _size = _hexWidth / Sqrt3;
+        /// <summary>
+        /// shortest distance between two hex centres
+        /// https://www.redblobgames.com/grids/hexagons/#basics
+        /// </summary>
+        public static float UnitsPerHex
+        {
+            get => _hexWidth;
+            set
+            {
+                _hexWidth = value;
+                _size = UnitsPerHex / Sqrt3;
+            }
+        }
+        
         public static Hex ToHex(this Point p)
         {
-            float q = (p.X * Sqrt3 / 3f - p.Y / 3f) / HexRadius;
-            float r = p.Y * 2f / 3f / HexRadius;
+            float q = (p.X * Sqrt3 / 3f - p.Y / 3f) / _size;
+            float r = (p.Y * 2f / 3f) / _size;
             float s = -q - r;
 
             int qi = (int)Math.Round(q);
@@ -40,8 +53,8 @@ namespace MeanderingHeroes.Engine
         public static bool InHex(this Point p, Hex hex) => p.ToHex().Equals(hex);
         public static Point Centre(this Hex hex)
             => new Point(
-                X: UnitsPerHex * (hex.Q + hex.R / 2f),
-                Y: HexRadius * 1.5f * hex.R
+                X: _size * (Sqrt3 * hex.Q + Sqrt3 * hex.R / 2f),
+                Y: _size * 1.5f * hex.R
             );
 
         public static IEnumerable<Hex> Neighbours(this Hex current) 

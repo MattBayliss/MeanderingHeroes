@@ -23,7 +23,11 @@ sources/4 = SubResource("TileSetAtlasSource_wrm1d")
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_ebmjs")
-HeroSpeed = 1.0
+HeroSpeed = 5.0
+
+[node name="Camera2D" type="Camera2D" parent="."]
+offset = Vector2(300, 200)
+zoom = Vector2(2, 2)
 
 [node name="HexMap" type="TileMapLayer" parent="."]
 unique_name_in_owner = true
@@ -32,8 +36,6 @@ tile_set = SubResource("TileSet_ebmjs")
 navigation_enabled = false
 
 [node name="Hero" parent="." instance=ExtResource("3_wrm1d")]
-
-[node name="Camera2D" type="Camera2D" parent="Hero"]
 
 [node name="Engine" parent="." instance=ExtResource("4_3dryh")]
 

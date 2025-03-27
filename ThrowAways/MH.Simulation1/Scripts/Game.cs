@@ -29,8 +29,11 @@ public partial class Game : Node2D
 
     public override void _Ready()
     {
+        Godot.Engine.TimeScale = 5.0;
         _hero = GetNode<Polygon2D>("Hero");
         _hexMap = GetNode<TileMapLayer>("%HexMap");
+        var shortestDistanceBetweenHexes = _hexMap.TileSet.TileSize.Y;
+        Functions.UnitsPerHex = shortestDistanceBetweenHexes;
         var startingPos = _hexMap.MapToLocal(new Vector2I(3, 2));
         _hero.Position = startingPos;
         _hexData = LoadMapData(_hexMap);
@@ -48,6 +51,7 @@ public partial class Game : Node2D
         _heroEntity = updatedEntity;
         var newPosition = new Vector2(_heroEntity.Location.X, _heroEntity.Location.Y);
         _hero.Position = newPosition;
+        Print($"{_heroEntity.Location}, {_hero.Position}");
     }
 
     public override void _Input(InputEvent @event)
@@ -82,7 +86,7 @@ public partial class Game : Node2D
 
         _heroEntity = updatedEntity;
 
-        Print($"Destination: {_destination}, _heroEntity: {_heroEntity}");
+        Print($"Destination: {_destination} DestCentre:{_destination.Centre()}, DestHex: {_destination.Centre().ToHex()}, _heroEntity: {_heroEntity.Location}, Hex: {_heroEntity.Location.ToHex()}");
     }
 
     private Dictionary<Hex, HexData> LoadMapData(TileMapLayer hexMap) =>
