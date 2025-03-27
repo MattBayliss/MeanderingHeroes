@@ -45,11 +45,6 @@ namespace MeanderingHeroes.Engine.Types
     {
         public static implicit operator Vector2(Point location) => new Vector2((float)location.X, (float)location.Y);
         public static implicit operator Point(Vector2 vector) => new(vector.X, vector.Y);
-        public bool Equals(Point other, float margin)
-        {
-            Assert.True(margin > 0);
-            return MathF.Abs(X - other.X) + MathF.Abs(Y - other.Y) < margin;
-        }
     }
 
     // Implementing Hexes from the mind-blowing blog: https://www.redblobgames.com/grids/hexagons/

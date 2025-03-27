@@ -44,23 +44,18 @@ namespace MeanderingHeroes.Engine
                     [var p1, var p2, ..]        => (false, p1.Centre())
                 };
 
-                // TODO: don't calculate distanceCovered if we're already at destination
-
                 var vectorToDestination = Vector2.Subtract(destination, entity.Location);
                 var distanceToDestination = vectorToDestination.Length();
 
-                // Assuming entityhex exists on the grid - it should do!
-                // The grid's hexes were used to make the path, and even
-                // if the entity starts off the grid, the path would be empty
-                var distanceCovered = entity.Speed / grid.Terrain[entityhex].MovementCost;
+                Func<Point> calcNextPoint = () =>
+                {
+                    var distanceCovered = entity.Speed / grid.Terrain[entityhex].MovementCost;
+                    return distanceCovered < distanceToDestination
+                        ? entity.Location + Vector2.Multiply(vectorToDestination, distanceCovered / distanceToDestination)
+                        : destination;
+                };
 
-                Point nextPoint = distanceToDestination > distanceCovered
-                    ? entity.Location + Vector2.Multiply(
-                        vectorToDestination,
-                        distanceCovered / distanceToDestination)
-                    : destination;
-
-
+                Point nextPoint = distanceToDestination < 0.001f ? destination : calcNextPoint();
 
                 return (atFirstHex ? path.Skip(1).ToImmutableList() : path, entity with { Location = nextPoint });
 

@@ -20,7 +20,7 @@ namespace MeanderingHeroes.Test
 
             // https://www.redblobgames.com/grids/hexagons/#conversions-offset
             var rMinus1 = new Hex(0, -1);
-            Point rMinus1Offset = Vector2.Multiply(Vector2.Normalize(new Vector2(-1, -MathF.Sqrt(3))), Functions.UnitsPerHex);
+            Point rMinus1Offset = Vector2.Normalize(new Vector2(-1, -MathF.Sqrt(3)));
             var rMinus1HexCentre = rMinus1.Centre();
 
             Assert.Equal(rMinus1Offset.X, rMinus1HexCentre.X, 0.001f);

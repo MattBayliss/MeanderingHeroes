@@ -26,7 +26,7 @@ namespace MeanderingHeroes.Test
             var startAt = hexStart.Centre();
             var endAt = hexDestination.Centre();
 
-            Assert.Equal(2f * UnitsPerHex, endAt.X - startAt.X, 0.01f);
+            Assert.Equal(2f, endAt.X - startAt.X, 0.001f);
             Assert.Equal(0f, endAt.Y);
             Assert.Equal(0f, startAt.Y);
 
@@ -42,7 +42,9 @@ namespace MeanderingHeroes.Test
             var utilityAI = new UtilityAIComponent(grid);
             hero = utilityAI.Update(new GameState([]), hero);
 
-            Assert.Equal(startAt with { X = startAt.X + speed }, hero.Location);
+            Point expectedLocation = startAt with { X = startAt.X + speed };
+
+            Assert.True(expectedLocation.WithinMargin(hero.Location, 0.001f));
         }
         [Fact]
         public void PathToDestinationOnUniformTerrainTest()
@@ -154,7 +156,7 @@ namespace MeanderingHeroes.Test
             var endAt = hexDestination.Centre();
 
             // distance relative to hex centres, per tick (easily divisible by 3 for occular pat down)
-            var speed = 0.6f;
+            var speed = 0.1f;
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(grid, hexStart, hexDestination);
 
