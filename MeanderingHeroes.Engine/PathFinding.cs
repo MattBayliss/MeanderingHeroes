@@ -71,6 +71,10 @@ namespace MeanderingHeroes.Engine
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp
         public static IEnumerable<Hex> AStarPath(this Grid grid, Hex start, Hex end)
         {
+            if(!grid.InBounds(start) || !grid.InBounds(end))
+            {
+                return [];
+            }
             var cameFrom = new Dictionary<Hex, Hex> { { start, start } };
             var costSoFar = new Dictionary<Hex, double> { { start, 0 } };
 

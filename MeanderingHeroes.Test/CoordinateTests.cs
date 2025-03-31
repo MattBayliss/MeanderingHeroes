@@ -12,6 +12,21 @@ namespace MeanderingHeroes.Test
     public class CoordinateTests
     {
         [Fact]
+        public void HexWidthIs1()
+        {
+            var hexZero = new Hex(0, 0);
+            var offsetZero = new Point(0, 0);
+            Assert.Equal(offsetZero, hexZero.Centre());
+
+            // https://www.redblobgames.com/grids/hexagons/#conversions-offset
+            var qPlus1 = new Hex(1, 0);
+            Point qPlus1Offset = new Vector2(1f, 0);
+            var qPlus1HexCentre = qPlus1.Centre();
+
+            Assert.Equal(qPlus1Offset.X, qPlus1HexCentre.X);
+            Assert.Equal(qPlus1Offset.Y, qPlus1HexCentre.Y);
+        }
+        [Fact]
         public void RMinusOneTest()
         {
             var hexZero = new Hex(0, 0);

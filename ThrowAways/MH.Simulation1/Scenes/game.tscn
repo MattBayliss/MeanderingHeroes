@@ -17,8 +17,6 @@ texture_region_size = Vector2i(29, 33)
 tile_shape = 3
 tile_layout = 2
 tile_size = Vector2i(29, 33)
-custom_data_layer_0/name = "MovementCost"
-custom_data_layer_0/type = 3
 sources/4 = SubResource("TileSetAtlasSource_wrm1d")
 
 [node name="Game" type="Node2D"]
@@ -27,7 +25,7 @@ HeroSpeed = 5.0
 
 [node name="Camera2D" type="Camera2D" parent="."]
 offset = Vector2(300, 200)
-zoom = Vector2(2, 2)
+zoom = Vector2(1.435, 1.435)
 
 [node name="HexMap" type="TileMapLayer" parent="."]
 unique_name_in_owner = true

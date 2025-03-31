@@ -48,7 +48,8 @@ namespace MeanderingHeroes.Engine
         public static bool InHex(this Point p, Hex hex) => p.ToHex().Equals(hex);
         public static Point Centre(this Hex hex)
             => new Point(
-                X: _size * (Sqrt3 * hex.Q + Sqrt3 * hex.R / 2f),
+                // X: _size * (Sqrt3 * hex.Q + (Sqrt3 / 2f) * hex.R),
+                X: _hexWidth * (hex.Q + hex.R / 2f),
                 Y: _size * 1.5f * hex.R
             );
 
