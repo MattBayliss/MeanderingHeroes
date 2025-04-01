@@ -15,57 +15,61 @@ namespace MeanderingHeroes.Engine
     {
         public static StatefulConsideration<ImmutableList<Hex>> GeneratePathGoalConsideration(Grid grid, Hex start, Hex end)
         {
-            Point endPoint = end.Centre();
+            FractionalHex endHex = end;
+
+            // function to use when we're in a hex in the path and we want to steer to the next one
+            Func<FractionalHex, FractionalHex, FractionalHex> veeredDestination = (hex1, hex2) => (FractionalHex)Vector3.Divide(Vector3.Add(hex1, hex2), 2);
 
             // function for checking if we're at the first hex of the path, and if so, move to next hex
             Func<ImmutableList<Hex>, Entity, (ImmutableList<Hex> path, Entity entity)> moveAlongPath = (path, entity) =>
             {
-                var entityhex = entity.Location.ToHex();
+                var entityhex = entity.AxialCoords.Round();
 
-                (bool atFirstHex, Point destination) = path switch
+                (bool atFirstHex, FractionalHex destination) = path switch
                 {
                     // no more path, assume the hex centre is the destination
-                    []                          => (false, entityhex.Centre()),
+                    []                          => (false, entityhex),
 
                     // we're at the final hex, clear the remaining path, and make the hex centre the destination
                     [var p1]
-                        when p1 == entityhex    => (true, entityhex.Centre()),
+                        when p1 == entityhex    => (true, entityhex),
 
                     // one hex to go on the path, but we're not there yet. Mark that hex as the destination
-                    [var p1]                    => (false, p1.Centre()),
+                    [var p1]                    => (false, p1),
 
                     // two or more hexes left on the path, and we've made it to the next hex,
                     // remove the current hex from the path, and start veering towards next hex
                     [var p1, var p2, ..]
-                        when p1 == entityhex    => (true, (Point)Vector2.Divide(Vector2.Add(p1.Centre(), p2.Centre()), 2)),
+                        when p1 == entityhex    => (true, veeredDestination(p1, p2)),
 
                     // two or more hexes left on the path, and we're not at the first hex yet -
                     // mark it as the destination
-                    [var p1, var p2, ..]        => (false, p1.Centre())
+                    [var p1, var p2, ..]        => (false, p1)
                 };
 
-                var vectorToDestination = Vector2.Subtract(destination, entity.Location);
+                var vectorToDestination = Vector3.Subtract(destination, entity.AxialCoords);
                 var distanceToDestination = vectorToDestination.Length();
 
-                Func<Point> calcNextPoint = () =>
+                Func<FractionalHex> calcNextCoords = () =>
                 {
                     var distanceCovered = entity.Speed / grid.Terrain[entityhex].MovementCost;
                     return distanceCovered < distanceToDestination
-                        ? entity.Location + Vector2.Multiply(vectorToDestination, distanceCovered / distanceToDestination)
+                        ? (FractionalHex)(entity.AxialCoords + Vector3.Multiply(vectorToDestination, distanceCovered / distanceToDestination))
                         : destination;
                 };
 
-                Point nextPoint = distanceToDestination < 0.001f ? destination : calcNextPoint();
+                FractionalHex nextCoords = distanceToDestination < 0.001f ? destination : calcNextCoords();
 
-                return (atFirstHex ? path.Skip(1).ToImmutableList() : path, entity with { Location = nextPoint });
+                return (atFirstHex ? path.Skip(1).ToImmutableList() : path, entity with { AxialCoords = nextCoords });
 
             };
+
             return new StatefulConsideration<ImmutableList<Hex>>(
                 c11nState: grid.AStarPath(start, end).ToImmutableList(),
                 // hardcoded for now
-                utilityFunc: (_, _, _, entity) => entity.Location == endPoint ? 0 : 0.3f,
+                utilityFunc: (_, _, entity) => entity.AxialCoords == endHex ? 0 : 0.3f,
                 updateFunc: (path, entity) => moveAlongPath(path, entity),
-                toRemove: (entity) => entity.Location == endPoint
+                toRemove: (entity) => entity.AxialCoords == endHex
             );
         }
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp
@@ -117,21 +121,5 @@ namespace MeanderingHeroes.Engine
 
             return result;
         }
-
-        public static Func<Entity, Entity> GenerateDestinationUpdater(Point destination) => entity =>
-        {
-            if (entity.Speed <= 0) return entity;
-
-            var vectorToDestination = Vector2.Subtract(destination, entity.Location);
-            var distanceToDestination = vectorToDestination.Length();
-
-            Point nextPoint = distanceToDestination > entity.Speed
-                ? entity.Location + Vector2.Multiply(
-                    vectorToDestination,
-                    entity.Speed / distanceToDestination)
-                : destination;
-
-            return entity with { Location = nextPoint };
-        };
     }
 }

@@ -10,14 +10,14 @@ namespace MeanderingHeroes.Engine.Types
 {
     public record Entity
     {
-        public Point Location { get; init; }
+        public FractionalHex AxialCoords { get; init; }
         public float Speed { get; init; } = 0F;
         public IImmutableList<IConsideration> Considerations { get; init; } = [];
-        public Entity(Point location, float speed)
+        public Entity(FractionalHex axialCoords, float speed)
         {
             Assert.True(speed >= 0);
 
-            Location = location;
+            AxialCoords = axialCoords;
             Speed = speed;
         }
     }

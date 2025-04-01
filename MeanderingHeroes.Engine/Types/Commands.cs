@@ -25,16 +25,16 @@ namespace MeanderingHeroes.Engine.Types
         {
             if (entity.Speed <= 0) return entity;
 
-            var vectorToDestination = Vector2.Subtract(Destination, entity.Location);
+            var vectorToDestination = Vector2.Subtract(Destination, entity.AxialCoords);
             var distanceToDestination = vectorToDestination.Length();
 
             Point nextPoint = distanceToDestination > entity.Speed
-                ? entity.Location + Vector2.Multiply(
+                ? entity.AxialCoords + Vector2.Multiply(
                     vectorToDestination,
                     entity.Speed / distanceToDestination)
                 : Destination;
 
-            return entity with { Location = nextPoint };
+            return entity with { AxialCoords = nextPoint };
         }
     }
 }

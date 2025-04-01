@@ -37,14 +37,14 @@ namespace MeanderingHeroes.Test
 
             var hero = new Entity(startAt, speed).AddConsideration(moveConsideration);
 
-            Assert.Equal(startAt, hero.Location);
+            Assert.Equal(startAt, hero.AxialCoords);
 
             var utilityAI = new UtilityAIComponent(grid);
-            hero = utilityAI.Update(new GameState([]), hero);
+            hero = utilityAI.Update(hero);
 
             Point expectedLocation = startAt with { X = startAt.X + speed };
 
-            Assert.True(expectedLocation.WithinMargin(hero.Location, 0.001f));
+            Assert.True(expectedLocation.WithinMargin(hero.AxialCoords, 0.001f));
         }
         [Fact]
         public void PathToDestinationOnUniformTerrainTest()
@@ -65,7 +65,7 @@ namespace MeanderingHeroes.Test
 
             var hero = new Entity(startAt, speed).AddConsideration(moveConsideration);
 
-            Assert.Equal(startAt, hero.Location);
+            Assert.Equal(startAt, hero.AxialCoords);
 
             IEnumerable<Point> pathTaken = [];
 
@@ -73,16 +73,16 @@ namespace MeanderingHeroes.Test
             int attempt = 1;
 
             var utilityAI = new UtilityAIComponent(grid);
-            while (hero.Location != endAt && attempt < quitAfterTick)
+            while (hero.AxialCoords != endAt && attempt < quitAfterTick)
             {
-                hero = utilityAI.Update(new GameState([]), hero);
-                pathTaken = pathTaken.Append(hero.Location);
+                hero = utilityAI.Update(hero);
+                pathTaken = pathTaken.Append(hero.AxialCoords);
                 attempt++;
             }
 
             Assert.True(attempt < quitAfterTick);
-            Assert.Equal(endAt, hero.Location);
-            Assert.Equal(hexDestination, hero.Location.ToHex());
+            Assert.Equal(endAt, hero.AxialCoords);
+            Assert.Equal(hexDestination, hero.AxialCoords.ToHex());
 
             var distancesToEnd = pathTaken
                 .Select(p => Vector2.Subtract(endAt, p).Length());
@@ -161,7 +161,6 @@ namespace MeanderingHeroes.Test
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(grid, hexStart, hexDestination);
 
             var hero = new Entity(startAt, speed).AddConsideration(moveConsideration);
-            var gameState = new GameState([hero]);
 
             var ai = new UtilityAIComponent(grid);
 
@@ -170,10 +169,10 @@ namespace MeanderingHeroes.Test
 
             IEnumerable<Point> pointsAlongPath = [];
 
-            while (hero.Location != endAt && attempt < attemptLimit)
+            while (hero.AxialCoords != endAt && attempt < attemptLimit)
             {
-                hero = ai.Update(gameState, hero);
-                pointsAlongPath = pointsAlongPath.Append(hero.Location);
+                hero = ai.Update(hero);
+                pointsAlongPath = pointsAlongPath.Append(hero.AxialCoords);
                 attempt++;
             }
 

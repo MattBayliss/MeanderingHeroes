@@ -113,5 +113,52 @@ namespace MeanderingHeroes.Engine.Types
             new Hex(-1, 2, -1),
             new Hex(1, 1, -2)
         ];
+
+    }
+    public readonly record struct FractionalHex
+    {
+        public float Q { get; init; }
+        public float R { get; init; }
+        public float S { get; init; }
+        public FractionalHex(float q, float r)
+        {
+            Q = q;
+            R = r;
+            S = -q - r;
+        }
+        public FractionalHex(float q, float r, float s)
+        {
+            Q = q;
+            R = r;
+            S = s;
+            if (Math.Round(q + r + s) != 0) throw new ArgumentException("Q + R + S must be 0");
+        }
+        public static implicit operator FractionalHex(Hex hex) => new FractionalHex(hex.Q, hex.R);
+        public static implicit operator Vector3(FractionalHex fhex) => new Vector3(fhex.Q, fhex.R, fhex.S);
+        public static explicit operator FractionalHex(Vector3 axialVector) => new FractionalHex(axialVector.X, axialVector.Y, axialVector.Z);
+
+        public Hex Round()
+        {
+            int qi = (int)Math.Round(Q);
+            int ri = (int)Math.Round(R);
+            int si = (int)Math.Round(S);
+            float q_diff = Math.Abs(qi - Q);
+            float r_diff = Math.Abs(ri - R);
+            float s_diff = Math.Abs(si - R);
+
+            if (q_diff > r_diff && q_diff > s_diff)
+            {
+                qi = -ri - si;
+            }
+            else if (r_diff > s_diff)
+            {
+                ri = -qi - si;
+            }
+            else
+            {
+                si = -qi - ri;
+            }
+            return new Hex(qi, ri, si);
+        }
     }
 }

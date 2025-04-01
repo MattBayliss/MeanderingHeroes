@@ -1,20 +1,14 @@
 ﻿using LaYumba.Functional;
 using MeanderingHeroes.Engine.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MeanderingHeroes.Engine.Components
 {
     // c11n shorthand for consideration
-    public delegate float UtilityDelegate<T>(Grid grid, GameState state, T c11nState, Entity entity);
+    public delegate float UtilityDelegate<T>(Grid grid, T c11nState, Entity entity);
     public delegate (T C11nState, Entity Entity) UpdateDelegate<T>(T c11nState, Entity entity);
     public interface IConsideration
     {
-        float CalculateUtility(Grid grid, GameState state, Entity entity);
+        float CalculateUtility(Grid grid, Entity entity);
         Entity Update(Entity entity);
         bool ToRemove(Entity entity);
     }
@@ -32,7 +26,7 @@ namespace MeanderingHeroes.Engine.Components
             _toRemove = toRemove;
         }
         public bool ToRemove(Entity entity) => _toRemove(entity);
-        public float CalculateUtility(Grid grid, GameState state, Entity entity) => _utilityFunc(grid, state, C11nState, entity);
+        public float CalculateUtility(Grid grid, Entity entity) => _utilityFunc(grid, C11nState, entity);
 
         public Entity Update(Entity entity)
         {
@@ -44,7 +38,7 @@ namespace MeanderingHeroes.Engine.Components
     public class UtilityAIComponent(Grid grid)
     {
         public Grid Grid { get; } = grid;
-        public Entity Update(GameState gameState, Entity entity)
+        public Entity Update(Entity entity)
         {
             // you should take the top 3 and randomly choose from those - depending
             // on the deviation of results
@@ -53,7 +47,7 @@ namespace MeanderingHeroes.Engine.Components
             var calculatedUtilities = entity.Considerations
                 .Select(c =>
                     (
-                        Utility: c.CalculateUtility(Grid, gameState, entity),
+                        Utility: c.CalculateUtility(Grid, entity),
                         C11n: c
                     )
                 ).OrderByDescending(cc => cc.Utility);
