@@ -35,17 +35,6 @@ namespace MeanderingHeroes.Engine.Types
         public Option<Terrain> TerrainForHex(Hex hex) => Terrain.Lookup(hex);
         public bool InBounds(Hex hex) => Terrain.ContainsKey(hex);
     }
-    /// <summary>
-    /// Points are standard X, Y cartesian coordinates, that map to Hex Q, R "pointy top - odd-r"
-    /// Scale will be (x:10, y:0) => (q:1, r:0)
-    /// </summary>
-    /// <param name="X"></param>
-    /// <param name="Y"></param>
-    public record Point(float X, float Y)
-    {
-        public static implicit operator Vector2(Point location) => new Vector2((float)location.X, (float)location.Y);
-        public static implicit operator Point(Vector2 vector) => new(vector.X, vector.Y);
-    }
 
     // Implementing Hexes from the mind-blowing blog: https://www.redblobgames.com/grids/hexagons/
     // Most of this boilerplate is copy-pasta from the samples provided there.
@@ -134,9 +123,10 @@ namespace MeanderingHeroes.Engine.Types
             if (Math.Round(q + r + s) != 0) throw new ArgumentException("Q + R + S must be 0");
         }
         public static implicit operator FractionalHex(Hex hex) => new FractionalHex(hex.Q, hex.R);
-        public static implicit operator Vector3(FractionalHex fhex) => new Vector3(fhex.Q, fhex.R, fhex.S);
+        public static explicit operator Vector3(FractionalHex fhex) => new Vector3(fhex.Q, fhex.R, fhex.S);
+        public static explicit operator Vector2(FractionalHex fhex) => new Vector2(fhex.Q, fhex.R);
         public static explicit operator FractionalHex(Vector3 axialVector) => new FractionalHex(axialVector.X, axialVector.Y, axialVector.Z);
-
+        public static explicit operator FractionalHex(Vector2 axialVector) => new FractionalHex(axialVector.X, axialVector.Y);
         public Hex Round()
         {
             int qi = (int)Math.Round(Q);

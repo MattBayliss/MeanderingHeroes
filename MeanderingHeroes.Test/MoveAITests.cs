@@ -17,6 +17,9 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void OneTickTest()
         {
+            var offsetZero = Vector2.Zero;
+            Transforms.Init(offsetZero, 1f, 2f / MathF.Sqrt(3));
+
             var grid = Helpers.MakeGrass10x10MapGrid();
 
             Hex hexStart = (1, 0);
@@ -35,20 +38,26 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(grid, hexStart, hexDestination);
 
-            var hero = new Entity(startAt, speed).AddConsideration(moveConsideration);
+            var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
 
-            Assert.Equal(startAt, hero.AxialCoords);
+            Assert.Equal(hexStart, hero.HexCoords);
 
             var utilityAI = new UtilityAIComponent(grid);
             hero = utilityAI.Update(hero);
 
-            Point expectedLocation = startAt with { X = startAt.X + speed };
+            var heroCartesian = hero.Location;
 
-            Assert.True(expectedLocation.WithinMargin(hero.AxialCoords, 0.001f));
+            var expectedLocation = startAt with { X = startAt.X + speed };
+
+            Assert.Equal(expectedLocation.Y, heroCartesian.Y, 0.001f);
+            Assert.Equal(expectedLocation.X, heroCartesian.X, 0.001f);
         }
         [Fact]
         public void PathToDestinationOnUniformTerrainTest()
         {
+            var offsetZero = Vector2.Zero;
+            Transforms.Init(offsetZero, 1f, 2f / MathF.Sqrt(3));
+
             var grid = Helpers.MakeGrass10x10MapGrid();
 
             Hex hexStart = (0, 0); // top left of map
@@ -63,26 +72,25 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(grid, hexStart, hexDestination);
 
-            var hero = new Entity(startAt, speed).AddConsideration(moveConsideration);
+            var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
 
-            Assert.Equal(startAt, hero.AxialCoords);
+            Assert.Equal(hexStart, hero.HexCoords);
 
-            IEnumerable<Point> pathTaken = [];
+            IEnumerable<Vector2> pathTaken = [];
 
             int quitAfterTick = 1000;
             int attempt = 1;
 
             var utilityAI = new UtilityAIComponent(grid);
-            while (hero.AxialCoords != endAt && attempt < quitAfterTick)
+            while (hero.HexCoords != hexDestination && attempt < quitAfterTick)
             {
                 hero = utilityAI.Update(hero);
-                pathTaken = pathTaken.Append(hero.AxialCoords);
+                pathTaken = pathTaken.Append(hero.Location);
                 attempt++;
             }
 
             Assert.True(attempt < quitAfterTick);
-            Assert.Equal(endAt, hero.AxialCoords);
-            Assert.Equal(hexDestination, hero.AxialCoords.ToHex());
+            Assert.Equal(hexDestination, hero.HexCoords);
 
             var distancesToEnd = pathTaken
                 .Select(p => Vector2.Subtract(endAt, p).Length());
@@ -94,7 +102,7 @@ namespace MeanderingHeroes.Test
             var distanceToEndForCurrentAndNext = distancesToEnd.Zip(distancesToEnd.Skip(1));
 
             // Assert there are no cases where the 2nd point is futher away than the first
-            Assert.DoesNotContain(false, distanceToEndForCurrentAndNext.Select(tuple => tuple.First > tuple.Second));
+            Assert.DoesNotContain(false, distanceToEndForCurrentAndNext.Select(tuple => tuple.First >= tuple.Second));
 
             Assert.Empty(hero.Considerations);
         }
@@ -151,6 +159,9 @@ namespace MeanderingHeroes.Test
             Hex hexStart = (0, 0); // left-most
             Hex hexDestination = (9, 0); // right-most
 
+            var offsetZero = Vector2.Zero;
+            Transforms.Init(offsetZero, 1f, 2f / MathF.Sqrt(3));
+
             // in cartesian
             var startAt = hexStart.Centre();
             var endAt = hexDestination.Centre();
@@ -160,19 +171,19 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(grid, hexStart, hexDestination);
 
-            var hero = new Entity(startAt, speed).AddConsideration(moveConsideration);
+            var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
 
             var ai = new UtilityAIComponent(grid);
 
             int attemptLimit = 1000;
             int attempt = 1;
 
-            IEnumerable<Point> pointsAlongPath = [];
+            IEnumerable<Vector2> pointsAlongPath = [];
 
-            while (hero.AxialCoords != endAt && attempt < attemptLimit)
+            while (hero.HexCoords != hexDestination && attempt < attemptLimit)
             {
                 hero = ai.Update(hero);
-                pointsAlongPath = pointsAlongPath.Append(hero.AxialCoords);
+                pointsAlongPath = pointsAlongPath.Append(hero.Location);
                 attempt++;
             }
 

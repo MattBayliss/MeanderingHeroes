@@ -13,17 +13,19 @@ namespace MeanderingHeroes.Engine
 {
     public static class PathFinding
     {
+        private static float Sqrt2 = MathF.Sqrt(2);
+
         public static StatefulConsideration<ImmutableList<Hex>> GeneratePathGoalConsideration(Grid grid, Hex start, Hex end)
         {
             FractionalHex endHex = end;
 
             // function to use when we're in a hex in the path and we want to steer to the next one
-            Func<FractionalHex, FractionalHex, FractionalHex> veeredDestination = (hex1, hex2) => (FractionalHex)Vector3.Divide(Vector3.Add(hex1, hex2), 2);
+            Func<FractionalHex, FractionalHex, FractionalHex> veeredDestination = (hex1, hex2) => (FractionalHex)Vector3.Divide(Vector3.Add((Vector3)hex1, (Vector3)hex2), 2);
 
             // function for checking if we're at the first hex of the path, and if so, move to next hex
             Func<ImmutableList<Hex>, Entity, (ImmutableList<Hex> path, Entity entity)> moveAlongPath = (path, entity) =>
             {
-                var entityhex = entity.AxialCoords.Round();
+                var entityhex = entity.HexCoords.Round();
 
                 (bool atFirstHex, FractionalHex destination) = path switch
                 {
@@ -47,29 +49,32 @@ namespace MeanderingHeroes.Engine
                     [var p1, var p2, ..]        => (false, p1)
                 };
 
-                var vectorToDestination = Vector3.Subtract(destination, entity.AxialCoords);
+                var vectorToDestination = Vector3.Subtract((Vector3)destination, (Vector3)entity.HexCoords);
                 var distanceToDestination = vectorToDestination.Length();
 
                 Func<FractionalHex> calcNextCoords = () =>
                 {
-                    var distanceCovered = entity.Speed / grid.Terrain[entityhex].MovementCost;
+                    // entity speed is defined as fraction of a hex travelled per tick, assuming travel cost of 1.0,
+                    // but the axial vector of (q:1, r:0) is actually (q:1, r:0:, s:-1) and so has a length of √2,
+                    // so speed = entity.Speed * √2
+                    var distanceCovered = entity.Speed * Sqrt2 / grid.Terrain[entityhex].MovementCost;
                     return distanceCovered < distanceToDestination
-                        ? (FractionalHex)(entity.AxialCoords + Vector3.Multiply(vectorToDestination, distanceCovered / distanceToDestination))
+                        ? (FractionalHex)((Vector3)entity.HexCoords + Vector3.Multiply(vectorToDestination, distanceCovered / distanceToDestination))
                         : destination;
                 };
 
                 FractionalHex nextCoords = distanceToDestination < 0.001f ? destination : calcNextCoords();
 
-                return (atFirstHex ? path.Skip(1).ToImmutableList() : path, entity with { AxialCoords = nextCoords });
+                return (atFirstHex ? path.Skip(1).ToImmutableList() : path, entity with { HexCoords = nextCoords });
 
             };
 
             return new StatefulConsideration<ImmutableList<Hex>>(
                 c11nState: grid.AStarPath(start, end).ToImmutableList(),
                 // hardcoded for now
-                utilityFunc: (_, _, entity) => entity.AxialCoords == endHex ? 0 : 0.3f,
+                utilityFunc: (_, _, entity) => entity.HexCoords == endHex ? 0 : 0.3f,
                 updateFunc: (path, entity) => moveAlongPath(path, entity),
-                toRemove: (entity) => entity.AxialCoords == endHex
+                toRemove: (entity) => entity.HexCoords == endHex
             );
         }
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp
