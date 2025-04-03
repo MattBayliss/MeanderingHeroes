@@ -12,7 +12,6 @@ namespace MeanderingHeroes.Engine.Types
     public record Entity
     {
         public FractionalHex HexCoords { get; init; }
-        public Vector2 Location => HexCoords.ToVector2();
         /// <summary>
         /// The fraction of hex width covered per tick, assuming a terrain cost of 1.0 (i.e. speed of 1.0f means 1 hex / tick)
         /// </summary>

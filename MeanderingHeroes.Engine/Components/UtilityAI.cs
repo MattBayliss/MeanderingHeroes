@@ -4,12 +4,12 @@ using MeanderingHeroes.Engine.Types;
 namespace MeanderingHeroes.Engine.Components
 {
     // c11n shorthand for consideration
-    public delegate float UtilityDelegate<T>(Grid grid, T c11nState, Entity entity);
-    public delegate (T C11nState, Entity Entity) UpdateDelegate<T>(T c11nState, Entity entity);
+    public delegate float UtilityDelegate<T>(Game game, T c11nState, Entity entity);
+    public delegate (T C11nState, Entity Entity) UpdateDelegate<T>(Game game, T c11nState, Entity entity);
     public interface IConsideration
     {
-        float CalculateUtility(Grid grid, Entity entity);
-        Entity Update(Entity entity);
+        float CalculateUtility(Game grid, Entity entity);
+        Entity Update(Game game, Entity entity);
         bool ToRemove(Entity entity);
     }
     public record StatefulConsideration<T> : IConsideration
@@ -26,19 +26,18 @@ namespace MeanderingHeroes.Engine.Components
             _toRemove = toRemove;
         }
         public bool ToRemove(Entity entity) => _toRemove(entity);
-        public float CalculateUtility(Grid grid, Entity entity) => _utilityFunc(grid, C11nState, entity);
+        public float CalculateUtility(Game game, Entity entity) => _utilityFunc(game, C11nState, entity);
 
-        public Entity Update(Entity entity)
+        public Entity Update(Game game, Entity entity)
         {
-            var (state2, entity2) = _updateFunc(C11nState, entity);
+            var (state2, entity2) = _updateFunc(game, C11nState, entity);
             return entity2 with { Considerations = entity.Considerations.Replace(this, this with { C11nState = state2 }) };
         }
     }
 
-    public class UtilityAIComponent(Grid grid)
+    public class UtilityAIComponent
     {
-        public Grid Grid { get; } = grid;
-        public Entity Update(Entity entity)
+        public Entity Update(Game game, Entity entity)
         {
             // you should take the top 3 and randomly choose from those - depending
             // on the deviation of results
@@ -47,7 +46,7 @@ namespace MeanderingHeroes.Engine.Components
             var calculatedUtilities = entity.Considerations
                 .Select(c =>
                     (
-                        Utility: c.CalculateUtility(Grid, entity),
+                        Utility: c.CalculateUtility(game, entity),
                         C11n: c
                     )
                 ).OrderByDescending(cc => cc.Utility);
@@ -56,7 +55,7 @@ namespace MeanderingHeroes.Engine.Components
 
             return winner.Match(
                 None: () => entity,
-                Some: cns => cns.C11n.Update(entity)
+                Some: cns => cns.C11n.Update(game, entity)
             ).Pipe(updated => updated with 
                 { Considerations = updated.Considerations.Where(c11n => !c11n.ToRemove(updated)).ToImmutableList() }
             );

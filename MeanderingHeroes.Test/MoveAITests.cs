@@ -6,6 +6,8 @@ using System.Numerics;
 
 using static MeanderingHeroes.Engine.Functions;
 using static LaYumba.Functional.F;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ClientProtocol;
+using Xunit.Abstractions;
 
 namespace MeanderingHeroes.Test
 {
@@ -14,20 +16,29 @@ namespace MeanderingHeroes.Test
     /// </summary>
     public class MoveAITests
     {
+        private readonly ITestOutputHelper output;
+
+        public MoveAITests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
         [Fact]
         public void OneTickTest()
         {
             var offsetZero = Vector2.Zero;
-            Transforms.Init(offsetZero, 1f, 2f / MathF.Sqrt(3));
 
-            var grid = Helpers.MakeGrass10x10MapGrid();
+            var game = new Game(
+                HexMap: Helpers.MakeGrass10x10MapGrid(),
+                Transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                Entities: []
+            );
 
             Hex hexStart = (1, 0);
             Hex hexDestination = (3, 0); // 2nd hex to the east
 
             // in cartesian
-            var startAt = hexStart.Centre();
-            var endAt = hexDestination.Centre();
+            var startAt = game.HexCentreXY(hexStart);
+            var endAt = game.HexCentreXY(hexDestination);
 
             Assert.Equal(2f, endAt.X - startAt.X, 0.001f);
             Assert.Equal(0f, endAt.Y);
@@ -36,16 +47,16 @@ namespace MeanderingHeroes.Test
             // speed relative to hex centres
             var speed = 1f;
 
-            var moveConsideration = PathFinding.GeneratePathGoalConsideration(grid, hexStart, hexDestination);
+            var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
             var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
-            var utilityAI = new UtilityAIComponent(grid);
-            hero = utilityAI.Update(hero);
+            var utilityAI = new UtilityAIComponent();
+            hero = utilityAI.Update(game, hero);
 
-            var heroCartesian = hero.Location;
+            var heroCartesian = game.HexCentreXY(hero.HexCoords);
 
             var expectedLocation = startAt with { X = startAt.X + speed };
 
@@ -56,21 +67,24 @@ namespace MeanderingHeroes.Test
         public void PathToDestinationOnUniformTerrainTest()
         {
             var offsetZero = Vector2.Zero;
-            Transforms.Init(offsetZero, 1f, 2f / MathF.Sqrt(3));
 
-            var grid = Helpers.MakeGrass10x10MapGrid();
+            var game = new Game(
+                HexMap: Helpers.MakeGrass10x10MapGrid(),
+                Transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                Entities: []
+            );
 
             Hex hexStart = (0, 0); // top left of map
             Hex hexDestination = (3, 3); // 3 hexes to the SE
 
             // in cartesian
-            var startAt = hexStart.Centre();
-            var endAt = hexDestination.Centre();
+            var startAt = game.HexCentreXY(hexStart);
+            var endAt = game.HexCentreXY(hexDestination);
 
             // distance relative to hex centres, per tick
             var speed = 0.3f;
 
-            var moveConsideration = PathFinding.GeneratePathGoalConsideration(grid, hexStart, hexDestination);
+            var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
             var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
 
@@ -81,11 +95,11 @@ namespace MeanderingHeroes.Test
             int quitAfterTick = 1000;
             int attempt = 1;
 
-            var utilityAI = new UtilityAIComponent(grid);
+            var utilityAI = new UtilityAIComponent();
             while (hero.HexCoords != hexDestination && attempt < quitAfterTick)
             {
-                hero = utilityAI.Update(hero);
-                pathTaken = pathTaken.Append(hero.Location);
+                hero = utilityAI.Update(game, hero);
+                pathTaken = pathTaken.Append(game.HexCentreXY(hero.HexCoords));
                 attempt++;
             }
 
@@ -141,39 +155,78 @@ namespace MeanderingHeroes.Test
         }
 
         [Fact]
+        public void SpeedIsFractionsOfHexWidth()
+        {
+            var offsetZero = Vector2.Zero;
+
+            var game = new Game(
+                HexMap: Helpers.MakeGrass10x10MapGrid(),
+                Transforms: new Transforms(offsetZero, 1f, 1f),
+                Entities: []
+            );
+
+            // ensure assumption that all terrain costs are 1.0
+            Assert.DoesNotContain(false, game.HexMap.Terrain.Values.Select(t => t.MovementCost == 1.0));
+
+            // distance relative to hex centres, per tick
+            var speed = 1f;
+
+            Hex hexStart = (0, 0);
+            Hex hexDestination = (2, 0); // 2 "speeds", just so we can see it stop at (1,0)
+
+            // in cartesian
+            var startAt = game.HexCentreXY(hexStart);
+            var endAt = game.HexCentreXY(hexDestination);
+
+            var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
+
+            var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
+
+            var ai = new UtilityAIComponent();
+
+            Assert.Equal(hexStart, hero.HexCoords.Round());
+
+            var heroAfter1Tick = ai.Update(game, hero);
+
+            var atHex = heroAfter1Tick.HexCoords;
+
+            Assert.Equal(new Hex(1, 0), atHex.Round());
+            Assert.Equal(new FractionalHex(1f, 0f), atHex);
+        }
+
+        [Fact]
         public void TerrainCostsAffectDistanceTravelled()
         {
-            //a long west-east map, half with terrain cost 1.0, half with terrain cost 3.0
-            var terrain = new LandTerrain[10, 1];
-            for (int r = 0; r < 10; r++)
-            {
-                terrain[r, 0] = r < 5 ? new LandTerrain("grass", 1) : new LandTerrain("forest", 3);
-            }
             var grid = new Grid(
-                Range(0,9)
+                Range(0, 9)
                     .Select(r => (
-                        Hex: new Hex(r,0), 
-                        Terrain: (Terrain)(r < 5 ? new LandTerrain("grass", 1) : new LandTerrain("forest", 3))))
+                        Hex: new Hex(r, 0),
+                        Terrain: (Terrain)(r < 5 ? new LandTerrain("grass", 1f) : new LandTerrain("forest", 3f))))
                 );
 
             Hex hexStart = (0, 0); // left-most
             Hex hexDestination = (9, 0); // right-most
 
             var offsetZero = Vector2.Zero;
-            Transforms.Init(offsetZero, 1f, 2f / MathF.Sqrt(3));
+
+            var game = new Game(
+                HexMap: grid,
+                Transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                Entities: []
+            );
 
             // in cartesian
-            var startAt = hexStart.Centre();
-            var endAt = hexDestination.Centre();
+            var startAt = game.HexCentreXY(hexStart);
+            var endAt = game.HexCentreXY(hexDestination);
 
             // distance relative to hex centres, per tick (easily divisible by 3 for occular pat down)
             var speed = 0.1f;
 
-            var moveConsideration = PathFinding.GeneratePathGoalConsideration(grid, hexStart, hexDestination);
+            var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
             var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
 
-            var ai = new UtilityAIComponent(grid);
+            var ai = new UtilityAIComponent();
 
             int attemptLimit = 1000;
             int attempt = 1;
@@ -182,8 +235,8 @@ namespace MeanderingHeroes.Test
 
             while (hero.HexCoords != hexDestination && attempt < attemptLimit)
             {
-                hero = ai.Update(hero);
-                pointsAlongPath = pointsAlongPath.Append(hero.Location);
+                hero = ai.Update(game, hero);
+                pointsAlongPath = pointsAlongPath.Append(game.ToGameXY(hero.HexCoords));
                 attempt++;
             }
 
@@ -194,15 +247,16 @@ namespace MeanderingHeroes.Test
             var hexesAndDistanceTravelled = pointsAlongPath
                 .Zip(pointsAlongPath.Skip(1))
                 .Select(points => (
-                    FromHex: points.First.ToHex(),
-                    ToHex: points.Second.ToHex(),
+                    FromHex: game.HexQR(points.First).Round(),
+                    ToHex: game.HexQR(points.Second).Round(),
                     DistanceTravelled: Vector2.Distance(points.First, points.Second)))
                 .Select(ftd =>
-                (   ftd.FromHex,
-                    FromTerrain: grid.TerrainForHex(ftd.FromHex),
-                    ftd.ToHex,
-                    ToTerrain: grid.TerrainForHex(ftd.ToHex),
-                    ftd.DistanceTravelled
+                (
+                    FromHex: ftd.FromHex,
+                    FromTerrain: game.HexMap.TerrainForHex(ftd.FromHex),
+                    ToHex: ftd.ToHex,
+                    ToTerrain: game.HexMap.TerrainForHex(ftd.ToHex),
+                    DistanceTravelled: ftd.DistanceTravelled
                 ))
                 .SkipLast(1); // the last hop will be to the destination - a remainder value we can ignore for this test
 
@@ -213,14 +267,22 @@ namespace MeanderingHeroes.Test
 
                 // if travelling through the same terrain type, the distance travelled is a simple calculation
                 // of speed / movement cost
-                if(fromTerrain == toTerrain)
+                if (fromTerrain == toTerrain)
                 {
+                    if (had.ToHex.Q < 5)
+                    {
+                        Assert.Equal(1f, toTerrain.MovementCost);
+                    }
+                    else if (had.FromHex.Q >= 5)
+                    {
+                        Assert.Equal(3f, fromTerrain.MovementCost);
+                    }
                     Assert.Equal(speed / fromTerrain.MovementCost, had.DistanceTravelled, 0.001);
                 }
                 else
                 {
                     // because we made a map where movement cost increases, we don't need to sort from/to movement costs
-                    Assert.InRange(had.DistanceTravelled, speed /toTerrain.MovementCost, speed / fromTerrain.MovementCost);
+                    Assert.InRange(had.DistanceTravelled, speed / toTerrain.MovementCost, speed / fromTerrain.MovementCost);
                 }
             });
         }

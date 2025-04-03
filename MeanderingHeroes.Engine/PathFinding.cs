@@ -15,7 +15,7 @@ namespace MeanderingHeroes.Engine
     {
         private static float Sqrt2 = MathF.Sqrt(2);
 
-        public static StatefulConsideration<ImmutableList<Hex>> GeneratePathGoalConsideration(Grid grid, Hex start, Hex end)
+        public static StatefulConsideration<ImmutableList<Hex>> GeneratePathGoalConsideration(Game game, Hex start, Hex end)
         {
             FractionalHex endHex = end;
 
@@ -57,9 +57,9 @@ namespace MeanderingHeroes.Engine
                     // entity speed is defined as fraction of a hex travelled per tick, assuming travel cost of 1.0,
                     // but the axial vector of (q:1, r:0) is actually (q:1, r:0:, s:-1) and so has a length of √2,
                     // so speed = entity.Speed * √2
-                    var distanceCovered = entity.Speed * Sqrt2 / grid.Terrain[entityhex].MovementCost;
+                    var distanceCovered = entity.Speed * Sqrt2 / game.HexMap.Terrain[entityhex].MovementCost;
                     return distanceCovered < distanceToDestination
-                        ? (FractionalHex)((Vector3)entity.HexCoords + Vector3.Multiply(vectorToDestination, distanceCovered / distanceToDestination))
+                        ? (FractionalHex)((Vector3)entity.HexCoords + (vectorToDestination * distanceCovered / distanceToDestination))
                         : destination;
                 };
 
@@ -70,10 +70,10 @@ namespace MeanderingHeroes.Engine
             };
 
             return new StatefulConsideration<ImmutableList<Hex>>(
-                c11nState: grid.AStarPath(start, end).ToImmutableList(),
+                c11nState: game.HexMap.AStarPath(start, end).ToImmutableList(),
                 // hardcoded for now
                 utilityFunc: (_, _, entity) => entity.HexCoords == endHex ? 0 : 0.3f,
-                updateFunc: (path, entity) => moveAlongPath(path, entity),
+                updateFunc: (game, path, entity) => moveAlongPath(path, entity),
                 toRemove: (entity) => entity.HexCoords == endHex
             );
         }
