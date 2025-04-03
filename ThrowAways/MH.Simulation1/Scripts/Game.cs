@@ -4,10 +4,8 @@ using MeanderingHeroes.Engine.Components;
 using MeanderingHeroes.Engine.Types;
 using MH.Simulation1.Types;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Timers;
 
 public partial class Game : Node2D
 {
@@ -19,15 +17,12 @@ public partial class Game : Node2D
     private TileMapLayer _hexMap;
     private Hex _destination;
     private UtilityAIComponent _utilityAI;
-    private Transform2D _toHexSpaceMatrix;
-    private Transform2D _toGameSpaceMatrix;
 
     private static Terrain _grass = new LandTerrain("grass", 1f);
     private static Terrain _forest = new LandTerrain("forest", 3f);
     private static Terrain _hills = new LandTerrain("hills", 2f);
     private static Terrain _sea = new WaterTerrain("sea", 50f);
     private Entity _heroEntity;
-    private GameState _gameState;
 
     public override void _Ready()
     {
@@ -35,7 +30,8 @@ public partial class Game : Node2D
         _hero = GetNode<Polygon2D>("Hero");
         _hexMap = GetNode<TileMapLayer>("%HexMap");
 
-        (_toHexSpaceMatrix, _toGameSpaceMatrix) = GetTransformMatrices(_hexMap);
+        var tileSize = _hexMap.TileSet.TileSize;
+        Transforms.Init(_hexMap.MapToLocal(new Vector2I(0, 0)).ToDotNetVector2(), tileSize.X, tileSize.Y);
 
         var startingPos = _hexMap.MapToLocal(new Vector2I(0, 0));
         _hero.Position = startingPos;
@@ -43,17 +39,14 @@ public partial class Game : Node2D
         Print($"Hexes loaded: {_hexData.Count}");
 
         _utilityAI = new UtilityAIComponent(_hexData.ToGrid());
-        _heroEntity = new Entity((_toHexSpaceMatrix * startingPos).ToPoint(), HeroSpeed);
-        _gameState = new GameState([_heroEntity]);
+        _heroEntity = new Entity(new FractionalHex(0f, 0f), HeroSpeed);
     }
 
     public void Update()
     {
-        var updatedEntity = _utilityAI.Update(_gameState, _heroEntity);
-        _gameState = _gameState with { Entities = _gameState.Entities.Replace(_heroEntity, updatedEntity) };
+        var updatedEntity = _utilityAI.Update(_heroEntity);
         _heroEntity = updatedEntity;
-        var newPosition = _toGameSpaceMatrix * _heroEntity.Location.ToVector2();
-        _hero.Position = newPosition;
+        _hero.Position = updatedEntity.Location.ToGodotVector();
     }
 
     public override void _Input(InputEvent @event)
@@ -82,25 +75,12 @@ public partial class Game : Node2D
 
         var moveConsideration = PathFinding.GeneratePathGoalConsideration(
             _utilityAI.Grid,
-            _heroEntity.Location.ToHex(),
+            _heroEntity.HexCoords.Round(),
             _destination);
 
         var updatedEntity = _heroEntity with { Considerations = [moveConsideration] };
 
-        _gameState = _gameState with { Entities = [updatedEntity] };
-
         _heroEntity = updatedEntity;
-
-        // TODO: delete this destination debugging
-        var destHexPoint = _destination.Centre();
-        var destHexVector2 = _toGameSpaceMatrix * destHexPoint.ToVector2();
-        var destTileVector = _hexMap.MapToLocal(new Vector2I(_destination.Q, _destination.R));
-        var tileForVector2 = _hexMap.LocalToMap(destHexVector2);
-
-        // clicking on as close to centre of title 0,0 as possible
-        // VPPos: (166, 60), Positon: (14.285706, 16.027866), tileCoords: (0, 0), Destination: Hex { Q = 0, R = 0, S = 0 } destPoint:Point { X = 0, Y = 0 }|(0, 0), destVector2: (-14.5, -16.5), tileForVector2: (0, -2), heroPoint: Point { X = 0, Y = 0 }, heroVector2: (-14.5, -16.5), heroHex: $Hex { Q = 0, R = 0, S = 0 }
-
-        Print($"VPPos: {viewPortPosition}, Positon: {position}, tileCoords: {tileCoords}, Destination: {_destination} destHexPoint:{destHexPoint}, destHexVector2: {destHexVector2}, destTileVector: {destTileVector}, heroPoint: {_heroEntity.Location}, heroVector2: {_toGameSpaceMatrix * _heroEntity.Location.ToVector2()}, heroHex: {_heroEntity.Location.ToHex()}");
     }
 
     private Dictionary<Hex, HexData> LoadMapData(TileMapLayer hexMap) =>
@@ -148,6 +128,6 @@ public static partial class Extensions
     public static Grid ToGrid(this Dictionary<Hex, HexData> hexData)
         => new Grid(hexData.Select(kvp => (kvp.Key, kvp.Value.Terrain)));
 
-    public static Point ToPoint(this Vector2 vector2) => new Point(vector2.X, vector2.Y);
-    public static Vector2 ToVector2(this Point point) => new Vector2(point.X, point.Y);
+    public static System.Numerics.Vector2 ToDotNetVector2(this Godot.Vector2 vector2) => new System.Numerics.Vector2(vector2.X, vector2.Y);
+    public static Godot.Vector2 ToGodotVector(this System.Numerics.Vector2 vector2) => new Godot.Vector2(vector2.X, vector2.Y);
 }

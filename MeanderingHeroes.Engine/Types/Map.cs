@@ -17,8 +17,6 @@ namespace MeanderingHeroes.Engine.Types
     /// <summary>
     /// A HexGrid for holding all the entities on the map.
     /// </summary>
-    /// <param name="Width">How many hex columns</param>
-    /// <param name="Height">How many hex rows</param>
     public record Grid
     {
         // trialling spatial partition https://gameprogrammingpatterns.com/spatial-partition.html
