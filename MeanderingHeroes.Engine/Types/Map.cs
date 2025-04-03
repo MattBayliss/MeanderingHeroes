@@ -23,12 +23,12 @@ namespace MeanderingHeroes.Engine.Types
         // Starting with hexes being pretty big, and all entities within being able to interact,
         // and special cases with neighbour hexes too. If hexes get smaller, might use quadtrees,
         // or hextrees rather.
-        public ImmutableDictionary<Hex, Terrain> Terrain { get; init; }
+        public ImmutableDictionary<(int Q, int R), Terrain> Terrain { get; init; }
 
         public Grid(IEnumerable<(Hex Hex, Terrain Terrain)> terrainForHex)
         {
             // allow any duplicate keys to throw an error here
-            Terrain = terrainForHex.ToImmutableDictionary(ht => ht.Hex, ht => ht.Terrain);
+            Terrain = terrainForHex.ToImmutableDictionary(ht => (ht.Hex.Q, ht.Hex.R), ht => ht.Terrain);
         }
         public Option<Terrain> TerrainForHex(Hex hex) => Terrain.Lookup(hex);
         public bool InBounds(Hex hex) => Terrain.ContainsKey(hex);

@@ -6,6 +6,7 @@ using MH.Simulation1.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static LaYumba.Functional.F;
 
 public partial class Game : Node2D
 {
@@ -17,6 +18,7 @@ public partial class Game : Node2D
     private TileMapLayer _hexMap;
     private Hex _destination;
     private UtilityAIComponent _utilityAI;
+    private MeanderingHeroes.Engine.Types.Game _gameEngine;
 
     private static Terrain _grass = new LandTerrain("grass", 1f);
     private static Terrain _forest = new LandTerrain("forest", 3f);
@@ -31,22 +33,27 @@ public partial class Game : Node2D
         _hexMap = GetNode<TileMapLayer>("%HexMap");
 
         var tileSize = _hexMap.TileSet.TileSize;
-        Transforms.Init(_hexMap.MapToLocal(new Vector2I(0, 0)).ToDotNetVector2(), tileSize.X, tileSize.Y);
-
+        
         var startingPos = _hexMap.MapToLocal(new Vector2I(0, 0));
+
         _hero.Position = startingPos;
+
         _hexData = LoadMapData(_hexMap);
         Print($"Hexes loaded: {_hexData.Count}");
 
-        _utilityAI = new UtilityAIComponent(_hexData.ToGrid());
+        var hexOffset = startingPos.ToDotNetVector2();
+
+        _gameEngine = new MeanderingHeroes.Engine.Types.Game(_hexData.ToGrid(), new Transforms(hexOffset, tileSize.X, tileSize.Y), []);
+
+        _utilityAI = new UtilityAIComponent();
         _heroEntity = new Entity(new FractionalHex(0f, 0f), HeroSpeed);
     }
 
     public void Update()
     {
-        var updatedEntity = _utilityAI.Update(_heroEntity);
+        var updatedEntity = _utilityAI.Update(_gameEngine, _heroEntity);
         _heroEntity = updatedEntity;
-        _hero.Position = updatedEntity.Location.ToGodotVector();
+        _hero.Position = _gameEngine.ToGameXY(updatedEntity.HexCoords).ToGodotVector();
     }
 
     public override void _Input(InputEvent @event)
@@ -64,17 +71,27 @@ public partial class Game : Node2D
     {
         var position = _hexMap.MakeCanvasPositionLocal(viewPortPosition);
         var tileCoords = _hexMap.LocalToMap(position);
-        Print($"tile clicked: {tileCoords}");
+        
+        Print($"tile clicked: {tileCoords} - AtlasCoords: {_hexMap.GetCellAtlasCoords(tileCoords)}");
+
         var hex = new Hex(tileCoords.X, tileCoords.Y);
-        if (!_hexData.ContainsKey(hex))
+
+        if(!_gameEngine.HexMap.InBounds(hex))
         {
+            Print($"destination out of bounds: {hex}");
             return;
         }
 
         _destination = hex;
 
+        if (!_gameEngine.HexMap.InBounds(_heroEntity.HexCoords.Round())) {
+            Print($"hero out of bounds: {_heroEntity.HexCoords}");
+            return;
+        }
+
+
         var moveConsideration = PathFinding.GeneratePathGoalConsideration(
-            _utilityAI.Grid,
+            _gameEngine,
             _heroEntity.HexCoords.Round(),
             _destination);
 
@@ -99,26 +116,6 @@ public partial class Game : Node2D
                     _ => _grass
                 })
             ).ToDictionary(hd => hd.Hex, hd => hd);
-    private static (Transform2D ToHexSpace, Transform2D ToGameSpace) GetTransformMatrices(TileMapLayer hexMap)
-    {
-        var offset = hexMap.MapToLocal(Vector2I.Zero);
-        Print($"Offset: {offset}");
-
-        var refX = new Vector2(hexMap.TileSet.TileSize.X, 0);
-        var refY = new Vector2(0, hexMap.TileSet.TileSize.Y) 
-            * (Mathf.Sqrt(3) / 2f); // finding hex `size` from height - to calculate Y axis adjustment
-
-        Print($"Offset: {offset}, refX:{refX}, refY:{refY}");
-
-        var tileSize = hexMap.TileSet.TileSize;
-        var toGameSpace = new Transform2D(
-            xAxis: refX,
-            yAxis: refY,
-            originPos: offset
-        );
-
-        return (toGameSpace.AffineInverse(), toGameSpace);
-    }
 }
 public static partial class Extensions
 {

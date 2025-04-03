@@ -99,7 +99,6 @@ namespace MeanderingHeroes.Engine
                     break;
                 }
                 current.Neighbours()
-                    .Where(nhex => nhex.Q >= 0 && nhex.R >= 0)
                     .Where(grid.InBounds)
                     .ForEach(next =>
                 {
