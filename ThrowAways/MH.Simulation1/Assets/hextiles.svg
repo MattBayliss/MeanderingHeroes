@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="306.95914mm"
-   height="87.703224mm"
-   viewBox="0 0 306.95914 87.703224"
+   width="116"
+   height="33"
+   viewBox="0 0 30.691667 8.73125"
    version="1.1"
    id="svg1"
    inkscape:export-filename="hextiles.png"
@@ -25,10 +25,10 @@
      inkscape:pageopacity="0"
      inkscape:pagecheckerboard="1"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:document-units="mm"
-     inkscape:zoom="0.25990635"
-     inkscape:cx="1202.3562"
-     inkscape:cy="682.9383"
+     inkscape:document-units="px"
+     inkscape:zoom="5.8810093"
+     inkscape:cx="88.080118"
+     inkscape:cy="58.238302"
      inkscape:window-width="2560"
      inkscape:window-height="1369"
      inkscape:window-x="1912"
@@ -44,7 +44,7 @@
      transform="translate(0.72286948,-14.650119)">
     <path
        sodipodi:type="star"
-       style="fill:#a8d396;fill-opacity:1;stroke:#343421;stroke-width:10;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       style="fill:#a8d396;fill-opacity:1;stroke:none;stroke-width:10;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
        id="path1"
        inkscape:flatsided="true"
        sodipodi:sides="6"
@@ -57,10 +57,10 @@
        inkscape:rounded="0"
        inkscape:randomized="0"
        d="M 65.943285,73.785072 35.120823,91.580429 4.2983608,73.785072 l 2e-7,-35.590713 30.822462,-17.795357 30.822462,17.795357 z"
-       transform="matrix(1.0711126,0,0,1.060134,0.02866512,-0.85487044)" />
+       transform="matrix(0.12446956,0,0,0.12319378,-1.2578846,12.137089)" />
     <path
        sodipodi:type="star"
-       style="fill:#178b17;fill-opacity:1;stroke:#343421;stroke-width:10;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       style="fill:#178b17;fill-opacity:1;stroke:none;stroke-width:10;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
        id="path1-8"
        inkscape:flatsided="true"
        sodipodi:sides="6"
@@ -73,10 +73,10 @@
        inkscape:rounded="0"
        inkscape:randomized="0"
        d="M 65.943285,73.785072 35.120823,91.580429 4.2983608,73.785072 l 2e-7,-35.590713 30.822462,-17.795357 30.822462,17.795357 z"
-       transform="matrix(1.0711126,0,0,1.060134,76.768447,-0.85487044)" />
+       transform="matrix(0.12446956,0,0,0.12319378,6.4150321,12.137089)" />
     <path
        sodipodi:type="star"
-       style="fill:#8b978f;fill-opacity:1;stroke:#343421;stroke-width:10;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       style="fill:#8b978f;fill-opacity:1;stroke:none;stroke-width:10;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
        id="path1-5"
        inkscape:flatsided="true"
        sodipodi:sides="6"
@@ -89,10 +89,10 @@
        inkscape:rounded="0"
        inkscape:randomized="0"
        d="M 65.943285,73.785072 35.120823,91.580429 4.2983608,73.785072 l 2e-7,-35.590713 30.822462,-17.795357 30.822462,17.795357 z"
-       transform="matrix(1.0711126,0,0,1.060134,153.50824,-0.85487044)" />
+       transform="matrix(0.12446956,0,0,0.12319378,14.087949,12.137089)" />
     <path
        sodipodi:type="star"
-       style="fill:#00879d;fill-opacity:1;stroke:#343421;stroke-width:10;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       style="fill:#00879d;fill-opacity:1;stroke:none;stroke-width:10;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
        id="path1-1"
        inkscape:flatsided="true"
        sodipodi:sides="6"
@@ -105,6 +105,6 @@
        inkscape:rounded="0"
        inkscape:randomized="0"
        d="M 65.943285,73.785072 35.120823,91.580429 4.2983608,73.785072 l 2e-7,-35.590713 30.822462,-17.795357 30.822462,17.795357 z"
-       transform="matrix(1.0711126,0,0,1.060134,230.24801,-0.85487044)" />
+       transform="matrix(0.12446956,0,0,0.12319378,21.760866,12.137089)" />
   </g>
 </svg>

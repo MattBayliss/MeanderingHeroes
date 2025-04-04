@@ -1,12 +1,11 @@
-[gd_scene load_steps=7 format=4 uid="uid://di5ar88qhcyjr"]
+[gd_scene load_steps=6 format=4 uid="uid://di5ar88qhcyjr"]
 
 [ext_resource type="Script" uid="uid://cl5npddifl8bh" path="res://Scripts/Game.cs" id="1_ebmjs"]
-[ext_resource type="Texture2D" uid="uid://dbilrbbv4ipvf" path="res://Assets/hextiles.png" id="2_qxrlw"]
+[ext_resource type="Texture2D" uid="uid://dm3orsfn34v2i" path="res://Assets/hextiles.svg" id="2_wrm1d"]
 [ext_resource type="PackedScene" uid="uid://hva7po7cytfs" path="res://Scenes/Entities/hero.tscn" id="3_wrm1d"]
-[ext_resource type="PackedScene" uid="uid://xc7x76qqqr8" path="res://Scenes/Engine.tscn" id="4_3dryh"]
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_wrm1d"]
-texture = ExtResource("2_qxrlw")
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_3dryh"]
+texture = ExtResource("2_wrm1d")
 texture_region_size = Vector2i(29, 33)
 0:0/0 = 0
 1:0/0 = 0
@@ -17,7 +16,7 @@ texture_region_size = Vector2i(29, 33)
 tile_shape = 3
 tile_layout = 2
 tile_size = Vector2i(29, 33)
-sources/4 = SubResource("TileSetAtlasSource_wrm1d")
+sources/4 = SubResource("TileSetAtlasSource_3dryh")
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_ebmjs")
@@ -34,8 +33,6 @@ tile_set = SubResource("TileSet_ebmjs")
 navigation_enabled = false
 
 [node name="Hero" parent="." instance=ExtResource("3_wrm1d")]
-
-[node name="Engine" parent="." instance=ExtResource("4_3dryh")]
 
 [node name="Timer" type="Timer" parent="."]
 autostart = true

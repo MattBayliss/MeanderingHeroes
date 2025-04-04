@@ -1,6 +1,22 @@
-[gd_scene load_steps=2 format=3 uid="uid://xc7x76qqqr8"]
+[gd_scene load_steps=2 format=3 uid="uid://dyq3krefsmjv5"]
 
-[ext_resource type="Script" uid="uid://jtygproo4jjv" path="res://Scripts/Engine.cs" id="1_sutch"]
+[sub_resource type="CSharpScript" id="CSharpScript_5lgux"]
+script/source = "using Godot;
+using Microsoft.VisualBasic.FileIO;
+using System;
+
+public partial class Engine : Node
+{
+    [Signal]
+    public delegate void EngineTickEventHandler();
+
+    public override void _Ready()
+    {
+        
+    }
+
+
+}"
 
 [node name="Engine" type="Node"]
-script = ExtResource("1_sutch")
+script = SubResource("CSharpScript_5lgux")
