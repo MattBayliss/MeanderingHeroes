@@ -23,7 +23,7 @@ namespace MeanderingHeroes.Engine
             Func<FractionalHex, FractionalHex, FractionalHex> veeredDestination = (hex1, hex2) => (FractionalHex)Vector3.Divide(Vector3.Add((Vector3)hex1, (Vector3)hex2), 2);
 
             // function for checking if we're at the first hex of the path, and if so, move to next hex
-            Func<ImmutableList<Hex>, Entity, (ImmutableList<Hex> path, Entity entity)> moveAlongPath = (path, entity) =>
+            Func<ImmutableList<Hex>, SmartEntity, (ImmutableList<Hex> path, SmartEntity entity)> moveAlongPath = (path, entity) =>
             {
                 var entityhex = entity.HexCoords.Round();
 
@@ -72,7 +72,7 @@ namespace MeanderingHeroes.Engine
             return new StatefulConsideration<ImmutableList<Hex>>(
                 c11nState: game.HexMap.AStarPath(start, end).ToImmutableList(),
                 // hardcoded for now
-                utilityFunc: (_, _, entity) => entity.HexCoords == endHex ? 0 : 0.3f,
+                utilityFunc: (_, entity) => entity.HexCoords == endHex ? 0 : 0.3f,
                 updateFunc: (game, path, entity) => moveAlongPath(path, entity),
                 toRemove: (entity) => entity.HexCoords == endHex
             );

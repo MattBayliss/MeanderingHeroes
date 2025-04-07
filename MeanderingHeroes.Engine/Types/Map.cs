@@ -120,6 +120,8 @@ namespace MeanderingHeroes.Engine.Types
             S = s;
             if (Math.Round(q + r + s) != 0) throw new ArgumentException("Q + R + S must be 0");
         }
+        public static implicit operator FractionalHex((float, float) floatTuple) => new FractionalHex(floatTuple.Item1, floatTuple.Item2);
+        public static implicit operator (float Q, float R)(FractionalHex fhex) => (fhex.Q, fhex.R);
         public static implicit operator FractionalHex(Hex hex) => new FractionalHex(hex.Q, hex.R);
         public static explicit operator Vector3(FractionalHex fhex) => new Vector3(fhex.Q, fhex.R, fhex.S);
         public static explicit operator Vector2(FractionalHex fhex) => new Vector2(fhex.Q, fhex.R);

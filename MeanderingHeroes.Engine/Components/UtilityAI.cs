@@ -3,32 +3,56 @@ using MeanderingHeroes.Engine.Types;
 
 namespace MeanderingHeroes.Engine.Components
 {
+    [Flags]
+    public enum AdvertFlag
+    {
+        All,
+        Mobile,
+        BaseMotives,
+        HigherMotives,
+        Wealth,
+        Greed,
+        Hero = Mobile | BaseMotives | HigherMotives | Wealth
+    }
+
+    public record Offer(AdvertFlag Types, IConsideration Consideration);
+    public delegate Utility UtilityDelegate(Game game, SmartEntity entity);
+    public delegate SmartEntity UpdateDelegate(Game game, SmartEntity entity);
     // c11n shorthand for consideration
-    public delegate float UtilityDelegate<T>(Game game, T c11nState, Entity entity);
-    public delegate (T C11nState, Entity Entity) UpdateDelegate<T>(Game game, T c11nState, Entity entity);
+    public delegate (T C11nState, SmartEntity Entity) StatefulUpdateDelegate<T>(Game game, T c11nState, SmartEntity entity);
     public interface IConsideration
     {
-        float CalculateUtility(Game grid, Entity entity);
-        Entity Update(Game game, Entity entity);
-        bool ToRemove(Entity entity);
+        // TODO: Separate CalculateUtility away from the Update?
+        /// <summary>
+        /// Calculates a utility value (from 0.0 to 1.0) 
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        Utility CalculateUtility(Game grid, SmartEntity entity);
+        SmartEntity Update(Game game, SmartEntity entity);
+        bool ToRemove(SmartEntity entity);
     }
+
+    public record ConsiderationRecord(UtilityDelegate CalculateUtility, UpdateDelegate Update);
+
     public record StatefulConsideration<T> : IConsideration
     {
         public T C11nState { get; init; }
-        protected Func<Entity, bool> _toRemove { get; init; }
-        protected UtilityDelegate<T> _utilityFunc { get; init; }
-        protected UpdateDelegate<T> _updateFunc { get; init; }
-        public StatefulConsideration(T c11nState, UtilityDelegate<T> utilityFunc, UpdateDelegate<T> updateFunc, Func<Entity, bool> toRemove)
+        protected Func<SmartEntity, bool> _toRemove { get; init; }
+        protected UtilityDelegate _utilityFunc { get; init; }
+        protected StatefulUpdateDelegate<T> _updateFunc { get; init; }
+        public StatefulConsideration(T c11nState, UtilityDelegate utilityFunc, StatefulUpdateDelegate<T> updateFunc, Func<SmartEntity, bool> toRemove)
         {
             C11nState = c11nState;
             _utilityFunc = utilityFunc;
             _updateFunc = updateFunc;
             _toRemove = toRemove;
         }
-        public bool ToRemove(Entity entity) => _toRemove(entity);
-        public float CalculateUtility(Game game, Entity entity) => _utilityFunc(game, C11nState, entity);
+        public bool ToRemove(SmartEntity entity) => _toRemove(entity);
+        public Utility CalculateUtility(Game game, SmartEntity entity) => _utilityFunc(game, entity);
 
-        public Entity Update(Game game, Entity entity)
+        public SmartEntity Update(Game game, SmartEntity entity)
         {
             var (state2, entity2) = _updateFunc(game, C11nState, entity);
             return entity2 with { Considerations = entity.Considerations.Replace(this, this with { C11nState = state2 }) };
@@ -37,7 +61,7 @@ namespace MeanderingHeroes.Engine.Components
 
     public class UtilityAIComponent
     {
-        public Entity Update(Game game, Entity entity)
+        public SmartEntity Update(Game game, SmartEntity entity)
         {
             // you should take the top 3 and randomly choose from those - depending
             // on the deviation of results

@@ -1,27 +1,27 @@
 ﻿using MeanderingHeroes.Engine.Components;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace MeanderingHeroes.Engine.Types
 {
-    public record Entity
+    public abstract record Entity(FractionalHex HexCoords);
+    public record Advertiser : Entity
     {
-        public FractionalHex HexCoords { get; init; }
-        /// <summary>
-        /// The fraction of hex width covered per tick, assuming a terrain cost of 1.0 (i.e. speed of 1.0f means 1 hex / tick)
-        /// </summary>
+        public ImmutableList<Offer> Offers { get; init; }
+        public Advertiser(FractionalHex hexCoords, IEnumerable<Offer> offers) : base(hexCoords)
+        {
+            Offers = offers.ToImmutableList();
+        }
+    }
+    public record SmartEntity : Advertiser
+    {
         public float Speed { get; init; } = 0F;
         public IImmutableList<IConsideration> Considerations { get; init; } = [];
-        public Entity(FractionalHex axialCoords, float speed)
+        //TODO: Add some default Offers to a SmartEntity
+        public SmartEntity(FractionalHex hexCoords, float speed) : base(hexCoords, [])
         {
             Assert.True(speed >= 0);
 
-            HexCoords = axialCoords;
+            HexCoords = hexCoords;
             Speed = speed;
         }
     }

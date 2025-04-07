@@ -14,13 +14,13 @@ namespace MeanderingHeroes.Test
     /// <summary>
     /// Testing path-finding and Move related Considerations for the UtilityAI
     /// </summary>
-    public class MoveAITests
+    public class AIMove
     {
-        private readonly ITestOutputHelper output;
+        private readonly ITestOutputHelper Output;
 
-        public MoveAITests(ITestOutputHelper output)
+        public AIMove(ITestOutputHelper output)
         {
-            this.output = output;
+            this.Output = output;
         }
         [Fact]
         public void OneTickTest()
@@ -49,7 +49,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = new SmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
@@ -86,7 +86,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = new SmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
@@ -180,7 +180,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = new SmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             var ai = new UtilityAIComponent();
 
@@ -224,7 +224,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = new Entity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = new SmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             var ai = new UtilityAIComponent();
 

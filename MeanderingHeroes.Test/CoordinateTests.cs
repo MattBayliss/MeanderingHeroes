@@ -1,11 +1,6 @@
 ﻿using MeanderingHeroes.Engine;
 using MeanderingHeroes.Engine.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MeanderingHeroes.Test
 {
@@ -33,6 +28,7 @@ namespace MeanderingHeroes.Test
             Assert.Equal(qPlus1Offset.X, qPlus1HexCentre.X);
             Assert.Equal(qPlus1Offset.Y, qPlus1HexCentre.Y);
         }
+
         [Fact]
         public void RMinusOneTest()
         {
@@ -86,10 +82,8 @@ namespace MeanderingHeroes.Test
             Assert.Equal(new Hex(0, 0), game.HexQR(hexOriginOffsetInGame).Round());
 
             // from Godot tests, I know Hex(4,1) == Vector2 (145, 41.25)
-
             //                       q
             Assert.Equal(new Vector2(145f, 41.25f), game.HexCentreXY(new FractionalHex(4f, 1f)));
-
         }
     }
 }
