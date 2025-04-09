@@ -20,7 +20,7 @@ namespace MeanderingHeroes.Test
                 Entities: []
             );
 
-            var treasure = new Advertiser(
+            var treasure = EntityFactory.CreateAdvertiser(
                 hexCoords: (6f, 6f),
                 offers:
                     [

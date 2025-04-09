@@ -49,7 +49,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = new SmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = EntityFactory.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
@@ -86,7 +86,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = new SmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = EntityFactory.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
@@ -180,7 +180,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = new SmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = EntityFactory.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             var ai = new UtilityAIComponent();
 
@@ -224,7 +224,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = new SmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = EntityFactory.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             var ai = new UtilityAIComponent();
 
