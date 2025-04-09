@@ -18,6 +18,7 @@ namespace MeanderingHeroes.Engine.Types
             {
                 throw new ArgumentOutOfRangeException("value", value, "Utility value must be between 0.0f and 1.0f");
             }
+            Value = value;
         }
 
         public static implicit operator float(Utility utility) => utility.Value;
