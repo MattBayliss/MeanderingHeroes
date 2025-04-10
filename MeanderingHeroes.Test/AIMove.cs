@@ -28,9 +28,9 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
-                HexMap: Helpers.MakeGrass10x10MapGrid(),
-                Transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
-                Entities: []
+                hexMap: Helpers.MakeGrass10x10MapGrid(),
+                transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                entities: []
             );
 
             Hex hexStart = (1, 0);
@@ -49,7 +49,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = EntityFactory.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = game.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
@@ -69,9 +69,9 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
-                HexMap: Helpers.MakeGrass10x10MapGrid(),
-                Transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
-                Entities: []
+                hexMap: Helpers.MakeGrass10x10MapGrid(),
+                transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                entities: []
             );
 
             Hex hexStart = (0, 0); // top left of map
@@ -86,7 +86,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = EntityFactory.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = game.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
@@ -160,9 +160,9 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
-                HexMap: Helpers.MakeGrass10x10MapGrid(),
-                Transforms: new Transforms(offsetZero, 1f, 1f),
-                Entities: []
+                hexMap: Helpers.MakeGrass10x10MapGrid(),
+                transforms: new Transforms(offsetZero, 1f, 1f),
+                entities: []
             );
 
             // ensure assumption that all terrain costs are 1.0
@@ -180,7 +180,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = EntityFactory.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = game.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             var ai = new UtilityAIComponent();
 
@@ -210,9 +210,9 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
-                HexMap: grid,
-                Transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
-                Entities: []
+                hexMap: grid,
+                transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                entities: []
             );
 
             // in cartesian
@@ -224,7 +224,7 @@ namespace MeanderingHeroes.Test
 
             var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
 
-            var hero = EntityFactory.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = game.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
 
             var ai = new UtilityAIComponent();
 

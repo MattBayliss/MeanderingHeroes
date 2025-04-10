@@ -15,12 +15,12 @@ namespace MeanderingHeroes.Test
         public void TreasureAdvertises()
         {
             var game = new Game(
-                HexMap: Helpers.MakeGrass10x10MapGrid(),
-                Transforms: new Transforms(Vector2.Zero, 1f, 2f / MathF.Sqrt(3)),
-                Entities: []
+                hexMap: Helpers.MakeGrass10x10MapGrid(),
+                transforms: new Transforms(Vector2.Zero, 1f, 2f / MathF.Sqrt(3)),
+                entities: []
             );
 
-            var treasure = EntityFactory.CreateAdvertiser(
+            var treasure = game.CreateAdvertiser(
                 hexCoords: (6f, 6f),
                 offers:
                     [

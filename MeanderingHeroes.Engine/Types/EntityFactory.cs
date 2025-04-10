@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace MeanderingHeroes.Engine.Types
 {
-    public static class EntityFactory
+    internal class EntityFactory
     {
-        private static int LastId { get; set; }
+        private int _lastId;
 
-        public static void SetLastId(int lastId)
+        public EntityFactory(int lastId)
         {
-            LastId = lastId;
+            _lastId = lastId;
         }
 
-        public static SmartEntity CreateSmartEntity(FractionalHex hexCoords, float speed) => new SmartEntity(LastId++, hexCoords, speed);
-        public static Advertiser CreateAdvertiser(FractionalHex hexCoords, IEnumerable<Offer> offers) => new Advertiser(LastId++, hexCoords, offers);
+        public SmartEntity CreateSmartEntity(FractionalHex hexCoords, float speed) => new SmartEntity(_lastId++, hexCoords, speed);
+        public Advertiser CreateAdvertiser(FractionalHex hexCoords, IEnumerable<Offer> offers) => new Advertiser(_lastId++, hexCoords, offers);
     }
 }

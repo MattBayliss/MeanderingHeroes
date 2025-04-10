@@ -12,9 +12,9 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
-                HexMap: Helpers.MakeGrass10x10MapGrid(),
-                Transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
-                Entities: []
+                hexMap: Helpers.MakeGrass10x10MapGrid(),
+                transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                entities: []
             );
 
             var hexZero = new Hex(0, 0);
@@ -35,9 +35,9 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
-                HexMap: Helpers.MakeGrass10x10MapGrid(),
-                Transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
-                Entities: []
+                hexMap: Helpers.MakeGrass10x10MapGrid(),
+                transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                entities: []
             );
 
             var hexZero = new Hex(0, 0);
