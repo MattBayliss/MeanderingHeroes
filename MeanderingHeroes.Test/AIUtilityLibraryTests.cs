@@ -37,7 +37,25 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void DistanceUtilityTest()
         {
-            Assert.Fail();
+            FractionalHex firstHex = (0, 0);
+            FractionalHex targetHex = (3, 0);
+            var game = new Game(new Grid([]), new Transforms(Vector2.Zero, 1, 1), []);
+            var movingEntity = game.CreateSmartEntity(firstHex, 0);
+            var targetEntity = game.CreateAdvertiser(targetHex, []);
+
+            Func<float, Utility> distanceCurve = distance => distance / 10f;
+
+            var distanceToTargetUtitily = UtilityLibrary.DistanceUtility(targetEntity, distanceCurve);
+
+            Assert.Equal<Utility>(firstHex.Distance(targetHex) / 10f, distanceToTargetUtitily(game, movingEntity));
+
+            FractionalHex closerHex = (2, 0);
+
+            var closerEntity = game.CreateSmartEntity(closerHex, 0);
+            var firstDistance = movingEntity.HexCoords.Distance(targetEntity.HexCoords) / 10f;
+
+            Assert.Equal<Utility>(closerHex.Distance(targetHex) / 10f, distanceToTargetUtitily(game, closerEntity));
+
         }
     }
 }
