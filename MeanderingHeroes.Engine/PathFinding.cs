@@ -1,6 +1,7 @@
 ﻿using LaYumba.Functional;
 using MeanderingHeroes.Engine.Components;
 using MeanderingHeroes.Engine.Types;
+using MeanderingHeroes.Engine.Types.AI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace MeanderingHeroes.Engine
     {
         private static float Sqrt2 = MathF.Sqrt(2);
 
-        public static StatefulConsideration<ImmutableList<Hex>> GeneratePathGoalConsideration(Game game, Hex start, Hex end)
+        public static StatefulBehaviour<ImmutableList<Hex>> GeneratePathGoalBehaviour(Game game, Hex start, Hex end)
         {
             FractionalHex endHex = end;
 
@@ -69,10 +70,13 @@ namespace MeanderingHeroes.Engine
 
             };
 
-            return new StatefulConsideration<ImmutableList<Hex>>(
+            return new StatefulBehaviour<ImmutableList<Hex>>(
+                name: "Path-Finding",
                 c11nState: game.HexMap.AStarPath(start, end).ToImmutableList(),
                 // hardcoded for now
-                utilityFunc: (_, entity) => entity.HexCoords == endHex ? 0 : 0.3f,
+                interaction: new Interaction(
+                    consideration: (_, entity) => entity.HexCoords == endHex ? 0 : 0.3f,
+                    curve: c11n => (Utility)c11n),
                 updateFunc: (game, path, entity) => moveAlongPath(path, entity),
                 toRemove: (entity) => entity.HexCoords == endHex
             );

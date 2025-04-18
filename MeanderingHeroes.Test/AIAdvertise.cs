@@ -20,6 +20,8 @@ namespace MeanderingHeroes.Test
                 entities: []
             );
 
+            var hero = game.CreateSmartEntity((0f, 0f), 1f);
+
             var treasure = game.CreateAdvertiser(
                 hexCoords: (6f, 6f),
                 offers:
@@ -30,6 +32,8 @@ namespace MeanderingHeroes.Test
                         //    )
                     ]
             );
+
+
         }
     }
 }

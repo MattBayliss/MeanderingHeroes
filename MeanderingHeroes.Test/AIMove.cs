@@ -47,14 +47,16 @@ namespace MeanderingHeroes.Test
             // speed relative to hex centres
             var speed = 1f;
 
-            var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
+            var moveBehaviour = PathFinding.GeneratePathGoalBehaviour(game, hexStart, hexDestination);
 
-            var hero = game.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = game.CreateSmartEntity(hexStart, speed);
+            hero = game.AddBehaviour(hero, moveBehaviour);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
-            var utilityAI = new UtilityAIComponent();
-            hero = utilityAI.Update(game, hero);
+            game.Update();
+
+            hero = Helpers.AssertIsSome<SmartEntity>(game.Entities.OfType<SmartEntity>().Find(entity => entity.Id == hero.Id));
 
             var heroCartesian = game.HexCentreXY(hero.HexCoords);
 
@@ -84,9 +86,10 @@ namespace MeanderingHeroes.Test
             // distance relative to hex centres, per tick
             var speed = 0.3f;
 
-            var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
+            var moveBehaviour = PathFinding.GeneratePathGoalBehaviour(game, hexStart, hexDestination);
 
-            var hero = game.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = game.CreateSmartEntity(hexStart, speed);
+            hero = game.AddBehaviour(hero, moveBehaviour);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
@@ -98,7 +101,9 @@ namespace MeanderingHeroes.Test
             var utilityAI = new UtilityAIComponent();
             while (hero.HexCoords != hexDestination && attempt < quitAfterTick)
             {
-                hero = utilityAI.Update(game, hero);
+                game.Update();
+                hero = Helpers.AssertIsSome<SmartEntity>(game.Entities.OfType<SmartEntity>().Find(entity => entity.Id == hero.Id));
+
                 pathTaken = pathTaken.Append(game.HexCentreXY(hero.HexCoords));
                 attempt++;
             }
@@ -118,7 +123,7 @@ namespace MeanderingHeroes.Test
             // Assert there are no cases where the 2nd point is futher away than the first
             Assert.DoesNotContain(false, distanceToEndForCurrentAndNext.Select(tuple => tuple.First >= tuple.Second));
 
-            Assert.Empty(hero.Considerations);
+            Assert.Empty(hero.Behaviours);
         }
 
         [Fact]
@@ -178,15 +183,17 @@ namespace MeanderingHeroes.Test
             var startAt = game.HexCentreXY(hexStart);
             var endAt = game.HexCentreXY(hexDestination);
 
-            var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
+            var moveBehaviour = PathFinding.GeneratePathGoalBehaviour(game, hexStart, hexDestination);
 
-            var hero = game.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = game.CreateSmartEntity(hexStart, speed);
+            hero = game.AddBehaviour(hero, moveBehaviour);
 
             var ai = new UtilityAIComponent();
 
             Assert.Equal(hexStart, hero.HexCoords.Round());
 
-            var heroAfter1Tick = ai.Update(game, hero);
+            game.Update();
+            var heroAfter1Tick = Helpers.AssertIsSome<SmartEntity>(game.Entities.OfType<SmartEntity>().Find(entity => entity.Id == hero.Id));
 
             var atHex = heroAfter1Tick.HexCoords;
 
@@ -222,9 +229,10 @@ namespace MeanderingHeroes.Test
             // distance relative to hex centres, per tick (easily divisible by 3 for occular pat down)
             var speed = 0.1f;
 
-            var moveConsideration = PathFinding.GeneratePathGoalConsideration(game, hexStart, hexDestination);
+            var moveBehaviour = PathFinding.GeneratePathGoalBehaviour(game, hexStart, hexDestination);
 
-            var hero = game.CreateSmartEntity(hexStart, speed).AddConsideration(moveConsideration);
+            var hero = game.CreateSmartEntity(hexStart, speed);
+            hero = game.AddBehaviour(hero, moveBehaviour);
 
             var ai = new UtilityAIComponent();
 
@@ -235,7 +243,9 @@ namespace MeanderingHeroes.Test
 
             while (hero.HexCoords != hexDestination && attempt < attemptLimit)
             {
-                hero = ai.Update(game, hero);
+                game.Update();
+                hero = Helpers.AssertIsSome<SmartEntity>(game.Entities.OfType<SmartEntity>().Find(entity => entity.Id == hero.Id));
+
                 pointsAlongPath = pointsAlongPath.Append(game.ToGameXY(hero.HexCoords));
                 attempt++;
             }

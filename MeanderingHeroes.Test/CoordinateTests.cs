@@ -1,5 +1,4 @@
-﻿using MeanderingHeroes.Engine;
-using MeanderingHeroes.Engine.Types;
+﻿using MeanderingHeroes.Engine.Types;
 using System.Numerics;
 
 namespace MeanderingHeroes.Test

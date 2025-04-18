@@ -24,3 +24,23 @@ I'm trying to be realistic, and breaking it down to small (achievable?) steps in
 - [x] Make a basic Move test - give a Hero an a destination and see them move to that destination
 - [ ] Make a hunter-prey test - a hero will hunt a deer for food - the deer will try not to be food
 - [ ] Add hunger mechanics - test to see if Hero will try to find food (hunt or forage) to stay alive
+
+utility ai using terminology:
+
+- Evaluation
+    - Consideration (health, armor, distance) : float
+    - Curve
+- Aggregrator: two or more Evaluations
+
+Player set evaluations live on the player entity (agent?)
+    - destinations
+    - selected quests
+
+Advertised Evaluations
+    - resourcees
+    - other entitys' offerings
+
+PlayerEntity.Evaluations { get; }
+NearbyEntities.GetAdverts(PlayerEntity)
+
+UtiltyAI update:

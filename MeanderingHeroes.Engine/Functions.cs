@@ -1,6 +1,7 @@
 ﻿using LaYumba.Functional;
 using MeanderingHeroes.Engine.Components;
 using MeanderingHeroes.Engine.Types;
+using MeanderingHeroes.Engine.Types.AI;
 using System.Numerics;
 using Xunit;
 
@@ -12,13 +13,5 @@ namespace MeanderingHeroes.Engine
 
         public static IEnumerable<Hex> Neighbours(this Hex current)
             => Hex.Directions.Select(dir => current + dir);
-    }
-    public static partial class Core
-    {
-        public static SmartEntity AddConsideration(this SmartEntity entity, IConsideration consideration)
-            => entity with
-            {
-                Considerations = entity.Considerations.Add(consideration)
-            };
     }
 }

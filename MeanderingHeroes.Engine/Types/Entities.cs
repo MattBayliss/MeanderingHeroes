@@ -1,4 +1,5 @@
 ﻿using MeanderingHeroes.Engine.Components;
+using MeanderingHeroes.Engine.Types.AI;
 using Xunit;
 
 namespace MeanderingHeroes.Engine.Types
@@ -25,7 +26,7 @@ namespace MeanderingHeroes.Engine.Types
     public record SmartEntity : Advertiser
     {
         public float Speed { get; init; } = 0F;
-        public IImmutableList<IConsideration> Considerations { get; init; } = [];
+        public ImmutableList<Behaviour> Behaviours { get; init; } = [];
         //TODO: Add some default Offers to a SmartEntity
         internal SmartEntity(int id, FractionalHex hexCoords, float speed) : base(id, hexCoords, [])
         {
