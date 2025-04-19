@@ -1,7 +1,6 @@
 ﻿using LaYumba.Functional;
 using MeanderingHeroes.Engine.Components;
 using MeanderingHeroes.Engine.Types;
-using MeanderingHeroes.Engine.Types.AI;
 using System;
 using System.Collections.Generic;
 using System.Linq;

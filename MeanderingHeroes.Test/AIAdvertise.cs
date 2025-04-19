@@ -20,16 +20,14 @@ namespace MeanderingHeroes.Test
                 entities: []
             );
 
-            var hero = game.CreateSmartEntity((0f, 0f), 1f);
+            // very slow hero, in the same hex as a "treasure"
+            var hero = game.CreateSmartEntity((6.0f, 6.0f), 0.01f);
 
             var treasure = game.CreateAdvertiser(
-                hexCoords: (6f, 6f),
+                hexCoords: (6.1f, 6.4f),
                 offers:
                     [
-                        //new Offer(
-                        //    Types: AdvertFlag.Greed | AdvertFlag.Wealth,
-                        //    Consideration:
-                        //    )
+                        new Interaction(ConsideratonsLibrary.AcquireWealth, CurvesLibrary.Linear(0f,1f,1f))
                     ]
             );
 

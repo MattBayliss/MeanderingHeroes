@@ -17,6 +17,6 @@ namespace MeanderingHeroes.Engine.Types
         }
 
         public SmartEntity CreateSmartEntity(FractionalHex hexCoords, float speed) => new SmartEntity(_lastId++, hexCoords, speed);
-        public Advertiser CreateAdvertiser(FractionalHex hexCoords, IEnumerable<Offer> offers) => new Advertiser(_lastId++, hexCoords, offers);
+        public Advertiser CreateAdvertiser(FractionalHex hexCoords, IEnumerable<InteractionBase> offers) => new Advertiser(_lastId++, hexCoords, offers);
     }
 }

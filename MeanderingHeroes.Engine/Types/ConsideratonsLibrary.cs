@@ -1,10 +1,4 @@
-﻿using MeanderingHeroes.Engine.Types.AI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static LaYumba.Functional.F;
+﻿using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Types
 {

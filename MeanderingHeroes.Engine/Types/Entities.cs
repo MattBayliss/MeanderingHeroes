@@ -1,5 +1,4 @@
 ﻿using MeanderingHeroes.Engine.Components;
-using MeanderingHeroes.Engine.Types.AI;
 using Xunit;
 
 namespace MeanderingHeroes.Engine.Types
@@ -17,8 +16,8 @@ namespace MeanderingHeroes.Engine.Types
     }
     public record Advertiser : Entity
     {
-        public ImmutableList<Offer> Offers { get; init; }
-        internal Advertiser(int id, FractionalHex hexCoords, IEnumerable<Offer> offers) : base(id, hexCoords)
+        public ImmutableList<InteractionBase> Offers { get; init; }
+        internal Advertiser(int id, FractionalHex hexCoords, IEnumerable<InteractionBase> offers) : base(id, hexCoords)
         {
             Offers = offers.ToImmutableList();
         }

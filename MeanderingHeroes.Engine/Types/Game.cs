@@ -1,13 +1,5 @@
 ﻿using MeanderingHeroes.Engine.Components;
-using MeanderingHeroes.Engine.Types.AI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using LaYumba.Functional;
-using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Types
 {
@@ -41,7 +33,7 @@ namespace MeanderingHeroes.Engine.Types
         public SmartEntity CreateSmartEntity(FractionalHex hexCoords, float speed)
             => CreateEntityAndAppendToEntities(()
                 => _entityFactory.CreateSmartEntity(hexCoords, speed));
-        public Advertiser CreateAdvertiser(FractionalHex hexCoords, IEnumerable<Offer> offers)
+        public Advertiser CreateAdvertiser(FractionalHex hexCoords, IEnumerable<InteractionBase> offers)
             => CreateEntityAndAppendToEntities(()
                 => _entityFactory.CreateAdvertiser(hexCoords, offers));
 

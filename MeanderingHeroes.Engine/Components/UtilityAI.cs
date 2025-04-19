@@ -1,47 +1,8 @@
 ﻿using LaYumba.Functional;
 using MeanderingHeroes.Engine.Types;
-using MeanderingHeroes.Engine.Types.AI;
-using System.Linq;
 
 namespace MeanderingHeroes.Engine.Components
 {
-    public delegate Utility EvalAggregrator(Evaluation eval1, Evaluation eval2);
-    public delegate Utility EvalCurve(float consideration);
-    public record Evaluation(ConsiderationD consideration, EvalCurve curve);
-
-    public record Offer(ConsiderationD Consideration, EvalCurve Curve);
-    public delegate Utility UtilityDelegate(Game game, SmartEntity entity);
-    public delegate SmartEntity UpdateDelegate(Game game, SmartEntity entity);
-    // c11n shorthand for consideration
-    public delegate (T C11nState, SmartEntity Entity) StatefulUpdateDelegate<T>(Game game, T c11nState, SmartEntity entity);
-
-    public record ConsiderationRecord(UtilityDelegate CalculateUtility, UpdateDelegate Update);
-
-    public record StatefulBehaviour<T> : Behaviour
-    {
-        public T C11nState { get; init; }
-        protected Func<SmartEntity, bool> _toRemove { get; init; }
-        protected StatefulUpdateDelegate<T> _updateFunc { get; init; }
-        protected InteractionBase _interaction;
-
-        public StatefulBehaviour(string name, T c11nState, InteractionBase interaction, StatefulUpdateDelegate<T> updateFunc, Func<SmartEntity, bool> toRemove) 
-            : base(name, interaction)
-        {
-            C11nState = c11nState;
-            _updateFunc = updateFunc;
-            _toRemove = toRemove;
-            _interaction = interaction;
-        }
-        public Utility CalculateUtility(Game game, SmartEntity entity) => _interaction.CalculateUtility(game, entity);
-
-        public override SmartEntity Update(Game game, SmartEntity entity)
-        {
-            var (state2, entity2) = _updateFunc(game, C11nState, entity);
-            ToRemove = _toRemove(entity2);
-            return entity2 with { Behaviours = entity.Behaviours.Replace(this, this with { C11nState = state2 }) };
-        }
-    }
-
     public class UtilityAIComponent : IComponent
     {
         public GameState Update2(Game game, GameState state)
@@ -61,8 +22,7 @@ namespace MeanderingHeroes.Engine.Components
             var offers = game
                 .Entities
                 .OfType<Advertiser>()
-                .SelectMany(ad => ad.Offers)
-                .Select(off => off.Consideration);
+                .SelectMany(ad => ad.Offers);
 
 
 
