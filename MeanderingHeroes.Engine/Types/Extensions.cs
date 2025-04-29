@@ -1,5 +1,7 @@
-﻿using System;
+﻿using LaYumba.Functional;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -20,5 +22,10 @@ namespace MeanderingHeroes.Engine.Types
                 dict[key] = value;
             }
         }
+        public static ImmutableDictionary<TKey, ImmutableList<TItem>> AddOrUpdate<TKey, TItem>(this ImmutableDictionary<TKey, ImmutableList<TItem>> dict, TKey key, TItem value) where TKey : struct
+            => dict.Lookup(key).Match(
+                    None: () => dict.Add(key, [value]),
+                    Some: (existingValues) => dict.SetItem(key, existingValues.Add(value))
+                );
     }
 }

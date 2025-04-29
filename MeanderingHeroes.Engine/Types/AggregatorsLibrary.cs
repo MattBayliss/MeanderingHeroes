@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace MeanderingHeroes.Engine.Types
 {
-    public interface IComponent
+    public static class AggregatorsLibrary
     {
-        GameState Update(Game game, GameState state);
+        public static Aggregator Average = utilities => utilities.Average(u => (float)u);
     }
 }

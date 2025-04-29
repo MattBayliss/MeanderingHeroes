@@ -5,29 +5,29 @@ namespace MeanderingHeroes.Engine.Types
 {
     public abstract record Entity
     {
+        public Hex Hex { get; init; }
         public FractionalHex HexCoords { get; init; }
         public int Id { get; private init; }
-        internal Entity(int id, FractionalHex hexCoords)
+        public ImmutableList<Behaviour> Behaviours { get; init; }
+        internal Entity(int id, FractionalHex hexCoords) : this(id, hexCoords, []) { }
+        internal Entity(int id, FractionalHex hexCoords, IEnumerable<Behaviour> behaviours)
         {
             Id = id;
             HexCoords = hexCoords;
+            Hex = hexCoords.Round();
+            Behaviours = behaviours.ToImmutableList();
         }
         public override int GetHashCode() => Id;
     }
     public record Advertiser : Entity
     {
-        public ImmutableList<InteractionBase> Offers { get; init; }
-        internal Advertiser(int id, FractionalHex hexCoords, IEnumerable<InteractionBase> offers) : base(id, hexCoords)
-        {
-            Offers = offers.ToImmutableList();
-        }
+        internal Advertiser(int id, FractionalHex hexCoords, IEnumerable<Behaviour> behaviours) : base(id, hexCoords, behaviours) { }
     }
     public record SmartEntity : Advertiser
     {
         public float Speed { get; init; } = 0F;
-        public ImmutableList<Behaviour> Behaviours { get; init; } = [];
         //TODO: Add some default Offers to a SmartEntity
-        internal SmartEntity(int id, FractionalHex hexCoords, float speed) : base(id, hexCoords, [])
+        internal SmartEntity(int id, FractionalHex hexCoords, float speed, IEnumerable<Behaviour> behaviours) : base(id, hexCoords, behaviours)
         {
             Assert.True(speed >= 0);
 

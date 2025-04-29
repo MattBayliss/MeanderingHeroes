@@ -15,7 +15,7 @@ namespace MeanderingHeroes.Engine
     {
         private static float Sqrt2 = MathF.Sqrt(2);
 
-        public static StatefulBehaviour<ImmutableList<Hex>> GeneratePathGoalBehaviour(Game game, Hex start, Hex end)
+        public static StatefulBehaviour<ImmutableList<Hex>> GeneratePathGoalBehaviour(Game game, InteractionBase interaction, Hex end)
         {
             FractionalHex endHex = end;
 
@@ -71,11 +71,8 @@ namespace MeanderingHeroes.Engine
 
             return new StatefulBehaviour<ImmutableList<Hex>>(
                 name: "Path-Finding",
-                c11nState: game.HexMap.AStarPath(start, end).ToImmutableList(),
-                // hardcoded for now
-                interaction: new Interaction(
-                    consideration: (_, entity) => entity.HexCoords == endHex ? 0 : 0.3f,
-                    curve: c11n => (Utility)c11n),
+                initState: entity => PathFinding.AStarPath(game.HexMap, entity.Hex, end).ToImmutableList(),
+                interaction: interaction,
                 updateFunc: (game, path, entity) => moveAlongPath(path, entity),
                 toRemove: (entity) => entity.HexCoords == endHex
             );

@@ -1,11 +1,4 @@
-﻿using MeanderingHeroes.Engine.Components;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MeanderingHeroes.Engine.Types
+﻿namespace MeanderingHeroes.Engine.Types
 {
     internal class EntityFactory
     {
@@ -16,7 +9,9 @@ namespace MeanderingHeroes.Engine.Types
             _lastId = lastId;
         }
 
-        public SmartEntity CreateSmartEntity(FractionalHex hexCoords, float speed) => new SmartEntity(_lastId++, hexCoords, speed);
-        public Advertiser CreateAdvertiser(FractionalHex hexCoords, IEnumerable<InteractionBase> offers) => new Advertiser(_lastId++, hexCoords, offers);
+        public SmartEntity CreateSmartEntity(FractionalHex hexCoords, float speed) 
+            => new SmartEntity(_lastId++, hexCoords, speed, []);
+        public Advertiser CreateAdvertiser(FractionalHex hexCoords, IEnumerable<Behaviour> offers) 
+            => new Advertiser(_lastId++, hexCoords, offers);
     }
 }

@@ -1,51 +1,64 @@
 ﻿using LaYumba.Functional;
 using MeanderingHeroes.Engine.Types;
+using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Components
 {
     public class UtilityAIComponent : IComponent
     {
-        public GameState Update2(Game game, GameState state)
-        {
-            var updatedEntities = state.Entities.Select(entity => entity switch
-            {
-                SmartEntity smartEntity => Update(game, smartEntity).Match(() => smartEntity, updatedEntity => updatedEntity),
-                _ => entity
-            });
+        private Dictionary<Hex, IEnumerable<Behaviour>> _behavioursByHex;
+        private Dictionary<int, IEnumerable<Behaviour>> _bevavioursByEntityId;
 
-            // TODO: test to see if this creates a copy of gamestate if nothing has changed
-            return state with { Entities = updatedEntities.ToImmutableList() };
-        }
-        private Option<SmartEntity> Update(Game game, SmartEntity entity)
+        public UtilityAIComponent()
         {
-            // TODO: filter advertisers to only those nearby entity?
-            var offers = game
+            _behavioursByHex = new Dictionary<Hex, IEnumerable<Behaviour>>();
+            _bevavioursByEntityId = new Dictionary<int, IEnumerable<Behaviour>>();
+        }
+        public void AddBehaviour(Entity entity, Behaviour behaviour)
+        {
+            _bevavioursByEntityId
+                .Lookup(entity.Id)
+                .Match(
+                    None: () => _bevavioursByEntityId.Add(entity.Id, [behaviour]),
+                    Some: existingBehaviours => _bevavioursByEntityId[entity.Id] = existingBehaviours.Append(behaviour)
+                );
+        }
+        public void AddBehaviour(Hex hex, Behaviour behaviour)
+        {
+            _behavioursByHex
+                .Lookup(hex)
+                .Match(
+                    None: () => _behavioursByHex.Add(hex, [behaviour]),
+                    Some: existingBehaviours => _behavioursByHex[hex] = existingBehaviours.Append(behaviour)
+                );
+        }
+        public GameState Update(Game game, GameState state)
+        {
+            var updatedEntities = state
                 .Entities
-                .OfType<Advertiser>()
-                .SelectMany(ad => ad.Offers);
+                .Select(entity => entity switch
+                {
+                    SmartEntity agent => (Entity: entity, Updated: UpdateAgent(game, state.EntitiesInRange(agent), agent)),
+                    _ => (entity, None)
+                })
+                .Select(eu => eu.Updated.Match(None: () => eu.Entity, Some: (updated) => updated));
 
-
-
-            // you should take the top 3 and randomly choose from those - depending
-            // on the deviation of results
-
-            // BUT this early on, just return the highest result every time
-            var calculatedUtilities = entity.Behaviours
-                .Select(b =>
-                    (
-                        Utility: b.Interaction.CalculateUtility(game, entity),
-                        Behaviour: b
-                    )
-                ).OrderByDescending(cc => cc.Utility);
-
-            var winner = calculatedUtilities.Head();
-
-            return winner.Match(
-                None: () => entity,
-                Some: bhr => bhr.Behaviour.Update(game, entity)
-            ).Pipe(updated => updated with 
-                { Behaviours = updated.Behaviours.Where(i9n => !i9n.ToRemove).ToImmutableList() }
-            );
+            return new GameState(updatedEntities);
         }
+        private Option<SmartEntity> UpdateAgent(Game game, IEnumerable<Entity> targets, SmartEntity agent)
+            => targets
+                .SelectMany(t => t.Behaviours.Select(b => (Target: t, Behaviour: b, Utility: b.Interaction.CalculateUtility(game, agent, t))))
+                .OrderByDescending(tbu => tbu.Utility)
+                // you should take the top 3 and randomly choose from those - depending
+                // on the deviation of results
+                // BUT this early on, just return the highest result every time
+                .Head()
+                .Map(tbu => tbu.Behaviour.Update(game, agent));
+
+        private IEnumerable<Behaviour> BehavioursInRange(Hex ofHex, int hexRange = 1)
+            => ofHex.HexesInRange(hexRange)
+                .Bind(hex => _behavioursByHex.Lookup(hex))
+                .Flatten();
     }
+
 }

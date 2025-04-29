@@ -43,15 +43,16 @@ public partial class Game : Node2D
 
         var hexOffset = startingPos.ToDotNetVector2();
 
-        _gameEngine = new MeanderingHeroes.Engine.Types.Game(_hexData.ToGrid(), new Transforms(hexOffset, tileSize.X, tileSize.Y), []);
+        _gameEngine = new MeanderingHeroes.Engine.Types.Game(_hexData.ToGrid(), new Transforms(hexOffset, tileSize.X, tileSize.Y));
 
         _utilityAI = new UtilityAIComponent();
-        _heroEntity = new Entity(new FractionalHex(0f, 0f), HeroSpeed);
+        _heroEntity = _gameEngine.CreateSmartEntity(new FractionalHex(0f, 0f), HeroSpeed);
     }
 
     public void Update()
     {
-        var updatedEntity = _utilityAI.Update(_gameEngine, _heroEntity);
+        _gameEngine.Update();
+        var updatedEntity = _gameEngine.Entities
         _heroEntity = updatedEntity;
         _hero.Position = _gameEngine.ToGameXY(updatedEntity.HexCoords).ToGodotVector();
     }

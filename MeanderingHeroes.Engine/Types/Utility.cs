@@ -20,7 +20,7 @@ namespace MeanderingHeroes.Engine.Types
             }
             Value = value;
         }
-
+        public static Utility Clamp(float value) => new Utility(float.Min(1f, float.Max(0f, value)));
         public static implicit operator float(Utility utility) => utility.Value;
         public static implicit operator Utility(float value) => new Utility(value);
         public static implicit operator string(Utility utility) => utility.ToString();

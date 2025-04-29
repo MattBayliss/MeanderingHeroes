@@ -1,6 +1,7 @@
 ﻿using LaYumba.Functional;
 using System.Numerics;
 using Xunit;
+using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Types
 {
@@ -69,6 +70,16 @@ namespace MeanderingHeroes.Engine.Types
         public int Distance(Hex b)
         {
             return (this - b).Length();
+        }
+
+        public IEnumerable<Hex> HexesInRange(int n)
+        {
+            var centre = this;
+            return Range(-n, n)
+                .SelectMany(q => 
+                    Range(int.Max(-n, -q - n), int.Min(n, -q + n))
+                    .Select(r => new Hex(q, r))
+                ).Select(h => centre + h);
         }
 
         public static implicit operator Hex((int, int) tuple) => new Hex(tuple.Item1, tuple.Item2);
