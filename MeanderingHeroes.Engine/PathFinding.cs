@@ -1,13 +1,7 @@
 ﻿using LaYumba.Functional;
-using MeanderingHeroes.Engine.Components;
 using MeanderingHeroes.Engine.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine
 {
@@ -15,7 +9,7 @@ namespace MeanderingHeroes.Engine
     {
         private static float Sqrt2 = MathF.Sqrt(2);
 
-        public static StatefulBehaviour<ImmutableList<Hex>> GeneratePathGoalBehaviour(Game game, InteractionBase interaction, Hex end)
+        public static BehaviourDelegate GeneratePathGoalBehaviour(Game game, Hex start, Hex end)
         {
             FractionalHex endHex = end;
 
@@ -69,13 +63,15 @@ namespace MeanderingHeroes.Engine
 
             };
 
-            return new StatefulBehaviour<ImmutableList<Hex>>(
-                name: "Path-Finding",
-                initState: entity => PathFinding.AStarPath(game.HexMap, entity.Hex, end).ToImmutableList(),
-                interaction: interaction,
-                updateFunc: (game, path, entity) => moveAlongPath(path, entity),
-                toRemove: (entity) => entity.HexCoords == endHex
-            );
+            var path = game.HexMap.AStarPath(start, end).ToImmutableList();
+
+            return (entity, _) => 
+            {
+                var pathResult = moveAlongPath(path, entity);
+                path = pathResult.path;
+
+                return new BehaviourResult(None, (Entity)pathResult.entity);
+            };
         }
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp
         public static IEnumerable<Hex> AStarPath(this Grid grid, Hex start, Hex end)

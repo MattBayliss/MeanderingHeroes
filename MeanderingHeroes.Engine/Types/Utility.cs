@@ -14,13 +14,12 @@ namespace MeanderingHeroes.Engine.Types
         private float Value { get; init; } 
         private Utility(float value)
         {
-            if (value > 1f || value < 0f)
-            {
-                throw new ArgumentOutOfRangeException("value", value, "Utility value must be between 0.0f and 1.0f");
-            }
-            Value = value;
+            // if (value > 1f || value < 0f)
+            // {
+            //     throw new ArgumentOutOfRangeException("value", value, "Utility value must be between 0.0f and 1.0f");
+            // }
+            Value = Math.Clamp(value, 0f, 1f);
         }
-        public static Utility Clamp(float value) => new Utility(float.Min(1f, float.Max(0f, value)));
         public static implicit operator float(Utility utility) => utility.Value;
         public static implicit operator Utility(float value) => new Utility(value);
         public static implicit operator string(Utility utility) => utility.ToString();

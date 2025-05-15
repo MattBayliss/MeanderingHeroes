@@ -10,8 +10,6 @@
         }
 
         public SmartEntity CreateSmartEntity(FractionalHex hexCoords, float speed) 
-            => new SmartEntity(_lastId++, hexCoords, speed, []);
-        public Advertiser CreateAdvertiser(FractionalHex hexCoords, IEnumerable<Behaviour> offers) 
-            => new Advertiser(_lastId++, hexCoords, offers);
+            => new SmartEntity(_lastId++, hexCoords, speed);
     }
 }

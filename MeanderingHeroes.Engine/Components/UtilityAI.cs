@@ -4,61 +4,130 @@ using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Components
 {
-    public class UtilityAIComponent : IComponent
-    {
-        private Dictionary<Hex, IEnumerable<Behaviour>> _behavioursByHex;
-        private Dictionary<int, IEnumerable<Behaviour>> _bevavioursByEntityId;
 
-        public UtilityAIComponent()
+    public class UtilityAIComponent
+    {
+        private record BehaviourScore(Dse Dse, float Score);
+        private record DseAndScoreFunc(Dse Dse, Func<float> ScoreFunc);
+        private ConsiderationContext _considerationContext;
+        private Dictionary<int, BehaviourDelegate> _behaviourFuncs;
+        public UtilityAIComponent(ConsiderationContext context)
         {
-            _behavioursByHex = new Dictionary<Hex, IEnumerable<Behaviour>>();
-            _bevavioursByEntityId = new Dictionary<int, IEnumerable<Behaviour>>();
+            _considerationContext = context;
+            _behaviourFuncs = new Dictionary<int, BehaviourDelegate>();
         }
-        public void AddBehaviour(Entity entity, Behaviour behaviour)
-        {
-            _bevavioursByEntityId
-                .Lookup(entity.Id)
-                .Match(
-                    None: () => _bevavioursByEntityId.Add(entity.Id, [behaviour]),
-                    Some: existingBehaviours => _bevavioursByEntityId[entity.Id] = existingBehaviours.Append(behaviour)
-                );
-        }
-        public void AddBehaviour(Hex hex, Behaviour behaviour)
-        {
-            _behavioursByHex
-                .Lookup(hex)
-                .Match(
-                    None: () => _behavioursByHex.Add(hex, [behaviour]),
-                    Some: existingBehaviours => _behavioursByHex[hex] = existingBehaviours.Append(behaviour)
-                );
-        }
+
         public GameState Update(Game game, GameState state)
         {
-            var updatedEntities = state
+            (GameState State, IEnumerable<Entity> UpdatedEntities) initialState = (state, []);
+
+            var updated = state
                 .Entities
-                .Select(entity => entity switch
-                {
-                    SmartEntity agent => (Entity: entity, Updated: UpdateAgent(game, state.EntitiesInRange(agent), agent)),
-                    _ => (entity, None)
-                })
-                .Select(eu => eu.Updated.Match(None: () => eu.Entity, Some: (updated) => updated));
+                .Aggregate(
+                    seed: initialState,
+                    func: (runningState, entity) => {
+                        (var rs, var eee) = runningState;
+                        var update = entity switch
+                        {
+                            SmartEntity pawn => UpdateAgent(rs, pawn),
+                            _ => None
+                        };
+                        var updatedEntities = update
+                            .Bind(br => br.EntityChange)
+                            .Match(
+                                    None: () => eee,
+                                    Some: ue => eee.Append(ue)
+                                );
+                        var updatedState = update
+                            .Bind(br => br.StateChange)
+                            .Match(
+                                    None: () => rs,
+                                    Some: newState => newState
+                                );
 
-            return new GameState(updatedEntities);
+                        return (updatedState, updatedEntities);
+                    }
+                );
+
+            return updated.State.ModifyEntities(updated.UpdatedEntities);
         }
-        private Option<SmartEntity> UpdateAgent(Game game, IEnumerable<Entity> targets, SmartEntity agent)
-            => targets
-                .SelectMany(t => t.Behaviours.Select(b => (Target: t, Behaviour: b, Utility: b.Interaction.CalculateUtility(game, agent, t))))
-                .OrderByDescending(tbu => tbu.Utility)
-                // you should take the top 3 and randomly choose from those - depending
-                // on the deviation of results
-                // BUT this early on, just return the highest result every time
-                .Head()
-                .Map(tbu => tbu.Behaviour.Update(game, agent));
+        private Option<BehaviourResult> UpdateAgent(GameState state, SmartEntity agent)
+        {
+            Func<Decision, Utility> getConsideration = 
+                decision => _considerationContext.GetConsideration(decision)(agent);
 
-        private IEnumerable<Behaviour> BehavioursInRange(Hex ofHex, int hexRange = 1)
-            => ofHex.HexesInRange(hexRange)
-                .Bind(hex => _behavioursByHex.Lookup(hex))
-                .Flatten();
+            var behaviours = state.Behaviours
+                .Where(b => b.EntityId == agent.Id);
+
+            var dses = behaviours
+            .Select(b => b.DseId)
+            .Bind(state.DseById.Lookup);
+
+            var winningBehaviour = GetWinningBehaviour(getConsideration, dses);
+
+            var bFunc = winningBehaviour
+                .Bind(wb => behaviours.Where(b => b.DseId == wb.Dse.Id).Head())
+                .Map(b => b.Run);
+
+            return bFunc.Map(fn => fn(agent, state));
+        }
+
+        private static Option<BehaviourScore> GetWinningBehaviour(Func<Decision, Utility> getConsideration, IEnumerable<Dse> decisionEvaluators)
+        {
+            // scores have to be able to generate values over the threshold to be considered
+            float threshold = 0f;
+
+            // process highest weights first (so we can stop calculating once the threshold can no longer be met)
+            var dsesByWeight = decisionEvaluators.OrderByDescending(dse => dse.Weight).GroupBy(dse => dse.Weight);
+
+            // setting up the linq selects - nothing is being evaluated.. yet
+            IEnumerable<(float Weight, IEnumerable<DseAndScoreFunc> DseScoreFunc)> scoreFuncsByDseByWeight =
+                dsesByWeight.Select(g => (
+                    Weight: g.Key,
+                    ScoreFuncsByDse: g.Select(
+                        dse => new DseAndScoreFunc(
+                            Dse: dse,
+                            ScoreFunc: () => CalculateScore(
+                                    scores: dse.Decisions.Select(d =>
+                                        (
+                                            Input: getConsideration(d),
+                                            Curve: d.Curve.ToFunc()
+                                        )
+                                    ).Select(ic => ic.Curve(ic.Input) * dse.Weight) // TODO: add an inertia component here? dse.Inertia
+                                )
+                            )
+                        )
+                    )
+                );
+
+            // now the evalation begins
+            IEnumerable<BehaviourScore> scores = [];
+            foreach (var weightDseScoreFuncs in scoreFuncsByDseByWeight)
+            {
+                if (weightDseScoreFuncs.Weight < threshold)
+                {
+                    // if the DSE can't possibly meet the threshold, don't bother anymore
+                    break;
+                }
+
+                // this is where the calculations are run
+                var scoresBatch = weightDseScoreFuncs.DseScoreFunc
+                    .Select(dsf => new BehaviourScore(dsf.Dse, dsf.ScoreFunc()))
+                    .Where(bs => bs.Score > 0f)
+                    // we only care about the top 3 for each weight tier (for now?)
+                    .OrderByDescending(bs => bs.Score)
+                    .Take(3);
+
+                threshold = scoresBatch.Select(bs => bs.Score).Min();
+
+                scores = scores.Concat(scoresBatch);
+            }
+
+            return scores.OrderByDescending(ds => ds.Score).Head();
+        }
+
+        private static float CalculateScore(IEnumerable<float> scores)
+            => scores.Any(s => s == 0f) ? 0f : scores.Aggregate((total, next) => total *= next);
     }
 
 }

@@ -1,73 +1,102 @@
-﻿using MeanderingHeroes.Engine.Components;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LaYumba.Functional;
-using static LaYumba.Functional.F;
+﻿using LaYumba.Functional;
 
 namespace MeanderingHeroes.Engine.Types
 {
-    public abstract record Behaviour (string Name, InteractionBase Interaction)
+    public delegate Behaviour BehaviourTemplate(Game game, SmartEntity pawn);
+    public record Behaviour(Dse Dse, BehaviourDelegate BehaviourFunc);
+    public record BehaviourResult(Option<GameState> StateChange, Option<Entity> EntityChange);
+    public delegate BehaviourResult BehaviourDelegate(SmartEntity entity, GameState state);
+    // TODO: Idea was - when it returns None, the Behaviour has finished...
+    public delegate Option<SmartEntity> UpdateEntity(SmartEntity pawn);
+    public delegate GameState UpdateState(GameState state, Entity entity);
+    /// <summary>
+    /// Decision Score Evaluator
+    /// </summary>
+    public readonly record struct Dse
     {
-        public bool ToRemove { get; protected set; }
-        public abstract SmartEntity Update(Game game, SmartEntity agent);
-    }
-    public delegate Utility EvalCurve(float consideration);
+        public static int lastId = 0;
+        public int Id { get; init; }
+        public string Name { get; init; }
+        public string Description { get; init; }
+        public float Weight { get; init; } = 1f;
+        public ImmutableList<Decision> Decisions { get; init; }
 
-    public delegate Utility UtilityDelegate(Game game, SmartEntity agent);
-    // c11n shorthand for consideration
-    public delegate (T C11nState, SmartEntity Entity) StatefulUpdateDelegate<T>(Game game, T c11nState, SmartEntity agent);
-
-    public record StatefulBehaviour<T> : Behaviour
-    {
-        public Option<T> State { get; init; }
-        private Func<Entity, T> _initState { get; init; }
-        protected Func<SmartEntity, bool> _toRemove { get; init; }
-        protected StatefulUpdateDelegate<T> _updateFunc { get; init; }
-        protected InteractionBase _interaction;
-
-        public StatefulBehaviour(string name, Func<Entity, T> initState, InteractionBase interaction, StatefulUpdateDelegate<T> updateFunc, Func<SmartEntity, bool> toRemove)
-            : base(name, interaction)
+        public Dse(string name, string description, float weight, IEnumerable<Decision> decisions)
         {
-            State = None;
-            _initState = initState;
-            _updateFunc = updateFunc;
-            _toRemove = toRemove;
-            _interaction = interaction;
-        }
-        public Utility CalculateUtility(Game game, SmartEntity agent, Entity target) => _interaction.CalculateUtility(game, agent, target);
-
-        public override SmartEntity Update(Game game, SmartEntity agent)
-        {
-            var (state2, entity2) = _updateFunc(game, State.Match(() => _initState(agent), state => state), agent);
-            ToRemove = _toRemove(entity2);
-            return entity2 with { Behaviours = agent.Behaviours.Replace(this, this with { State = Some(state2) }) };
+            Id = lastId++;
+            Name = name;
+            Description = description;
+            Weight = weight;
+            Decisions = decisions.ToImmutableList();
         }
     }
 
-    public delegate Option<float> ConsiderationD(Game game, SmartEntity agent, Entity target);
+    public readonly record struct CurveParams(float M, float K, float B, float C);
 
-    public delegate SmartEntity UpdateEntity(Game game, SmartEntity entity);
-    public delegate Utility Curve(float consideration);
-    public delegate Utility Aggregator(params IEnumerable<Utility> Utilities);
-    public abstract record InteractionBase
-    {
-        public abstract Utility CalculateUtility(Game game, SmartEntity agent, Entity target);
+    public readonly record struct CurveDefinition(CurveType CurveType, CurveParams CurveParams) {
+        public CurveDefinition(CurveType curveType, float m, float k, float b, float c) : this(curveType, new CurveParams(m,k,b,c)) { }
     }
-    public record Interaction(ConsiderationD consideration, Curve curve) : InteractionBase
+    public record Decision(ConsiderationType ConsiderationType, CurveDefinition Curve);
+    public record DecisionOnHex : Decision
     {
-        public override Utility CalculateUtility(Game game, SmartEntity agent, Entity target)
+        public FractionalHex Target { get; init; }
+        public DecisionOnHex(ConsiderationType considerationType, CurveDefinition curve, FractionalHex targetHex) : base(considerationType, curve)
         {
-            return consideration(game, agent, target)
-                 .Map(cv => curve(cv))
-                 .Match(() => (Utility)0f, utility => utility);
+            Target = targetHex;
         }
     }
-    public record CombinedInteraction(IEnumerable<Interaction> Interactions, Aggregator AggregatorFunc) : InteractionBase
+    public record DecisionOnEntity : Decision
     {
-        public override Utility CalculateUtility(Game game, SmartEntity agent, Entity target) => AggregatorFunc(Interactions.Select(i => i.CalculateUtility(game, agent, target)));
+        public Entity Target { get; init; }
+        public DecisionOnEntity(ConsiderationType considerationType, CurveDefinition curve, Entity target) : base(considerationType, curve)
+        {
+            Target = target;
+        }
     }
+    public record Consideration;
+    public enum CurveType
+    {
+        Linear,
+        Quadratic,
+        Logistic,
+        Logit
+    }
+    public readonly record struct ResponseCurve(CurveType curveType, CurveParams curveParams);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="x"></param>
+    /// <returns></returns>
+    public delegate Utility CurveFunction(Utility x);
+    public delegate CurveFunction CurveFunctionBuilder(CurveParams curveParams);
 
+    public record Agent(int Id, ImmutableList<Dse> DSEs);
+
+    public static class CurveFunctions
+    {
+        public static CurveFunction ToFunc(this CurveDefinition cd) =>
+            cd switch
+            {
+                { CurveType: CurveType.Quadratic } => Quadratic(cd.CurveParams),
+                { CurveType: CurveType.Logistic } => Logistic(cd.CurveParams),
+                _ => _ => 0 // default unknown types to return 0 utility
+
+            };
+        /// <summary>
+        /// Define a quadratic or linear curve (linear curve is when k = 1)
+        /// x: the parameter being passed into the linear curve function</param>
+        /// m: slope
+        /// k: exponent
+        /// b: y-intercept (vertical shift)</param>
+        /// c: x-intercept (horizontal shift)</param>
+        /// </summary>
+        public static CurveFunctionBuilder Quadratic => cp => x => cp.M * MathF.Pow(x - cp.C, cp.K) + cp.B;
+        /// <summary>
+        /// m = slope of the line at inflection point
+        /// k = vertical size of the curve
+        /// b = y-intercept (vertical shift)
+        /// c = x-intercept of the inflection point (horizontal shift)
+        /// </summary>
+        public static CurveFunctionBuilder Logistic => cp => x => cp.B + cp.K / (1f + 1000f * cp.M * MathF.Exp(-x + cp.C));
+    }
 }
