@@ -4,7 +4,15 @@ namespace MeanderingHeroes.Engine.Types
 {
     public delegate Behaviour BehaviourTemplate(Game game, SmartEntity pawn);
     public record Behaviour(Dse Dse, BehaviourDelegate BehaviourFunc);
-    public record BehaviourResult(Option<GameState> StateChange, Option<Entity> EntityChange);
+    [Flags]
+    public enum DseStatus
+    {
+        Unknown = 0b000,
+        Running = 0b001,
+        Completed = 0b010,
+        Aborted = 0b110
+    }
+    public record BehaviourResult(Option<GameState> StateChange, Option<Entity> EntityChange, DseStatus Status);
     public delegate BehaviourResult BehaviourDelegate(SmartEntity entity, GameState state);
     // TODO: Idea was - when it returns None, the Behaviour has finished...
     public delegate Option<SmartEntity> UpdateEntity(SmartEntity pawn);

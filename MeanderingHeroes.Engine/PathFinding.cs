@@ -70,7 +70,9 @@ namespace MeanderingHeroes.Engine
                 var pathResult = moveAlongPath(path, entity);
                 path = pathResult.path;
 
-                return new BehaviourResult(None, (Entity)pathResult.entity);
+                var status = pathResult.entity.HexCoords == endHex ? DseStatus.Completed : DseStatus.Running;
+
+                return new BehaviourResult(None, (Entity)pathResult.entity, status);
             };
         }
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp

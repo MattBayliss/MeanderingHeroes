@@ -53,6 +53,16 @@ namespace MeanderingHeroes.Engine.Types
                 _hexEntities = this._entitiesById.Values.Select(e => (e.Hex, e.Id)).ToImmutableHashSet()
             };
         }
+        public GameState RemoveBehaviours(IEnumerable<int> DSEIds)
+        {
+            if(!DSEIds.Any()) { return this; }
+
+            return this with
+            {
+                DseById = this.DseById.RemoveRange(DSEIds),
+                Behaviours = this.Behaviours.ExceptBy(DSEIds, b => b.DseId).ToImmutableHashSet()
+            };
+        }
     }
 
 }

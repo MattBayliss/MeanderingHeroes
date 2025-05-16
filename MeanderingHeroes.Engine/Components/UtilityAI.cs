@@ -7,7 +7,7 @@ namespace MeanderingHeroes.Engine.Components
 
     public class UtilityAIComponent
     {
-        private record BehaviourScore(Dse Dse, float Score);
+        private record BehaviourScore(int DseId, float Score);
         private record DseAndScoreFunc(Dse Dse, Func<float> ScoreFunc);
         private ConsiderationContext _considerationContext;
         private Dictionary<int, BehaviourDelegate> _behaviourFuncs;
@@ -19,41 +19,41 @@ namespace MeanderingHeroes.Engine.Components
 
         public GameState Update(Game game, GameState state)
         {
-            (GameState State, IEnumerable<Entity> UpdatedEntities) initialState = (state, []);
+            (GameState State, IEnumerable<Entity> UpdatedEntities, IEnumerable<int> CompletedDSEs) initialState = (state, [], []);
 
             var updated = state
                 .Entities
                 .Aggregate(
                     seed: initialState,
                     func: (runningState, entity) => {
-                        (var rs, var eee) = runningState;
+                        (var rs, var eee, var done) = runningState;
                         var update = entity switch
                         {
                             SmartEntity pawn => UpdateAgent(rs, pawn),
                             _ => None
                         };
-                        var updatedEntities = update
-                            .Bind(br => br.EntityChange)
-                            .Match(
-                                    None: () => eee,
-                                    Some: ue => eee.Append(ue)
-                                );
-                        var updatedState = update
-                            .Bind(br => br.StateChange)
-                            .Match(
-                                    None: () => rs,
-                                    Some: newState => newState
-                                );
 
-                        return (updatedState, updatedEntities);
+                        return update.Match(
+                            None: () => runningState,
+                            Some: scoreResult => runningState with
+                            {
+                                State = scoreResult.Result.StateChange.GetOrElse(runningState.State),
+                                UpdatedEntities = runningState.UpdatedEntities.Concat(scoreResult.Result.EntityChange.AsEnumerable()),
+                                CompletedDSEs = scoreResult.Result.Status.HasFlag(DseStatus.Completed) 
+                                    ? runningState.CompletedDSEs.Append([scoreResult.Score.DseId]) 
+                                    : runningState.CompletedDSEs
+                            }
+                        );
                     }
                 );
 
-            return updated.State.ModifyEntities(updated.UpdatedEntities);
+            return updated.State
+                .ModifyEntities(updated.UpdatedEntities)
+                .RemoveBehaviours(updated.CompletedDSEs);
         }
-        private Option<BehaviourResult> UpdateAgent(GameState state, SmartEntity agent)
+        private Option<(BehaviourScore Score, BehaviourResult Result)> UpdateAgent(GameState state, SmartEntity agent)
         {
-            Func<Decision, Utility> getConsideration = 
+            Func<Decision, Utility> getConsideration =
                 decision => _considerationContext.GetConsideration(decision)(agent);
 
             var behaviours = state.Behaviours
@@ -65,11 +65,20 @@ namespace MeanderingHeroes.Engine.Components
 
             var winningBehaviour = GetWinningBehaviour(getConsideration, dses);
 
-            var bFunc = winningBehaviour
-                .Bind(wb => behaviours.Where(b => b.DseId == wb.Dse.Id).Head())
-                .Map(b => b.Run);
+            return winningBehaviour.Match(
+                None: () => None,
+                Some: score
+                    => score
+                        .Pipe(wb => behaviours.Where(b => b.DseId == wb.DseId).Head())
+                        .Map(b => b.Run)
+                        .Map(fn => fn(agent, state))
+                        .Match(
+                            None: () => None,
+                            Some: result => Some((Score: score, Result: result))
+                        )
+            );
 
-            return bFunc.Map(fn => fn(agent, state));
+
         }
 
         private static Option<BehaviourScore> GetWinningBehaviour(Func<Decision, Utility> getConsideration, IEnumerable<Dse> decisionEvaluators)
@@ -112,7 +121,7 @@ namespace MeanderingHeroes.Engine.Components
 
                 // this is where the calculations are run
                 var scoresBatch = weightDseScoreFuncs.DseScoreFunc
-                    .Select(dsf => new BehaviourScore(dsf.Dse, dsf.ScoreFunc()))
+                    .Select(dsf => new BehaviourScore(dsf.Dse.Id, dsf.ScoreFunc()))
                     .Where(bs => bs.Score > 0f)
                     // we only care about the top 3 for each weight tier (for now?)
                     .OrderByDescending(bs => bs.Score)
