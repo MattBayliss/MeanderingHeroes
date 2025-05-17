@@ -9,7 +9,7 @@
             _lastId = lastId;
         }
 
-        public SmartEntity CreateSmartEntity(FractionalHex hexCoords, float speed) 
-            => new SmartEntity(_lastId++, hexCoords, speed);
+        public Entity CreateEntity(FractionalHex hexCoords, float speed) 
+            => new Entity(_lastId++, hexCoords, speed);
     }
 }

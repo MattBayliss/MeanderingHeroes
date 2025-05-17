@@ -15,8 +15,7 @@ namespace MeanderingHeroes.Test
             );
 
             // very slow hero, in the same hex as a "treasure"
-            var hero = game.CreateSmartEntity((6.0f, 6.0f), 0.01f);
-
+            var hero = game.CreateEntity((6.0f, 6.0f), 0.01f);
 
         }
     }

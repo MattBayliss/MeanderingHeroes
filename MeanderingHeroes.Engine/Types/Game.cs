@@ -24,7 +24,7 @@ namespace MeanderingHeroes.Engine.Types
             _utilityAI = new UtilityAIComponent(_considerationContext);
         }
         public Option<Entity> this[int entityId] => _gameState[entityId];
-        private T CreateEntityAndAppendToEntities<T>(Func<T> entityCreator) where T : Entity
+        private Entity CreateEntityAndAppendToEntities(Func<Entity> entityCreator)
         {
             var newEntity = entityCreator();
 
@@ -33,11 +33,11 @@ namespace MeanderingHeroes.Engine.Types
 
             return newEntity;
         }
-        public SmartEntity CreateSmartEntity(FractionalHex hexCoords, float speed)
+        public Entity CreateEntity(FractionalHex hexCoords, float speed)
             => CreateEntityAndAppendToEntities(()
-                => _entityFactory.CreateSmartEntity(hexCoords, speed));
+                => _entityFactory.CreateEntity(hexCoords, speed));
 
-        public void AddBehaviour(SmartEntity pawn, BehaviourTemplate behaviour)
+        public void AddBehaviour(Entity pawn, BehaviourTemplate behaviour)
         {
             _gameState = _gameState.AddBehaviour(pawn, behaviour(this, pawn));
         }

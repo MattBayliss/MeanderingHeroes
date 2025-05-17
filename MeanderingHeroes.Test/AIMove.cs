@@ -49,14 +49,14 @@ namespace MeanderingHeroes.Test
 
             var moveBehaviour = BehavioursLibrary.PlayerSetDestination(hexDestination);
 
-            var hero = game.CreateSmartEntity(hexStart, speed);
+            var hero = game.CreateEntity(hexStart, speed);
             game.AddBehaviour(hero, moveBehaviour);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
             game.Update();
 
-            hero = Helpers.AssertIsSome<SmartEntity>(game.Entities.OfType<SmartEntity>().Find(entity => entity.Id == hero.Id));
+            hero = Helpers.AssertIsSome<Entity>(game.Entities.OfType<Entity>().Find(entity => entity.Id == hero.Id));
 
             var heroCartesian = game.HexCentreXY(hero.HexCoords);
 
@@ -88,7 +88,7 @@ namespace MeanderingHeroes.Test
 
             var moveBehaviour = BehavioursLibrary.PlayerSetDestination(hexDestination);
 
-            var hero = game.CreateSmartEntity(hexStart, speed);
+            var hero = game.CreateEntity(hexStart, speed);
             game.AddBehaviour(hero, moveBehaviour);
 
             Assert.Equal(hexStart, hero.HexCoords);
@@ -101,7 +101,7 @@ namespace MeanderingHeroes.Test
             while (hero.HexCoords != hexDestination && attempt < quitAfterTick)
             {
                 game.Update();
-                hero = Helpers.AssertIsSome<SmartEntity>(game.Entities.OfType<SmartEntity>().Find(entity => entity.Id == hero.Id));
+                hero = Helpers.AssertIsSome<Entity>(game.Entities.OfType<Entity>().Find(entity => entity.Id == hero.Id));
 
                 pathTaken = pathTaken.Append(game.HexCentreXY(hero.HexCoords));
                 attempt++;
@@ -184,13 +184,13 @@ namespace MeanderingHeroes.Test
 
             var moveBehaviour = BehavioursLibrary.PlayerSetDestination(hexDestination);
 
-            var hero = game.CreateSmartEntity(hexStart, speed);
+            var hero = game.CreateEntity(hexStart, speed);
             game.AddBehaviour(hero, moveBehaviour);
 
             Assert.Equal(hexStart, hero.HexCoords.Round());
 
             game.Update();
-            var heroAfter1Tick = Helpers.AssertIsSome<SmartEntity>(game.Entities.OfType<SmartEntity>().Find(entity => entity.Id == hero.Id));
+            var heroAfter1Tick = Helpers.AssertIsSome<Entity>(game.Entities.OfType<Entity>().Find(entity => entity.Id == hero.Id));
 
             var atHex = heroAfter1Tick.HexCoords;
 
@@ -228,7 +228,7 @@ namespace MeanderingHeroes.Test
 
             var moveBehaviour = BehavioursLibrary.PlayerSetDestination(hexDestination);
 
-            var hero = game.CreateSmartEntity(hexStart, speed);
+            var hero = game.CreateEntity(hexStart, speed);
             game.AddBehaviour(hero, moveBehaviour);
 
             int attemptLimit = 1000;
@@ -239,7 +239,7 @@ namespace MeanderingHeroes.Test
             while (hero.HexCoords != hexDestination && attempt < attemptLimit)
             {
                 game.Update();
-                hero = Helpers.AssertIsSome<SmartEntity>(game.Entities.OfType<SmartEntity>().Find(entity => entity.Id == hero.Id));
+                hero = Helpers.AssertIsSome<Entity>(game.Entities.OfType<Entity>().Find(entity => entity.Id == hero.Id));
 
                 pointsAlongPath = pointsAlongPath.Append(game.ToGameXY(hero.HexCoords));
                 attempt++;

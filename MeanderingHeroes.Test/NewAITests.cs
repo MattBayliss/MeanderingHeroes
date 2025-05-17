@@ -21,7 +21,7 @@ namespace MeanderingHeroes.Test
 
             var start = new Hex(1,1);
             var destination = new Hex(9, 9);
-            var player = game.CreateSmartEntity(start, 0.3f);
+            var player = game.CreateEntity(start, 0.3f);
             
             game.AddBehaviour(player, BehavioursLibrary.PlayerSetDestination(destination));
 

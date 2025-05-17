@@ -6,7 +6,7 @@
     {
         public GetConsideration GetConsideration(Decision forDecision) => forDecision switch
         {
-            { ConsiderationType: ConsiderationType.PawnSpeed } => entity => entity is SmartEntity pawn ? Math.Clamp(pawn.Speed, 0f, 1f) : 0f,
+            { ConsiderationType: ConsiderationType.PawnSpeed } => entity => entity is Entity pawn ? Math.Clamp(pawn.Speed, 0f, 1f) : 0f,
             { ConsiderationType: ConsiderationType.PawnAvarice } => PawnAvarice,
             DecisionOnHex { ConsiderationType: ConsiderationType.HexDistance, Target: var hex } => DistanceToHex(hex),
             DecisionOnEntity { ConsiderationType: ConsiderationType.TargetDistance, Target: var target } => DistanceToTarget(target),

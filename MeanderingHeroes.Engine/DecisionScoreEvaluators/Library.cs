@@ -10,7 +10,7 @@ namespace MeanderingHeroes.Engine.DecisionScoreEvaluators
 {
     public static class Library
     {
-        public static (Dse Behaviour, BehaviourDelegate BehaviourFunc) DestinationBehaviour(Game game, SmartEntity pawn, Hex destination)
+        public static (Dse Behaviour, BehaviourDelegate BehaviourFunc) DestinationBehaviour(Game game, Entity pawn, Hex destination)
         {
             var goToDestination = new DecisionOnHex(
                 ConsiderationType.TargetDistance,

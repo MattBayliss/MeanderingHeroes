@@ -2,7 +2,7 @@
 
 namespace MeanderingHeroes.Engine.Types
 {
-    public delegate Behaviour BehaviourTemplate(Game game, SmartEntity pawn);
+    public delegate Behaviour BehaviourTemplate(Game game, Entity pawn);
     public record Behaviour(Dse Dse, BehaviourDelegate BehaviourFunc);
     [Flags]
     public enum DseStatus
@@ -13,9 +13,9 @@ namespace MeanderingHeroes.Engine.Types
         Aborted = 0b110
     }
     public record BehaviourResult(Option<GameState> StateChange, Option<Entity> EntityChange, DseStatus Status);
-    public delegate BehaviourResult BehaviourDelegate(SmartEntity entity, GameState state);
+    public delegate BehaviourResult BehaviourDelegate(Entity entity, GameState state);
     // TODO: Idea was - when it returns None, the Behaviour has finished...
-    public delegate Option<SmartEntity> UpdateEntity(SmartEntity pawn);
+    public delegate Option<Entity> UpdateEntity(Entity pawn);
     public delegate GameState UpdateState(GameState state, Entity entity);
     /// <summary>
     /// Decision Score Evaluator

@@ -25,15 +25,7 @@ namespace MeanderingHeroes.Engine.Components
                 .Entities
                 .Aggregate(
                     seed: initialState,
-                    func: (runningState, entity) => {
-                        (var rs, var eee, var done) = runningState;
-                        var update = entity switch
-                        {
-                            SmartEntity pawn => UpdateAgent(rs, pawn),
-                            _ => None
-                        };
-
-                        return update.Match(
+                    func: (runningState, entity) => UpdateAgent(runningState.State, entity).Match(
                             None: () => runningState,
                             Some: scoreResult => runningState with
                             {
@@ -43,15 +35,14 @@ namespace MeanderingHeroes.Engine.Components
                                     ? runningState.CompletedDSEs.Append([scoreResult.Score.DseId]) 
                                     : runningState.CompletedDSEs
                             }
-                        );
-                    }
+                        )
                 );
 
             return updated.State
                 .ModifyEntities(updated.UpdatedEntities)
                 .RemoveBehaviours(updated.CompletedDSEs);
         }
-        private Option<(BehaviourScore Score, BehaviourResult Result)> UpdateAgent(GameState state, SmartEntity agent)
+        private Option<(BehaviourScore Score, BehaviourResult Result)> UpdateAgent(GameState state, Entity agent)
         {
             Func<Decision, Utility> getConsideration =
                 decision => _considerationContext.GetConsideration(decision)(agent);
