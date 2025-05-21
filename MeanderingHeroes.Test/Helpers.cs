@@ -5,7 +5,7 @@ using static LaYumba.Functional.F;
 namespace MeanderingHeroes.Test
 {
     internal static class Helpers
-    {
+    {   
         internal static Grid MakeGrass10x10MapGrid()
         {
             var terrain = Range(0, 9)

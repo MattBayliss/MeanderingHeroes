@@ -1,16 +1,19 @@
 ﻿using MeanderingHeroes.Engine.Types;
+using Microsoft.Extensions.Logging;
 using System.Numerics;
+using Xunit.Abstractions;
 
 namespace MeanderingHeroes.Test
 {
-    public class CoordinateTests
-    {
+    public class CoordinateTests(ITestOutputHelper output)
+{
         [Fact]
         public void HexWidthIs1()
         {
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
+                loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
                 entities: []
@@ -34,6 +37,7 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
+                loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
                 entities: []
@@ -55,14 +59,13 @@ namespace MeanderingHeroes.Test
         {
             var hexOriginOffsetInGame = Vector2.Zero;
 
-            var game = new Game(new Grid([]), new Transforms(hexOriginOffsetInGame,29f,33f), []);
+            var game = new Game(output.ToLoggerFactory(), new Grid([]), new Transforms(hexOriginOffsetInGame,29f,33f), []);
 
             // Zero hex should equate to zero
             Assert.Equal(hexOriginOffsetInGame, game.HexCentreXY(new FractionalHex(0, 0)));
             // Zero point should equate to Hex 0,0
             Assert.Equal(new FractionalHex(0, 0), game.HexQR(Vector2.Zero));
-
-            //                       q
+            
             Assert.Equal(new Vector2(29f, 0), game.HexCentreXY(new FractionalHex(1f, 0)));
 
             Assert.Equal(new Vector2(29f / 2f, 33f * 0.75f), game.HexCentreXY(new FractionalHex(0, 1f)));
@@ -72,7 +75,7 @@ namespace MeanderingHeroes.Test
         {
             var hexOriginOffsetInGame = new Vector2(14.5f, 16.5f);
 
-            var game = new Game(new Grid([]), new Transforms(hexOriginOffsetInGame, 29f, 33f), []);
+            var game = new Game(output.ToLoggerFactory(), new Grid([]), new Transforms(hexOriginOffsetInGame, 29f, 33f), []);
 
             // Zero hex should equate to offset
             Assert.Equal(hexOriginOffsetInGame, game.HexCentreXY(new FractionalHex(0, 0)));

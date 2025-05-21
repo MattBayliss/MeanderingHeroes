@@ -1,12 +1,11 @@
-﻿using MeanderingHeroes.Engine.Components;
-using MeanderingHeroes.Engine.Types;
+﻿using MeanderingHeroes.Engine.Types;
 using System.Numerics;
-using static LaYumba.Functional.F;
+using Xunit.Abstractions;
 using static MeanderingHeroes.Test.Helpers;
 
 namespace MeanderingHeroes.Test
 {
-    public class NewAITests
+    public class NewAITests(ITestOutputHelper output)
     {
         [Fact]
         public void PlayerSetDestinationTest()
@@ -14,6 +13,7 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
+                loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
                 entities: []
@@ -33,7 +33,6 @@ namespace MeanderingHeroes.Test
             FractionalHex destCoords = destination;
 
             Assert.True(destCoords.Distance(start) > destCoords.Distance(newCoords));
-
         }
     }
 }

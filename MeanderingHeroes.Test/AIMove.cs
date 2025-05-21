@@ -1,33 +1,25 @@
 using LaYumba.Functional;
 using MeanderingHeroes.Engine;
-using MeanderingHeroes.Engine.Components;
 using MeanderingHeroes.Engine.Types;
 using System.Numerics;
-
-using static MeanderingHeroes.Engine.Functions;
 using static LaYumba.Functional.F;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ClientProtocol;
 using Xunit.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace MeanderingHeroes.Test
 {
     /// <summary>
     /// Testing path-finding and Move related Considerations for the UtilityAI
     /// </summary>
-    public class AIMove
+    public class AIMove(ITestOutputHelper output)
     {
-        private readonly ITestOutputHelper Output;
-
-        public AIMove(ITestOutputHelper output)
-        {
-            this.Output = output;
-        }
         [Fact]
         public void OneTickTest()
         {
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
+                loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
                 entities: []
@@ -71,6 +63,7 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
+                loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
                 entities: []
@@ -164,6 +157,7 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
+                loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(offsetZero, 1f, 1f),
                 entities: []
@@ -214,6 +208,7 @@ namespace MeanderingHeroes.Test
             var offsetZero = Vector2.Zero;
 
             var game = new Game(
+                loggerFactory: output.ToLoggerFactory(),
                 hexMap: grid,
                 transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
                 entities: []
