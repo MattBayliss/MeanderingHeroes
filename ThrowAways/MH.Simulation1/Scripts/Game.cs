@@ -1,8 +1,10 @@
 using Godot;
+using LaYumba.Functional;
 using MeanderingHeroes.Engine;
 using MeanderingHeroes.Engine.Components;
 using MeanderingHeroes.Engine.Types;
 using MH.Simulation1.Types;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,18 +45,22 @@ public partial class Game : Node2D
 
         var hexOffset = startingPos.ToDotNetVector2();
 
-        _gameEngine = new MeanderingHeroes.Engine.Types.Game(_hexData.ToGrid(), new Transforms(hexOffset, tileSize.X, tileSize.Y));
+        
 
-        _utilityAI = new UtilityAIComponent();
-        _heroEntity = _gameEngine.CreateSmartEntity(new FractionalHex(0f, 0f), HeroSpeed);
+        _gameEngine = new MeanderingHeroes.Engine.Types.Game(GodotLogging.GodotLoggerFactory(), _hexData.ToGrid(), new Transforms(hexOffset, tileSize.X, tileSize.Y));
+        _heroEntity = _gameEngine.CreateEntity(new FractionalHex(0f, 0f), HeroSpeed);
     }
 
     public void Update()
     {
         _gameEngine.Update();
-        var updatedEntity = _gameEngine.Entities
-        _heroEntity = updatedEntity;
-        _hero.Position = _gameEngine.ToGameXY(updatedEntity.HexCoords).ToGodotVector();
+        var optionEntity = _gameEngine[_heroEntity.Id];
+        optionEntity.ForEach(updated =>
+        {
+            _heroEntity = updated;
+            _hero.Position = _gameEngine.ToGameXY(_heroEntity.HexCoords).ToGodotVector();
+        });
+        
     }
 
     public override void _Input(InputEvent @event)
@@ -90,15 +96,7 @@ public partial class Game : Node2D
             return;
         }
 
-
-        var moveConsideration = PathFinding.GeneratePathGoalConsideration(
-            _gameEngine,
-            _heroEntity.HexCoords.Round(),
-            _destination);
-
-        var updatedEntity = _heroEntity with { Considerations = [moveConsideration] };
-
-        _heroEntity = updatedEntity;
+        _gameEngine.AddBehaviour(_heroEntity, BehavioursLibrary.PlayerSetDestination(_destination));
     }
 
     private Dictionary<Hex, HexData> LoadMapData(TileMapLayer hexMap) =>
