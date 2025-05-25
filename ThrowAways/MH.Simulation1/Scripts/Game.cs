@@ -26,7 +26,8 @@ public partial class Game : Node2D
     private static Terrain _forest = new LandTerrain("forest", 3f);
     private static Terrain _hills = new LandTerrain("hills", 2f);
     private static Terrain _sea = new WaterTerrain("sea", 50f);
-    private Entity _heroEntity;
+    private int _heroId;
+    private int _runningDSEId = 0;
 
     public override void _Ready()
     {
@@ -48,17 +49,17 @@ public partial class Game : Node2D
         
 
         _gameEngine = new MeanderingHeroes.Engine.Types.Game(GodotLogging.GodotLoggerFactory(), _hexData.ToGrid(), new Transforms(hexOffset, tileSize.X, tileSize.Y));
-        _heroEntity = _gameEngine.CreateEntity(new FractionalHex(0f, 0f), HeroSpeed);
+        _heroId = _gameEngine.CreateEntity(new FractionalHex(0f, 0f), HeroSpeed);
     }
 
     public void Update()
     {
         _gameEngine.Update();
-        var optionEntity = _gameEngine[_heroEntity.Id];
+        var optionEntity = _gameEngine[_heroId];
         optionEntity.ForEach(updated =>
         {
-            _heroEntity = updated;
-            _hero.Position = _gameEngine.ToGameXY(_heroEntity.HexCoords).ToGodotVector();
+            _hero.Position = _gameEngine.ToGameXY(updated.HexCoords).ToGodotVector();
+            Print(_hero.Position.ToString());
         });
         
     }
@@ -89,14 +90,14 @@ public partial class Game : Node2D
             return;
         }
 
-        _destination = hex;
-
-        if (!_gameEngine.HexMap.InBounds(_heroEntity.HexCoords.Round())) {
-            Print($"hero out of bounds: {_heroEntity.HexCoords}");
-            return;
+        if(_runningDSEId > 0)
+        {
+            _gameEngine.RemoveBehaviour( _runningDSEId );
         }
 
-        _gameEngine.AddBehaviour(_heroEntity, BehavioursLibrary.PlayerSetDestination(_destination));
+        _destination = hex;
+
+        _runningDSEId = _gameEngine.AddBehaviour(_heroId, BehavioursLibrary.PlayerSetDestination(_destination));
     }
 
     private Dictionary<Hex, HexData> LoadMapData(TileMapLayer hexMap) =>

@@ -25,24 +25,24 @@ namespace MeanderingHeroes.Engine.Types
         {
             Behaviours = [];
             DseById = ImmutableDictionary.Create<int, Dse>();
-            _hexEntities = entities.Select(e => (e.Hex, e.Id)).ToImmutableHashSet();
+            _hexEntities = entities.Select(e => (e.HexCoords.Round(), e.Id)).ToImmutableHashSet();
             _entitiesById = entities.ToImmutableDictionary(e => e.Id, e => e);
         }
 
         public IEnumerable<Entity> EntitiesInRange(Entity ofEntity)
-            => ofEntity.Hex.Neighbours()
+            => ofEntity.HexCoords.Neighbours()
                 .SelectMany(hex => _hexEntities.Where(he => he.Hex == hex))
                 .Bind(he => _entitiesById.Lookup(he.EntityId));
 
         public GameState AddEntity(Entity entity) => this with
         {
             _entitiesById = _entitiesById.SetItem(entity.Id, entity),
-            _hexEntities = _entitiesById.Values.Select(e => (e.Hex, e.Id)).ToImmutableHashSet()
+            _hexEntities = _entitiesById.Values.Select(e => (e.HexCoords.Round(), e.Id)).ToImmutableHashSet()
         };
-        public GameState AddBehaviour(Entity entity, Behaviour behaviour)
+        public GameState AddBehaviour(int entityId, Behaviour behaviour)
         {
             return this with {
-                Behaviours = Behaviours.Add(new(entity.Id, behaviour.Dse.Id, behaviour.BehaviourFunc)),
+                Behaviours = Behaviours.Add(new(entityId, behaviour.Dse.Id, behaviour.BehaviourFunc)),
                 DseById = DseById.Add(behaviour.Dse.Id, behaviour.Dse)
             };
         }
@@ -50,7 +50,7 @@ namespace MeanderingHeroes.Engine.Types
         {
             return this with {
                 _entitiesById = this._entitiesById.SetItems(entities.Select(e => new KeyValuePair<int, Entity>(e.Id, e))),
-                _hexEntities = this._entitiesById.Values.Select(e => (e.Hex, e.Id)).ToImmutableHashSet()
+                _hexEntities = this._entitiesById.Values.Select(e => (e.HexCoords.Round(), e.Id)).ToImmutableHashSet()
             };
         }
         public GameState RemoveBehaviours(IEnumerable<int> DSEIds)

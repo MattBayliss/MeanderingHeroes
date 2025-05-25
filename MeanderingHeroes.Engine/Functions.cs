@@ -12,6 +12,8 @@ namespace MeanderingHeroes.Engine
 
         public static IEnumerable<Hex> Neighbours(this Hex current)
             => Hex.Directions.Select(dir => current + dir);
+        public static IEnumerable<Hex> Neighbours(this FractionalHex current) 
+            => current.Round().Pipe(hex => Hex.Directions.Select(dir => hex + dir));
 
         public static IEnumerable<TItem> AppendIfSome<TItem>(this IEnumerable<TItem> @this, Option<TItem> value) => @this.Concat(value.AsEnumerable());
     }

@@ -62,6 +62,8 @@ namespace MeanderingHeroes.Engine.Types
             S = s;
         }
 
+        public override string ToString() => $"({Q},{R})";
+
         public int Length()
         {
             return (Math.Abs(Q) + Math.Abs(R) + Math.Abs(S)) / 2;
@@ -130,6 +132,10 @@ namespace MeanderingHeroes.Engine.Types
             R = r;
             S = s;
             if (Math.Round(q + r + s) != 0) throw new ArgumentException("Q + R + S must be 0");
+        }
+        public override string ToString()
+        {
+            return $"({Q:0.00},{R:0.00})";
         }
         public float Distance(FractionalHex other) => Vector3.Distance((Vector3)this, (Vector3)other);
         public static implicit operator FractionalHex((float, float) floatTuple) => new FractionalHex(floatTuple.Item1, floatTuple.Item2);

@@ -12,12 +12,10 @@ namespace MeanderingHeroes.Engine.Components
         private record BehaviourScore(int DseId, float Score);
         private record DseAndScoreFunc(Dse Dse, Func<float> ScoreFunc);
         private ConsiderationContext _considerationContext;
-        private Dictionary<int, BehaviourDelegate> _behaviourFuncs;
         public UtilityAIComponent(ILogger<UtilityAIComponent> logger, ConsiderationContext context)
         {
             Logger = logger;
             _considerationContext = context;
-            _behaviourFuncs = new Dictionary<int, BehaviourDelegate>();
         }
 
         public GameState Update(Game game, GameState state)

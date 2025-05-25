@@ -41,8 +41,12 @@ namespace MeanderingHeroes.Test
 
             var moveBehaviour = BehavioursLibrary.PlayerSetDestination(hexDestination);
 
-            var hero = game.CreateEntity(hexStart, speed);
-            game.AddBehaviour(hero, moveBehaviour);
+            var heroId = game.CreateEntity(hexStart, speed);
+            game.AddBehaviour(heroId, moveBehaviour);
+
+            var heroOpt = game[heroId];
+
+            var hero = Helpers.AssertIsSome<Entity>(heroOpt);
 
             Assert.Equal(hexStart, hero.HexCoords);
 
@@ -69,21 +73,21 @@ namespace MeanderingHeroes.Test
                 entities: []
             );
 
-            Hex hexStart = (0, 0); // top left of map
-            Hex hexDestination = (3, 3); // 3 hexes to the SE
+            Hex hexStart = (1, 1); 
+            Hex firstDest = (3, 3); // 2 hexes to the SE
 
             // in cartesian
             var startAt = game.HexCentreXY(hexStart);
-            var endAt = game.HexCentreXY(hexDestination);
+            var endAt = game.HexCentreXY(firstDest);
 
             // distance relative to hex centres, per tick
             var speed = 0.3f;
 
-            var moveBehaviour = BehavioursLibrary.PlayerSetDestination(hexDestination);
+            var moveBehaviour = BehavioursLibrary.PlayerSetDestination(firstDest);
 
-            var hero = game.CreateEntity(hexStart, speed);
-            game.AddBehaviour(hero, moveBehaviour);
-
+            var heroId = game.CreateEntity(hexStart, speed);
+            game.AddBehaviour(heroId, moveBehaviour);
+            var hero = Helpers.AssertIsSome<Entity>(game[heroId]);
             Assert.Equal(hexStart, hero.HexCoords);
 
             IEnumerable<Vector2> pathTaken = [];
@@ -91,17 +95,17 @@ namespace MeanderingHeroes.Test
             int quitAfterTick = 1000;
             int attempt = 1;
             
-            while (hero.HexCoords != hexDestination && attempt < quitAfterTick)
+            while (hero.HexCoords != firstDest && attempt < quitAfterTick)
             {
                 game.Update();
-                hero = Helpers.AssertIsSome<Entity>(game.Entities.OfType<Entity>().Find(entity => entity.Id == hero.Id));
+                hero = Helpers.AssertIsSome<Entity>(game[heroId]);
 
                 pathTaken = pathTaken.Append(game.HexCentreXY(hero.HexCoords));
                 attempt++;
             }
 
             Assert.True(attempt < quitAfterTick);
-            Assert.Equal(hexDestination, hero.HexCoords);
+            Assert.Equal(firstDest, hero.HexCoords);
 
             var distancesToEnd = pathTaken
                 .Select(p => Vector2.Subtract(endAt, p).Length());
@@ -115,7 +119,44 @@ namespace MeanderingHeroes.Test
             // Assert there are no cases where the 2nd point is futher away than the first
             Assert.DoesNotContain(false, distanceToEndForCurrentAndNext.Select(tuple => tuple.First >= tuple.Second));
 
-            Assert.Empty(game.GetBehavioursForEntity(hero.Id));
+            Assert.Empty(game.GetBehavioursForEntity(heroId));
+
+            Hex nextDest = (6, 6);
+            endAt = game.HexCentreXY(nextDest);
+
+            var nextDestinationBehaviour = BehavioursLibrary.PlayerSetDestination(nextDest);
+
+            var nextDseId = game.AddBehaviour(heroId, nextDestinationBehaviour);
+
+            hero = Helpers.AssertIsSome<Entity>(game[heroId]);
+
+            // make sure position hasn't changed
+            Assert.Equal(firstDest, hero.HexCoords);
+
+            attempt = 1;
+
+           while (hero.HexCoords != nextDest && attempt < quitAfterTick)
+            {
+                game.Update();
+                hero = Helpers.AssertIsSome<Entity>(game[heroId]);
+
+                pathTaken = pathTaken.Append(game.HexCentreXY(hero.HexCoords));
+                attempt++;
+            }
+
+            output.WriteLine($"pathTaken: [{string.Join(",", pathTaken)}]");
+
+            distancesToEnd = pathTaken
+                .Select(p => Vector2.Subtract(endAt, p).Length());
+
+            // make a collection of tuples
+            //  First: the distance to the destination for the current Point
+            //  Second: the distance to the destination for the next Point
+            // In this way we can test that we're moving toward the destination
+            distanceToEndForCurrentAndNext = distancesToEnd.Zip(distancesToEnd.Skip(1));
+
+            // Assert there are no cases where the 2nd point is futher away than the first
+            Assert.DoesNotContain(false, distanceToEndForCurrentAndNext.Select(tuple => tuple.First >= tuple.Second));
         }
 
         [Fact]
@@ -178,9 +219,12 @@ namespace MeanderingHeroes.Test
 
             var moveBehaviour = BehavioursLibrary.PlayerSetDestination(hexDestination);
 
-            var hero = game.CreateEntity(hexStart, speed);
-            game.AddBehaviour(hero, moveBehaviour);
+            var heroId = game.CreateEntity(hexStart, speed);
+            game.AddBehaviour(heroId, moveBehaviour);
 
+            var heroOpt = game[heroId];
+
+            var hero = Helpers.AssertIsSome<Entity>(heroOpt);
             Assert.Equal(hexStart, hero.HexCoords.Round());
 
             game.Update();
@@ -223,18 +267,21 @@ namespace MeanderingHeroes.Test
 
             var moveBehaviour = BehavioursLibrary.PlayerSetDestination(hexDestination);
 
-            var hero = game.CreateEntity(hexStart, speed);
-            game.AddBehaviour(hero, moveBehaviour);
+            var heroId = game.CreateEntity(hexStart, speed);
+            game.AddBehaviour(heroId, moveBehaviour);
 
             int attemptLimit = 1000;
             int attempt = 1;
 
             IEnumerable<Vector2> pointsAlongPath = [];
 
+            var heroOpt = game[heroId];
+            var hero = Helpers.AssertIsSome<Entity>(heroOpt);
+
             while (hero.HexCoords != hexDestination && attempt < attemptLimit)
             {
                 game.Update();
-                hero = Helpers.AssertIsSome<Entity>(game.Entities.OfType<Entity>().Find(entity => entity.Id == hero.Id));
+                hero = Helpers.AssertIsSome<Entity>(game[heroId]);
 
                 pointsAlongPath = pointsAlongPath.Append(game.ToGameXY(hero.HexCoords));
                 attempt++;

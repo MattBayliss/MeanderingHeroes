@@ -7,7 +7,6 @@ namespace MeanderingHeroes.Engine.Types
 {
     public readonly record struct Entity
     {
-        public Hex Hex { get; init; }
         public FractionalHex HexCoords { get; init; }
         public int Id { get; private init; }
         public float Speed { get; init; } = 0F;
@@ -16,7 +15,6 @@ namespace MeanderingHeroes.Engine.Types
             Assert.True(speed >= 0);
             Id = id;
             HexCoords = hexCoords;
-            Hex = hexCoords.Round();
             Speed = speed;
         }
         public override int GetHashCode() => Id;

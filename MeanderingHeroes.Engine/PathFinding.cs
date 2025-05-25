@@ -1,5 +1,6 @@
 ﻿using LaYumba.Functional;
 using MeanderingHeroes.Engine.Types;
+using Microsoft.Extensions.Logging;
 using System.Numerics;
 using static LaYumba.Functional.F;
 
@@ -9,9 +10,11 @@ namespace MeanderingHeroes.Engine
     {
         private static float Sqrt2 = MathF.Sqrt(2);
 
-        public static BehaviourDelegate GeneratePathGoalBehaviour(Game game, Hex start, Hex end)
+        public static BehaviourDelegate GeneratePathGoalBehaviour(Game game, FractionalHex start, FractionalHex end)
         {
-            FractionalHex endHex = end;
+            var logger = game.LoggerFactory.CreateLogger("PathFinding");
+
+            logger.LogDebug($"GeneratePathGoalBehaviour: start: {start}, end: {end}");
 
             // function to use when we're in a hex in the path and we want to steer to the next one
             Func<FractionalHex, FractionalHex, FractionalHex> veeredDestination = (hex1, hex2) => (FractionalHex)Vector3.Divide(Vector3.Add((Vector3)hex1, (Vector3)hex2), 2);
@@ -63,16 +66,20 @@ namespace MeanderingHeroes.Engine
 
             };
 
-            var path = game.HexMap.AStarPath(start, end).ToImmutableList();
+            var path = game.HexMap.AStarPath(start.Round(), end.Round()).ToImmutableList();
+
+            logger.LogTrace($"PATH: [{string.Join(",", path.Select(h => $"({h.Q},{h.R})"))}]");
 
             return (entity, _) => 
             {
                 var pathResult = moveAlongPath(path, entity);
                 path = pathResult.path;
 
-                var status = pathResult.entity.HexCoords == endHex ? DseStatus.Completed : DseStatus.Running;
+                var status = pathResult.entity.HexCoords == end ? DseStatus.Completed : DseStatus.Running;
 
-                return new BehaviourResult(None, (Entity)pathResult.entity, status);
+                logger.LogTrace($"Entity {entity.Id} - {entity.HexCoords} => {pathResult.entity.HexCoords}");
+
+                return new BehaviourResult(None, pathResult.entity, status);
             };
         }
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp
