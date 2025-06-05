@@ -10,6 +10,8 @@ namespace MeanderingHeroes.Engine.Types
         public FractionalHex HexCoords { get; init; }
         public int Id { get; private init; }
         public float Speed { get; init; } = 0F;
+        public Utility Hunger { get; init; } = 0F;
+        public float FoodSupply { get; init; } = 0F;
         internal Entity(int id, FractionalHex hexCoords, float speed)
         {
             Assert.True(speed >= 0);

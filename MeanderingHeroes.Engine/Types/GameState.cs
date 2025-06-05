@@ -1,9 +1,4 @@
 ﻿using LaYumba.Functional;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MeanderingHeroes.Engine.Types
 {
@@ -16,7 +11,7 @@ namespace MeanderingHeroes.Engine.Types
         protected ImmutableHashSet<HexEntity> _hexEntities;
         public IEnumerable<Entity> Entities => _entitiesById.Values;
         public ImmutableDictionary<int, Dse> DseById { get; init; }
-        public ImmutableHashSet<(int EntityId, int DseId, BehaviourDelegate Run)> Behaviours { get; init; }
+        public ImmutableHashSet<EntityBehaviour> Behaviours { get; init; }
         protected ImmutableDictionary<int, Entity> _entitiesById;
         
         public Option<Entity> this[int index] => _entitiesById.Lookup(index);
@@ -42,7 +37,7 @@ namespace MeanderingHeroes.Engine.Types
         public GameState AddBehaviour(int entityId, Behaviour behaviour)
         {
             return this with {
-                Behaviours = Behaviours.Add(new(entityId, behaviour.Dse.Id, behaviour.BehaviourFunc)),
+                Behaviours = Behaviours.Add(new(entityId, behaviour.Dse.Id, 0f, behaviour.BehaviourFunc)),
                 DseById = DseById.Add(behaviour.Dse.Id, behaviour.Dse)
             };
         }
@@ -64,5 +59,4 @@ namespace MeanderingHeroes.Engine.Types
             };
         }
     }
-
 }

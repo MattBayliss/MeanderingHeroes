@@ -16,11 +16,15 @@ namespace MeanderingHeroes.Engine.Types
         private UtilityAIComponent _utilityAI;
         private GameState _gameState;
         private ConsiderationContext _considerationContext;
+        public ForageFoodLayer FoodLayer;
+        private ImmutableList<Func<Entity, Behaviour>> _baseEntityBehaviourTemplates;
         public Game(ILoggerFactory? loggerFactory, Grid hexMap, Transforms transforms) : this(loggerFactory, hexMap, transforms, []) { }
         public Game(ILoggerFactory? loggerFactory, Grid hexMap, Transforms transforms, IEnumerable<Entity> entities)
         {
             LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             Logger = LoggerFactory.CreateLogger<Game>();
+
+            FoodLayer = new ForageFoodLayer([]);
 
             HexMap = hexMap;
             Transforms = transforms;
@@ -28,27 +32,37 @@ namespace MeanderingHeroes.Engine.Types
             _entityFactory = new EntityFactory(entities.Select(e => e.Id).Append(0).Max());
             _considerationContext = new ConsiderationContext();
             _utilityAI = new UtilityAIComponent(LoggerFactory.CreateLogger<UtilityAIComponent>(), _considerationContext);
+
+            _baseEntityBehaviourTemplates = [
+                BehavioursLibrary.MoveToForageFood()(this)
+            ];
         }
         public Option<Entity> this[int entityId] => _gameState[entityId];
+        public void SetFoodItems(IEnumerable<FoodItem> foodItems)
+        {
+            FoodLayer = FoodLayer with { FoodItems = foodItems.ToImmutableHashSet() };
+        }
         private int CreateEntityAndAppendToEntities(Func<Entity> entityCreator)
         {
             var newEntity = entityCreator();
 
-            // This will be potential bad when Entities get bigger, or there's lots to add in a row
-            _gameState = _gameState.AddEntity(newEntity);
+            _gameState = _baseEntityBehaviourTemplates.Aggregate(
+                seed: _gameState.AddEntity(newEntity),
+                func: (state, beFunc) => state.AddBehaviour(newEntity.Id, beFunc(newEntity)));
 
             return newEntity.Id;
         }
-        public int CreateEntity(FractionalHex hexCoords, float speed)
+        public int CreateEntity(FractionalHex hexCoords, float speed) => CreateEntity(hexCoords, speed, e => e);
+        public int CreateEntity(FractionalHex hexCoords, float speed, Func<Entity, Entity> initFunc)
             => CreateEntityAndAppendToEntities(()
-                => _entityFactory.CreateEntity(hexCoords, speed));
+                => _entityFactory.CreateEntity(hexCoords, speed).Pipe(initFunc));
 
         public int AddBehaviour(int entityId, BehaviourTemplate behaviourTemplate)
             => _gameState[entityId].Match(
                 None: () => 0,
                 Some: pawn =>
                 {
-                    var behaviour = behaviourTemplate(this, pawn);
+                    var behaviour = behaviourTemplate(this)(pawn);
                     _gameState = _gameState.AddBehaviour(entityId, behaviour);
                     return behaviour.Dse.Id;
                 });

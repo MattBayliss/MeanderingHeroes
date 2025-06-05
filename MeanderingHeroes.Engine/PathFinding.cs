@@ -79,7 +79,7 @@ namespace MeanderingHeroes.Engine
 
                 logger.LogTrace($"Entity {entity.Id} - {entity.HexCoords} => {pathResult.entity.HexCoords}");
 
-                return new BehaviourResult(None, pathResult.entity, status);
+                return new BehaviourResult(pathResult.entity, status);
             };
         }
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp

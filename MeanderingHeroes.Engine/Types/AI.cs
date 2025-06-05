@@ -2,7 +2,16 @@
 
 namespace MeanderingHeroes.Engine.Types
 {
-    public delegate Behaviour BehaviourTemplate(Game game, Entity pawn);
+    //TODO: all these Behaviour* records and delegate names are very confusing
+    //      Behaviour, BehaviourDelegate, BehaviourResult, BehaviourTemplate, BehaviourScore
+
+    /// <summary>
+    /// Game => Entity => (Dse, BehaviourDelegate)
+    /// </summary>
+    /// <param name="game"></param>
+    /// <param name="pawn"></param>
+    /// <returns></returns>
+    public delegate Func<Entity, Behaviour> BehaviourTemplate(Game game);
     public record Behaviour(Dse Dse, BehaviourDelegate BehaviourFunc);
     [Flags]
     public enum DseStatus
@@ -12,11 +21,16 @@ namespace MeanderingHeroes.Engine.Types
         Completed = 0b010,
         Aborted = 0b110
     }
-    public record BehaviourResult(Option<GameState> StateChange, Option<Entity> EntityChange, DseStatus Status);
+    /// <summary>
+    /// (Option<Entity> EntityChange, DseStatus Status)
+    /// </summary>
+    public record BehaviourResult(Option<Entity> EntityChange, DseStatus Status);
+    /// <summary>
+    /// (Entity, GameState) => (Option<Entity>, DseStatus)
+    /// </summary>
     public delegate BehaviourResult BehaviourDelegate(Entity entity, GameState state);
-    // TODO: Idea was - when it returns None, the Behaviour has finished...
-    public delegate Option<Entity> UpdateEntity(Entity pawn);
-    public delegate GameState UpdateState(GameState state, Entity entity);
+
+
     /// <summary>
     /// Decision Score Evaluator
     /// </summary>
@@ -27,6 +41,7 @@ namespace MeanderingHeroes.Engine.Types
         public string Name { get; init; }
         public string Description { get; init; }
         public float Weight { get; init; } = 1f;
+        public float Inertia { get; init; } = 0f;
         public ImmutableList<Decision> Decisions { get; init; }
 
         public Dse(string name, string description, float weight, IEnumerable<Decision> decisions)
@@ -38,6 +53,8 @@ namespace MeanderingHeroes.Engine.Types
             Decisions = decisions.ToImmutableList();
         }
     }
+
+    public record EntityBehaviour(int EntityId, int DseId, float Inertia, BehaviourDelegate Run);
 
     public readonly record struct CurveParams(float M, float K, float B, float C);
 

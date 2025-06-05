@@ -5,10 +5,14 @@ using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Components
 {
-
     public class UtilityAIComponent
     {
         private readonly ILogger Logger;
+        /// <summary>
+        /// (DseId, Score)
+        /// </summary>
+        /// <param name="DseId"></param>
+        /// <param name="Score"></param>
         private record BehaviourScore(int DseId, float Score);
         private record DseAndScoreFunc(Dse Dse, Func<float> ScoreFunc);
         private ConsiderationContext _considerationContext;
@@ -17,29 +21,27 @@ namespace MeanderingHeroes.Engine.Components
             Logger = logger;
             _considerationContext = context;
         }
-
         public GameState Update(Game game, GameState state)
         {
-            (GameState State, IEnumerable<Entity> UpdatedEntities, IEnumerable<int> CompletedDSEs) initialState = (state, [], []);
+            (IEnumerable<Entity> UpdatedEntities, IEnumerable<int> CompletedDSEs) initialState = ([], []);
 
             var updated = state
                 .Entities
                 .Aggregate(
                     seed: initialState,
-                    func: (runningState, entity) => UpdateAgent(runningState.State, entity).Match(
+                    func: (runningState, entity) => UpdateAgent(state, entity).Match(
                             None: () => runningState,
                             Some: scoreResult => runningState with
                             {
-                                State = scoreResult.Result.StateChange.GetOrElse(runningState.State),
                                 UpdatedEntities = runningState.UpdatedEntities.Concat(scoreResult.Result.EntityChange.AsEnumerable()),
-                                CompletedDSEs = scoreResult.Result.Status.HasFlag(DseStatus.Completed) 
-                                    ? runningState.CompletedDSEs.Append([scoreResult.Score.DseId]) 
+                                CompletedDSEs = scoreResult.Result.Status.HasFlag(DseStatus.Completed)
+                                    ? runningState.CompletedDSEs.Append([scoreResult.Score.DseId])
                                     : runningState.CompletedDSEs
                             }
                         )
                 );
 
-            return updated.State
+            return state
                 .ModifyEntities(updated.UpdatedEntities)
                 .RemoveBehaviours(updated.CompletedDSEs);
         }
@@ -51,14 +53,20 @@ namespace MeanderingHeroes.Engine.Components
             var behaviours = state.Behaviours
                 .Where(b => b.EntityId == agent.Id);
 
-            var dses = behaviours
-            .Select(b => b.DseId)
-            .Bind(state.DseById.Lookup);
+            Func<EntityBehaviour, Option<Dse>> lookupDseAndApplyInertia =
+                b => state.DseById
+                    .Lookup(b.DseId)
+                    .Match(
+                        None: () => None,
+                        Some: dse => Some(dse with { Inertia = b.Inertia }));
+
+            var dses = behaviours.Bind(lookupDseAndApplyInertia);
 
             var winningBehaviour = GetWinningBehaviour(getConsideration, dses);
 
             Logger.LogTrace($"Winning DSE: {winningBehaviour.ToString()}");
 
+            // TODO: Decrease all losing inertia's - assign new inertia
             return winningBehaviour.Match(
                 None: () => None,
                 Some: score
@@ -71,8 +79,6 @@ namespace MeanderingHeroes.Engine.Components
                             Some: result => Some((Score: score, Result: result))
                         )
             );
-
-
         }
 
         private static Option<BehaviourScore> GetWinningBehaviour(Func<Decision, Utility> getConsideration, IEnumerable<Dse> decisionEvaluators)
@@ -96,7 +102,7 @@ namespace MeanderingHeroes.Engine.Components
                                             Input: getConsideration(d),
                                             Curve: d.Curve.ToFunc()
                                         )
-                                    ).Select(ic => ic.Curve(ic.Input) * dse.Weight) // TODO: add an inertia component here? dse.Inertia
+                                    ).Select(ic => dse.Inertia + ic.Curve(ic.Input) * dse.Weight)
                                 )
                             )
                         )
@@ -121,7 +127,7 @@ namespace MeanderingHeroes.Engine.Components
                     .OrderByDescending(bs => bs.Score)
                     .Take(3);
 
-                threshold = scoresBatch.Select(bs => bs.Score).Min();
+                threshold = scoresBatch.Any() ? scoresBatch.Select(bs => bs.Score).Min() : threshold;
 
                 scores = scores.Concat(scoresBatch);
             }
@@ -132,5 +138,4 @@ namespace MeanderingHeroes.Engine.Components
         private static float CalculateScore(IEnumerable<float> scores)
             => scores.Any(s => s == 0f) ? 0f : scores.Aggregate((total, next) => total *= next);
     }
-
 }

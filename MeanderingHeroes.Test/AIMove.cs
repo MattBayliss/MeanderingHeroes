@@ -86,6 +86,9 @@ namespace MeanderingHeroes.Test
             var moveBehaviour = BehavioursLibrary.PlayerSetDestination(firstDest);
 
             var heroId = game.CreateEntity(hexStart, speed);
+
+            var baseDseIds = game.GetBehavioursForEntity(heroId).Select(dse => dse.Id).ToList();
+
             game.AddBehaviour(heroId, moveBehaviour);
             var hero = Helpers.AssertIsSome<Entity>(game[heroId]);
             Assert.Equal(hexStart, hero.HexCoords);
@@ -119,7 +122,9 @@ namespace MeanderingHeroes.Test
             // Assert there are no cases where the 2nd point is futher away than the first
             Assert.DoesNotContain(false, distanceToEndForCurrentAndNext.Select(tuple => tuple.First >= tuple.Second));
 
-            Assert.Empty(game.GetBehavioursForEntity(heroId));
+            var dseIdsAfter = game.GetBehavioursForEntity(heroId).Select(dse => dse.Id).ToList();
+
+            Assert.Equal(baseDseIds, dseIdsAfter);
 
             Hex nextDest = (6, 6);
             endAt = game.HexCentreXY(nextDest);
@@ -173,6 +178,7 @@ namespace MeanderingHeroes.Test
                 _ _ _ _ _ _ _ _ _ _
                 _ _ _ _ _ _ _ _ _ _
                 """;
+            
             var grid = Helpers.GenerateMapFromAsciiMess(smallMountainRangeAscii);
 
             Hex start = (7, 0);
