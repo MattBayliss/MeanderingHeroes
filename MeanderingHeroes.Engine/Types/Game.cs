@@ -15,22 +15,23 @@ namespace MeanderingHeroes.Engine.Types
         private EntityFactory _entityFactory;
         private UtilityAIComponent _utilityAI;
         private GameState _gameState;
+        public GameState GameState => _gameState;
         private ConsiderationContext _considerationContext;
-        public ForageFoodLayer FoodLayer;
         private ImmutableList<Func<Entity, Behaviour>> _baseEntityBehaviourTemplates;
+        public Blackboard Blackboard { get; init; }
         public Game(ILoggerFactory? loggerFactory, Grid hexMap, Transforms transforms) : this(loggerFactory, hexMap, transforms, []) { }
         public Game(ILoggerFactory? loggerFactory, Grid hexMap, Transforms transforms, IEnumerable<Entity> entities)
         {
             LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             Logger = LoggerFactory.CreateLogger<Game>();
 
-            FoodLayer = new ForageFoodLayer([]);
+            Blackboard = new Blackboard();
 
             HexMap = hexMap;
             Transforms = transforms;
             _gameState = new GameState(entities);
             _entityFactory = new EntityFactory(entities.Select(e => e.Id).Append(0).Max());
-            _considerationContext = new ConsiderationContext();
+            _considerationContext = new ConsiderationContext(this);
             _utilityAI = new UtilityAIComponent(LoggerFactory.CreateLogger<UtilityAIComponent>(), _considerationContext);
 
             _baseEntityBehaviourTemplates = [
@@ -40,7 +41,7 @@ namespace MeanderingHeroes.Engine.Types
         public Option<Entity> this[int entityId] => _gameState[entityId];
         public void SetFoodItems(IEnumerable<FoodItem> foodItems)
         {
-            FoodLayer = FoodLayer with { FoodItems = foodItems.ToImmutableHashSet() };
+            _gameState = _gameState with { FoodItems = foodItems.ToImmutableHashSet() };
         }
         private int CreateEntityAndAppendToEntities(Func<Entity> entityCreator)
         {

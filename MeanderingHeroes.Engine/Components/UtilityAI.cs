@@ -23,6 +23,8 @@ namespace MeanderingHeroes.Engine.Components
         }
         public GameState Update(Game game, GameState state)
         {
+            _considerationContext.SetStateSnapshot();
+
             (IEnumerable<Entity> UpdatedEntities, IEnumerable<int> CompletedDSEs) initialState = ([], []);
 
             var updated = state
@@ -45,7 +47,7 @@ namespace MeanderingHeroes.Engine.Components
                 .ModifyEntities(updated.UpdatedEntities)
                 .RemoveBehaviours(updated.CompletedDSEs);
         }
-        private Option<(BehaviourScore Score, BehaviourResult Result)> UpdateAgent(GameState state, Entity agent)
+        private Option<(BehaviourScore Score, AiResult Result)> UpdateAgent(GameState state, Entity agent)
         {
             Func<Decision, Utility> getConsideration =
                 decision => _considerationContext.GetConsideration(decision)(agent);

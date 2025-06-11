@@ -13,7 +13,8 @@ namespace MeanderingHeroes.Engine.Types
         public ImmutableDictionary<int, Dse> DseById { get; init; }
         public ImmutableHashSet<EntityBehaviour> Behaviours { get; init; }
         protected ImmutableDictionary<int, Entity> _entitiesById;
-        
+        public ImmutableHashSet<FoodItem> FoodItems { get; init; } = [];
+
         public Option<Entity> this[int index] => _entitiesById.Lookup(index);
 
         public GameState(IEnumerable<Entity> entities)
@@ -37,7 +38,7 @@ namespace MeanderingHeroes.Engine.Types
         public GameState AddBehaviour(int entityId, Behaviour behaviour)
         {
             return this with {
-                Behaviours = Behaviours.Add(new(entityId, behaviour.Dse.Id, 0f, behaviour.BehaviourFunc)),
+                Behaviours = Behaviours.Add(new(entityId, behaviour.Dse.Id, 0f, behaviour.Command)),
                 DseById = DseById.Add(behaviour.Dse.Id, behaviour.Dse)
             };
         }

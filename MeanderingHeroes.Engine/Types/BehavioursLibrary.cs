@@ -12,8 +12,14 @@ namespace MeanderingHeroes.Engine.Types
         public static BehaviourTemplate MoveToForageFood()
             => game => pawn => new(
                 DseLibrary.MoveToForageFood(),
-                (entity, state) => new(None, DseStatus.Running)
-                
+                MoveToForageFoodUpdateFunc(game)
             );
+
+        private static Command MoveToForageFoodUpdateFunc(Game game) =>
+            (entity, state) => game.Blackboard.Get(BlackboardKeys.ForageFoodDistance(entity.HexCoords.Round()))
+                .Match(
+                    None: () => new AiResult(None, DseStatus.Aborted),
+                    Some: ff => PathFinding.GeneratePathGoalBehaviour(game, entity.HexCoords, ff.HexCoords)(entity, state)
+                );
     }
 }

@@ -10,7 +10,7 @@ namespace MeanderingHeroes.Engine
     {
         private static float Sqrt2 = MathF.Sqrt(2);
 
-        public static BehaviourDelegate GeneratePathGoalBehaviour(Game game, FractionalHex start, FractionalHex end)
+        public static Command GeneratePathGoalBehaviour(Game game, FractionalHex start, FractionalHex end)
         {
             var logger = game.LoggerFactory.CreateLogger("PathFinding");
 
@@ -79,7 +79,7 @@ namespace MeanderingHeroes.Engine
 
                 logger.LogTrace($"Entity {entity.Id} - {entity.HexCoords} => {pathResult.entity.HexCoords}");
 
-                return new BehaviourResult(pathResult.entity, status);
+                return new AiResult(pathResult.entity, status);
             };
         }
         // mostly copied line for line from https://www.redblobgames.com/pathfinding/a-star/implementation.html#csharp

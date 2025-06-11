@@ -2,17 +2,14 @@
 
 namespace MeanderingHeroes.Engine.Types
 {
-    //TODO: all these Behaviour* records and delegate names are very confusing
-    //      Behaviour, BehaviourDelegate, BehaviourResult, BehaviourTemplate, BehaviourScore
-
     /// <summary>
-    /// Game => Entity => (Dse, BehaviourDelegate)
+    /// Game => Entity => (Dse, Command)
     /// </summary>
     /// <param name="game"></param>
     /// <param name="pawn"></param>
     /// <returns></returns>
     public delegate Func<Entity, Behaviour> BehaviourTemplate(Game game);
-    public record Behaviour(Dse Dse, BehaviourDelegate BehaviourFunc);
+    public record Behaviour(Dse Dse, Command Command);
     [Flags]
     public enum DseStatus
     {
@@ -24,11 +21,11 @@ namespace MeanderingHeroes.Engine.Types
     /// <summary>
     /// (Option<Entity> EntityChange, DseStatus Status)
     /// </summary>
-    public record BehaviourResult(Option<Entity> EntityChange, DseStatus Status);
+    public record AiResult(Option<Entity> EntityChange, DseStatus Status);
     /// <summary>
     /// (Entity, GameState) => (Option<Entity>, DseStatus)
     /// </summary>
-    public delegate BehaviourResult BehaviourDelegate(Entity entity, GameState state);
+    public delegate AiResult Command(Entity entity, GameState state);
 
 
     /// <summary>
@@ -54,7 +51,7 @@ namespace MeanderingHeroes.Engine.Types
         }
     }
 
-    public record EntityBehaviour(int EntityId, int DseId, float Inertia, BehaviourDelegate Run);
+    public record EntityBehaviour(int EntityId, int DseId, float Inertia, Command Run);
 
     public readonly record struct CurveParams(float M, float K, float B, float C);
 
