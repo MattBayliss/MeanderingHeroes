@@ -5,6 +5,7 @@ using System.Numerics;
 using static LaYumba.Functional.F;
 using Xunit.Abstractions;
 using Microsoft.Extensions.Logging;
+using MeanderingHeroes.Engine.Types.Behaviours;
 
 namespace MeanderingHeroes.Test
 {

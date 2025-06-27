@@ -1,6 +1,8 @@
 ﻿using LaYumba.Functional;
 using MeanderingHeroes.Engine.Types;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
+using System.Text;
 using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Components
@@ -12,9 +14,11 @@ namespace MeanderingHeroes.Engine.Components
         /// (DseId, Score)
         /// </summary>
         /// <param name="DseId"></param>
+        /// <param name="Name">Name for debugging purposes</param>
         /// <param name="Score"></param>
-        private record BehaviourScore(int DseId, float Score);
-        private record DseAndScoreFunc(Dse Dse, Func<float> ScoreFunc);
+        private record BehaviourScore(int DseId, string Name, float Score);
+        private record DecisionResult(string Description, float Score);
+        private record DseAndScoreFunc(Dse Dse, Func<DecisionResult> ScoreFunc);
         private ConsiderationContext _considerationContext;
         public UtilityAIComponent(ILogger<UtilityAIComponent> logger, ConsiderationContext context)
         {
@@ -64,6 +68,8 @@ namespace MeanderingHeroes.Engine.Components
 
             var dses = behaviours.Bind(lookupDseAndApplyInertia);
 
+            Logger.LogTrace("Entity:{0}: DSEs:[{1}]", agent.Id, string.Join(",", dses.Select(dse => $"{dse.Id}:{dse.Name}")));
+
             var winningBehaviour = GetWinningBehaviour(getConsideration, dses);
 
             Logger.LogTrace($"Winning DSE: {winningBehaviour.ToString()}");
@@ -83,7 +89,7 @@ namespace MeanderingHeroes.Engine.Components
             );
         }
 
-        private static Option<BehaviourScore> GetWinningBehaviour(Func<Decision, Utility> getConsideration, IEnumerable<Dse> decisionEvaluators)
+        private Option<BehaviourScore> GetWinningBehaviour(Func<Decision, Utility> getConsideration, IEnumerable<Dse> decisionEvaluators)
         {
             // scores have to be able to generate values over the threshold to be considered
             float threshold = 0f;
@@ -99,12 +105,26 @@ namespace MeanderingHeroes.Engine.Components
                         dse => new DseAndScoreFunc(
                             Dse: dse,
                             ScoreFunc: () => CalculateScore(
-                                    scores: dse.Decisions.Select(d =>
-                                        (
-                                            Input: getConsideration(d),
-                                            Curve: d.Curve.ToFunc()
+                                    scores: dse.Decisions.Select
+                                        (d =>
+                                        // TODO: remove extra properties for logging when we've got basic tests to pass
+                                            (
+                                                Decision: d,
+                                                Input: getConsideration(d),
+                                                Curve: d.Curve.ToFunc()
+                                            )
                                         )
-                                    ).Select(ic => dse.Inertia + ic.Curve(ic.Input) * dse.Weight)
+                                        .Select(dic =>
+                                            (
+                                                dic.Decision,
+                                                dic.Input,
+                                                CurveDescription: dic.Decision.Curve.Description,
+                                                Result: dic.Curve(dic.Input) // TODO: add inertia back in when basics are working
+                                            )
+                                        )
+                                        .Select(ddd => new DecisionResult(
+                                            $"{ddd.Decision.ConsiderationType}:{ddd.Input} => {ddd.CurveDescription} => {ddd.Result}",
+                                            (float)ddd.Result))
                                 )
                             )
                         )
@@ -115,18 +135,26 @@ namespace MeanderingHeroes.Engine.Components
             IEnumerable<BehaviourScore> scores = [];
             foreach (var weightDseScoreFuncs in scoreFuncsByDseByWeight)
             {
-                if (weightDseScoreFuncs.Weight < threshold)
-                {
-                    // if the DSE can't possibly meet the threshold, don't bother anymore
-                    break;
-                }
+                //if (weightDseScoreFuncs.Weight < threshold)
+                //{
+                //    // if the DSE can't possibly meet the threshold, don't bother anymore
+                //    break;
+                //}
 
                 // this is where the calculations are run
                 var scoresBatch = weightDseScoreFuncs.DseScoreFunc
-                    .Select(dsf => new BehaviourScore(dsf.Dse.Id, dsf.ScoreFunc()))
+                    .Select(dsf => (
+                            DseId: dsf.Dse.Id,
+                            Name: dsf.Dse.Name,
+                            Result: dsf.ScoreFunc()))
+                    .Select(inr => new BehaviourScore(
+                        DseId: inr.DseId,
+                        Name: $"{inr.Name}::{inr.Result.Description}",
+                        Score: inr.Result.Score))
                     .Where(bs => bs.Score > 0f)
-                    // we only care about the top 3 for each weight tier (for now?)
+                // we only care about the top 3 for each weight tier (for now?)
                     .OrderByDescending(bs => bs.Score)
+                    .Do(bs => Logger.LogTrace($"{bs.Score:F3}::{bs.Name}"))
                     .Take(3);
 
                 threshold = scoresBatch.Any() ? scoresBatch.Select(bs => bs.Score).Min() : threshold;
@@ -137,7 +165,14 @@ namespace MeanderingHeroes.Engine.Components
             return scores.OrderByDescending(ds => ds.Score).Head();
         }
 
-        private static float CalculateScore(IEnumerable<float> scores)
-            => scores.Any(s => s == 0f) ? 0f : scores.Aggregate((total, next) => total *= next);
+        private static DecisionResult CalculateScore(IEnumerable<DecisionResult> scores)
+            => scores.Aggregate<DecisionResult, (IEnumerable<string> desc, float totalScore)>(
+                seed: ([], 1f),
+                func: (acc, score) => acc with 
+                    {
+                        desc = acc.desc.Append($"[{score.Description}]"),
+                        totalScore = acc.totalScore *= score.Score, 
+                    })
+            .Pipe(agg => new DecisionResult(string.Join(",", agg.desc), agg.totalScore));
     }
 }

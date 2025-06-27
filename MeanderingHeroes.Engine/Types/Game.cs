@@ -2,6 +2,7 @@
 using LaYumba.Functional;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using MeanderingHeroes.Engine.Types.Behaviours;
 
 namespace MeanderingHeroes.Engine.Types
 {
@@ -35,7 +36,9 @@ namespace MeanderingHeroes.Engine.Types
             _utilityAI = new UtilityAIComponent(LoggerFactory.CreateLogger<UtilityAIComponent>(), _considerationContext);
 
             _baseEntityBehaviourTemplates = [
-                BehavioursLibrary.MoveToForageFood()(this)
+                BehavioursLibrary.MoveToForageFood(this),
+                BehavioursLibrary.EatFood(this),
+                BehavioursLibrary.GatherFood(this)
             ];
         }
         public Option<Entity> this[int entityId] => _gameState[entityId];
@@ -83,6 +86,7 @@ namespace MeanderingHeroes.Engine.Types
 
         public void Update()
         {
+            _considerationContext.SetStateSnapshot();
             // run each component, updating the state as we go
             _gameState = _utilityAI.Update(this, _gameState);
         }

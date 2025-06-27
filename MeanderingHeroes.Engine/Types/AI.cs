@@ -55,8 +55,11 @@ namespace MeanderingHeroes.Engine.Types
 
     public readonly record struct CurveParams(float M, float K, float B, float C);
 
-    public readonly record struct CurveDefinition(CurveType CurveType, CurveParams CurveParams) {
-        public CurveDefinition(CurveType curveType, float m, float k, float b, float c) : this(curveType, new CurveParams(m,k,b,c)) { }
+    public readonly record struct CurveDefinition(string Description, CurveType CurveType, CurveParams CurveParams) {
+        public CurveDefinition(CurveType curveType, float m, float k, float b, float c)
+        : this($"[{curveType.ToString()}, {m}, {k}, {b}, {c}]", curveType, new CurveParams(m, k, b, c)) { }
+        public CurveDefinition(string description, CurveType curveType, float m, float k, float b, float c) 
+        : this(description, curveType, new CurveParams(m, k, b, c)) { }
     }
     public record Decision(ConsiderationType ConsiderationType, CurveDefinition Curve);
     public record DecisionOnHex : Decision
@@ -78,10 +81,9 @@ namespace MeanderingHeroes.Engine.Types
     public record Consideration;
     public enum CurveType
     {
-        Linear,
         Quadratic,
         Logistic,
-        Logit
+        Step
     }
     public readonly record struct ResponseCurve(CurveType curveType, CurveParams curveParams);
     /// <summary>
@@ -101,7 +103,8 @@ namespace MeanderingHeroes.Engine.Types
             {
                 { CurveType: CurveType.Quadratic } => Quadratic(cd.CurveParams),
                 { CurveType: CurveType.Logistic } => Logistic(cd.CurveParams),
-                _ => _ => 0 // default unknown types to return 0 utility
+                { CurveType: CurveType.Step} => Step(cd.CurveParams),
+                _ => throw new ArgumentException($"Unexpected CurveType: {cd.CurveType.ToString()}")
 
             };
         /// <summary>
@@ -119,6 +122,13 @@ namespace MeanderingHeroes.Engine.Types
         /// b = y-intercept (vertical shift)
         /// c = x-intercept of the inflection point (horizontal shift)
         /// </summary>
-        public static CurveFunctionBuilder Logistic => cp => x => cp.B + cp.K / (1f + 1000f * cp.M * MathF.Exp(-x + cp.C));
+        public static CurveFunctionBuilder Logistic => cp => x => cp.B + cp.K / (1f + cp.M * MathF.Exp(-10f * (x - cp.C)));
+        /// <summary>
+        /// m = value when x is less than b
+        /// k = value when x is greater or equal to b
+        /// b = the inflection point
+        /// c = ignored
+        /// </summary>
+        public static CurveFunctionBuilder Step => cp => x => x < cp.B ? cp.M : cp.K;
     }
 }

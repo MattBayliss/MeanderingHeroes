@@ -11,7 +11,7 @@ namespace MeanderingHeroes.Engine.Types
 
     public class Blackboard
     {
-        private readonly Dictionary<string, object> _data = new();
+        private readonly Dictionary<string, object> _data = [];
 
         public void Set<T>(BlackboardKey<T> key, T value) where T : struct
         {
@@ -24,11 +24,8 @@ namespace MeanderingHeroes.Engine.Types
 
     public static class BlackboardKeys
     {
-        public static BlackboardKey<ForageFoodLocation> ForageFoodDistance(Hex hex) => new($"ClosestForageFood.{hex}");
+        public static BlackboardKey<FractionalHex> ClosestForageFood(Hex hex) => new($"ClosestForageFood.{hex}");
         public static readonly BlackboardKey<int> PlayerHealth = new("Player.Health");
         public static readonly BlackboardKey<Vector3> PlayerPosition = new("Player.Position");
     }
-
-    // move all forage food stuff to it's only data type?
-    public readonly record struct ForageFoodLocation(FractionalHex HexCoords, float Value);
 }

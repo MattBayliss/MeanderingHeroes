@@ -13,7 +13,7 @@
         public static implicit operator float(Utility utility) => utility.Value;
         public static implicit operator Utility(float value) => new Utility(value);
         public static implicit operator string(Utility utility) => utility.ToString();
-        public override string ToString() => Value.ToString();
+        public override string ToString() => $"{Value:F3}";
         public override int GetHashCode() => Value.GetHashCode();
     }
 }

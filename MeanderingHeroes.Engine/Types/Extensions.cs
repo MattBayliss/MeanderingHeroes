@@ -27,5 +27,17 @@ namespace MeanderingHeroes.Engine.Types
                     None: () => dict.Add(key, [value]),
                     Some: (existingValues) => dict.SetItem(key, existingValues.Add(value))
                 );
+        /// <summary>
+        /// Stateful and messy - added to allow debugging - should not be used in prod
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="this"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Do<T>(this IEnumerable<T> @this, Action<T> action)
+        {
+            @this.ForEach(action);
+            return @this;
+        }
     }
 }

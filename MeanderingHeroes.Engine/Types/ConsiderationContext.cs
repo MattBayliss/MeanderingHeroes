@@ -27,8 +27,7 @@ namespace MeanderingHeroes.Engine.Types
             { ConsiderationType: ConsiderationType.FoodSupply } => FoodSupply,
             { ConsiderationType: ConsiderationType.ForageFoodDistance } => ForageFoodDistance(),
             DecisionOnHex { ConsiderationType: ConsiderationType.HexDistance, Target: var hex } => DistanceToHex(hex),
-            DecisionOnEntity { ConsiderationType: ConsiderationType.TargetDistance, Target: var target } => DistanceToTarget(target),
-            _ => _ => 0f
+            _ => throw new ArgumentException($"Unexpected ConsiderationType: {forDecision.ConsiderationType.ToString()}")
         };
         public static GetConsideration FoodSupply => pawn => pawn.FoodSupply / 5f;
         public static GetConsideration PawnHunger => pawn => pawn.Hunger;
@@ -38,11 +37,12 @@ namespace MeanderingHeroes.Engine.Types
         public static GetConsideration DistanceToTarget(Entity target) => DistanceToHex(target.HexCoords);
 
         // TODO: make Considerations command classes to better encapsulate each Consideration context and blackboard data
-        public GetConsideration ForageFoodDistance() {
+        public GetConsideration ForageFoodDistance()
+        {
 
             var getClosestFoodItem = (Entity pawn) => _stateSnapshot
                 .FoodItems
-                .Select(fi => (FoodItem: fi, Distance: pawn.HexCoords.Distance(fi.HexCoords)))
+                .Select(fi => (FoodItem: fi, Distance: DistanceToHex(fi.HexCoords)(pawn)))
                 .OrderByDescending(fi => fi.Distance)
                 .Head();
 
@@ -50,28 +50,24 @@ namespace MeanderingHeroes.Engine.Types
             {
                 var hex = pawn.HexCoords.Round();
 
-                var bbKey = BlackboardKeys.ForageFoodDistance(hex);
+                var bbKey = BlackboardKeys.ClosestForageFood(hex);
 
                 // looks for a value for food distance already on the blackboard, otherwise calculates
                 // distance and returns a new record to add to the blackboard
-                (var cValue, var bbItem) = _game.Blackboard.Get(bbKey)
+                (var cDistance, var bbItem) = _game.Blackboard.Get(bbKey)
                     .Match(
                         None: () => getClosestFoodItem(pawn).Match(
-                            None: () => (0f, Some(new ForageFoodLocation(hex, 0f))),
-                            Some: fi => (fi.Distance, Some(new ForageFoodLocation(fi.FoodItem.HexCoords, fi.Distance)))
+                            None: () => ((Utility)1f, Some(new FractionalHex(-1000f,-1000f))),
+                            Some: fi => (DistanceToHex(fi.FoodItem.HexCoords)(pawn), Some(fi.FoodItem.HexCoords))
                             ),
-                        Some: bbValue => (bbValue.Value, None));
+                        Some: bbValue => (DistanceToHex(bbValue)(pawn), None));
 
                 // if there's an item to add to the Blackboard, do it
                 bbItem.ForEach(bb => _game.Blackboard.Set(bbKey, bb));
 
-                return cValue;
+                return cDistance;
             };
         }
-    }
-
-    public static partial class Extensions {
-        public static GetConsideration Multiply(this GetConsideration first, GetConsideration second) => entity => first(entity) * second(entity);
     }
 
     public enum ConsiderationType

@@ -1,4 +1,5 @@
 ﻿using MeanderingHeroes.Engine.Types;
+using MeanderingHeroes.Engine.Types.Behaviours;
 using System.Numerics;
 using Xunit.Abstractions;
 using static MeanderingHeroes.Test.Helpers;
