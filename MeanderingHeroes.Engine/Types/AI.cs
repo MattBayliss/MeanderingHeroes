@@ -1,4 +1,5 @@
 ﻿using LaYumba.Functional;
+using MeanderingHeroes.Engine;
 
 namespace MeanderingHeroes.Engine.Types
 {
@@ -83,7 +84,9 @@ namespace MeanderingHeroes.Engine.Types
     {
         Quadratic,
         Logistic,
-        Step
+        Step,
+        MatchValue,
+        NotValue
     }
     public readonly record struct ResponseCurve(CurveType curveType, CurveParams curveParams);
     /// <summary>
@@ -91,7 +94,7 @@ namespace MeanderingHeroes.Engine.Types
     /// </summary>
     /// <param name="x"></param>
     /// <returns></returns>
-    public delegate Utility CurveFunction(Utility x);
+    public delegate Utility CurveFunction(float x);
     public delegate CurveFunction CurveFunctionBuilder(CurveParams curveParams);
 
     public record Agent(int Id, ImmutableList<Dse> DSEs);
@@ -104,6 +107,7 @@ namespace MeanderingHeroes.Engine.Types
                 { CurveType: CurveType.Quadratic } => Quadratic(cd.CurveParams),
                 { CurveType: CurveType.Logistic } => Logistic(cd.CurveParams),
                 { CurveType: CurveType.Step} => Step(cd.CurveParams),
+                { CurveType: CurveType.MatchValue } => MatchValue(cd.CurveParams),
                 _ => throw new ArgumentException($"Unexpected CurveType: {cd.CurveType.ToString()}")
 
             };
@@ -116,6 +120,10 @@ namespace MeanderingHeroes.Engine.Types
         /// c: x-intercept (horizontal shift)</param>
         /// </summary>
         public static CurveFunctionBuilder Quadratic => cp => x => cp.M * MathF.Pow(x - cp.C, cp.K) + cp.B;
+
+
+        // = B + K/(1+ M * EXP(-10 * (X - C))))
+
         /// <summary>
         /// m = slope of the line at inflection point
         /// k = vertical size of the curve
@@ -130,5 +138,12 @@ namespace MeanderingHeroes.Engine.Types
         /// c = ignored
         /// </summary>
         public static CurveFunctionBuilder Step => cp => x => x < cp.B ? cp.M : cp.K;
+        /// <summary>
+        /// m = value when x == b
+        /// k = value when x != b
+        /// b = value to match
+        /// c = margin of error (if any)
+        /// </summary>
+        public static CurveFunctionBuilder MatchValue => cp => x => Functions.EqualsWithMargin(x, cp.B, cp.C) ? cp.M: cp.K;
     }
 }

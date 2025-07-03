@@ -38,7 +38,7 @@ namespace MeanderingHeroes.Test
         {
             List<CurveDefinition> curvesThatGoDown = [
                 CurveLibrary.NegativeLinear,
-                CurveLibrary.ReverseLogistic, 
+                CurveLibrary.ReverseLogistic,
                 CurveLibrary.LogisticTrailOff,
                 CurveLibrary.WithinInteractionRange
             ];
@@ -54,6 +54,13 @@ namespace MeanderingHeroes.Test
                     Assert.True(pair.Second <= pair.First);
                 }
             }
+        }
+        
+        [Fact]
+        public void SupplyLogisticIsZeroWhenSupplyIsZero()
+        {
+            var supplyLogistic = CurveLibrary.SupplyLogistic.ToFunc();
+            Assert.Equal((Utility)0f, supplyLogistic(0f));
         }
     }
 }

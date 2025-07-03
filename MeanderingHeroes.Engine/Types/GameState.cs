@@ -44,9 +44,10 @@ namespace MeanderingHeroes.Engine.Types
         }
         public GameState ModifyEntities(IEnumerable<Entity> entities)
         {
+            var newEntitiesById = this._entitiesById.SetItems(entities.Select(e => new KeyValuePair<int, Entity>(e.Id, e)));
             return this with {
-                _entitiesById = this._entitiesById.SetItems(entities.Select(e => new KeyValuePair<int, Entity>(e.Id, e))),
-                _hexEntities = this._entitiesById.Values.Select(e => (e.HexCoords.Round(), e.Id)).ToImmutableHashSet()
+                _entitiesById = newEntitiesById,
+                _hexEntities = newEntitiesById.Values.Select(e => (e.HexCoords.Round(), e.Id)).ToImmutableHashSet()
             };
         }
         public GameState RemoveBehaviours(IEnumerable<int> DSEIds)

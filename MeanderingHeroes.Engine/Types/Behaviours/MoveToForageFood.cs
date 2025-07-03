@@ -1,10 +1,4 @@
-﻿using LaYumba.Functional;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static LaYumba.Functional.F;
+﻿using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Types.Behaviours
 {
@@ -25,8 +19,8 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
                         new Decision(ConsiderationType.Hunger, CurveLibrary.BasicLinear),
                         new Decision(ConsiderationType.FoodSupply, CurveLibrary.ReverseLogistic),
 
-                        // TODO: Needs to be 0 when we're close enough so a "Forage" DSE can take over
-                        new Decision(ConsiderationType.ForageFoodDistance, new(CurveType.Step, 0f, 1f, 0.05f, 0f)),
+                        // TODO: Needs to be 0 when we're at food so that "Forage" DSE can take over
+                        new Decision(ConsiderationType.ForageFoodDistance, CurveLibrary.IsNotZero),
                         new Decision(ConsiderationType.ForageFoodDistance, CurveLibrary.LogisticTrailOff)
                     ]
                 );

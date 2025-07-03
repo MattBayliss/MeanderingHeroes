@@ -89,6 +89,7 @@ namespace MeanderingHeroes.Engine.Types
             _considerationContext.SetStateSnapshot();
             // run each component, updating the state as we go
             _gameState = _utilityAI.Update(this, _gameState);
+            _gameState = TheMarchOfTime.Update(_gameState);
         }
     }
 }

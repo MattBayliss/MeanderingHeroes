@@ -5,11 +5,16 @@
     /// </summary>
     public readonly record struct Utility
     {
-        private float Value { get; init; } 
+        public float Value { get; init; } 
         private Utility(float value)
         {
             Value = Math.Clamp(value, 0f, 1f);
         }
+        public static Utility operator +(Utility first, Utility second) => new Utility(first.Value + second.Value);
+        public static Utility operator -(Utility first, Utility second) => new Utility(first.Value - second.Value);
+        public static Utility operator *(Utility first, Utility second) => new Utility(first.Value * second.Value);
+        public static Utility operator /(Utility first, Utility second) => new Utility(first.Value / second.Value);
+
         public static implicit operator float(Utility utility) => utility.Value;
         public static implicit operator Utility(float value) => new Utility(value);
         public static implicit operator string(Utility utility) => utility.ToString();

@@ -10,6 +10,10 @@ namespace MeanderingHeroes.Engine.Types
         public FractionalHex HexCoords { get; init; }
         public int Id { get; private init; }
         public float Speed { get; init; } = 0F;
+        /// <summary>
+        /// General heartiness - decreases due to starvation, illness, poison. Death occurs at 0
+        /// </summary>
+        public Utility Constitution { get; init; } = 1F;
         public Utility Hunger { get; init; } = 0F;
         public float FoodSupply { get; init; } = 0F;
         internal Entity(int id, FractionalHex hexCoords, float speed)

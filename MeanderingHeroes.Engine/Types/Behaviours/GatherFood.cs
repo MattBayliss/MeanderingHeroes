@@ -23,8 +23,8 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
                 decisions: 
                     [
                         new Decision(ConsiderationType.FoodSupply, CurveLibrary.NegativeLinear),
-                        // Needs to be 1 when we're close enough (within 0.05) and 0 otherwise
-                        new Decision(ConsiderationType.ForageFoodDistance, CurveLibrary.WithinInteractionRange)
+                        // Needs to be 1 when we're there and 0 otherwise
+                        new Decision(ConsiderationType.ForageFoodDistance, CurveLibrary.IsZero)
                     ]
                 );
 
