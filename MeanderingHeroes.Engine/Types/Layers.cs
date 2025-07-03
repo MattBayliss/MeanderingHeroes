@@ -18,7 +18,7 @@ namespace MeanderingHeroes.Engine.Types
         Fruit,
         Tuber
     }
-    public record LayerItem
+    public readonly record struct LayerItem
     {
         private static int _lastId = 0;
         public int Id { get; init; }
@@ -35,9 +35,5 @@ namespace MeanderingHeroes.Engine.Types
             Quality = quality;
         }
     }
-    public record FoodItem(FractionalHex HexCoords, FoodType FoodType, float Quality) : LayerItem(HexCoords, LayerItemType.Food, (int)FoodType, Quality);
-
-    public record Layer<T>(ImmutableHashSet<T> LayerItems) where T:LayerItem;
-
-    public record ForageFoodLayer(ImmutableHashSet<FoodItem> FoodItems) : Layer<FoodItem>(FoodItems);
+    public record Layer<T>(ImmutableHashSet<T> LayerItems);
 }

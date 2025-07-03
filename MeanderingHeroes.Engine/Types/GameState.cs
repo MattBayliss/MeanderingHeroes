@@ -13,7 +13,7 @@ namespace MeanderingHeroes.Engine.Types
         public ImmutableDictionary<int, Dse> DseById { get; init; }
         public ImmutableHashSet<EntityBehaviour> Behaviours { get; init; }
         protected ImmutableDictionary<int, Entity> _entitiesById;
-        public ImmutableHashSet<FoodItem> FoodItems { get; init; } = [];
+        public ImmutableHashSet<LayerItem> FoodItems { get; init; } = [];
 
         public Option<Entity> this[int index] => _entitiesById.Lookup(index);
 

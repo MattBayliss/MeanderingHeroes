@@ -42,7 +42,7 @@ namespace MeanderingHeroes.Engine.Types
             ];
         }
         public Option<Entity> this[int entityId] => _gameState[entityId];
-        public void SetFoodItems(IEnumerable<FoodItem> foodItems)
+        public void SetFoodItems(IEnumerable<LayerItem> foodItems)
         {
             _gameState = _gameState with { FoodItems = foodItems.ToImmutableHashSet() };
         }

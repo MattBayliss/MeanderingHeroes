@@ -24,7 +24,7 @@ namespace MeanderingHeroes.Engine.Types
 
     public static class BlackboardKeys
     {
-        public static BlackboardKey<FractionalHex> ClosestForageFood(Hex hex) => new($"ClosestForageFood.{hex}");
+        public static BlackboardKey<LayerItem> ClosestForageFood(Hex hex) => new($"ClosestForageFood.{hex}");
         public static readonly BlackboardKey<int> PlayerHealth = new("Player.Health");
         public static readonly BlackboardKey<Vector3> PlayerPosition = new("Player.Position");
     }

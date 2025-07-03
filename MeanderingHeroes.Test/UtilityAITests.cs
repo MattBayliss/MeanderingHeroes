@@ -24,7 +24,7 @@ namespace MeanderingHeroes.Test
             var heroId = game.CreateEntity((3f, 3f), 0.1f, entity => entity with { Hunger = startingHunger, FoodSupply = foodSupply });
 
             FractionalHex foodCoords = (3, 3);
-            var foodItem = new FoodItem(foodCoords, FoodType.Berry, 1f);
+            var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
             game.SetFoodItems([foodItem]);
 
 
@@ -70,7 +70,7 @@ namespace MeanderingHeroes.Test
             game.AddBehaviour(heroId, BehavioursLibrary.PlayerSetDestination(destination));
 
             FractionalHex foodCoords = (3, 4);
-            var foodItem = new FoodItem(foodCoords, FoodType.Berry, 1f);
+            var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
             game.SetFoodItems([foodItem]);
 
             List<(FractionalHex Coords, Hex Hex, Utility Hunger)> stateSnapshots = [];
@@ -109,7 +109,7 @@ namespace MeanderingHeroes.Test
                 var heroId = game.CreateEntity((1.0f, 6.0f), 0.3f, entity => entity with { Hunger = startingHunger, FoodSupply = foodSupply });
 
                 FractionalHex foodCoords = (3, 4);
-                var foodItem = new FoodItem(foodCoords, FoodType.Berry, 1f);
+                var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
                 game.SetFoodItems([foodItem]);
 
                 List<(FractionalHex Coords, float FoodSupply, float Hunger)> stateSnapshots = [];

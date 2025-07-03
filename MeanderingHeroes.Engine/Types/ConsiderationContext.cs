@@ -57,10 +57,10 @@ namespace MeanderingHeroes.Engine.Types
                 (var cDistance, var bbItem) = _game.Blackboard.Get(bbKey)
                     .Match(
                         None: () => getClosestFoodItem(pawn).Match(
-                            None: () => ((Utility)1f, Some(new FractionalHex(-1000f,-1000f))),
-                            Some: fi => (DistanceToHex(fi.FoodItem.HexCoords)(pawn), Some(fi.FoodItem.HexCoords))
+                            None: () => ((Utility)1f, Some(new LayerItem((-1000f,-1000f), LayerItemType.Food, 0, 0))),
+                            Some: fi => (DistanceToHex(fi.FoodItem.HexCoords)(pawn), Some(fi.FoodItem))
                             ),
-                        Some: bbValue => (DistanceToHex(bbValue)(pawn), None));
+                        Some: bbFoodItem => (DistanceToHex(bbFoodItem.HexCoords)(pawn), None));
 
                 // if there's an item to add to the Blackboard, do it
                 bbItem.ForEach(bb => _game.Blackboard.Set(bbKey, bb));

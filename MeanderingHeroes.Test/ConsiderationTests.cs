@@ -25,7 +25,7 @@ namespace MeanderingHeroes.Test
             float foodSupply = 4f;
             Utility expectedFoodUtility = foodSupply / 5f;
 
-            var foodItem = new FoodItem((3f, 1f), FoodType.Berry, 1f);
+            var foodItem = new LayerItem((3f, 1f), LayerItemType.Food, (int)FoodType.Berry, 1f);
 
             game.SetFoodItems([foodItem]);
 

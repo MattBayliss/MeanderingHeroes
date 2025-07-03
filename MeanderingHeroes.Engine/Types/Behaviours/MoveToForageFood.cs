@@ -29,7 +29,7 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
             (entity, state) => game.Blackboard.Get(BlackboardKeys.ClosestForageFood(entity.HexCoords.Round()))
                 .Match(
                     None: () => new AiResult(None, DseStatus.Aborted),
-                    Some: foodCoords => PathFinding.GeneratePathGoalBehaviour(game, entity.HexCoords, foodCoords, _ => DseStatus.Running)(entity, state)
+                    Some: foodItem => PathFinding.GeneratePathGoalBehaviour(game, entity.HexCoords, foodItem.HexCoords, _ => DseStatus.Running)(entity, state)
                 );
     }
 }
