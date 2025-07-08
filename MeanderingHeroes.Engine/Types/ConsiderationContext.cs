@@ -41,7 +41,7 @@ namespace MeanderingHeroes.Engine.Types
         {
 
             var getClosestFoodItem = (Entity pawn) => _stateSnapshot
-                .FoodItems
+                .LayerItems
                 .Select(fi => (FoodItem: fi, Distance: DistanceToHex(fi.HexCoords)(pawn)))
                 .OrderByDescending(fi => fi.Distance)
                 .Head();

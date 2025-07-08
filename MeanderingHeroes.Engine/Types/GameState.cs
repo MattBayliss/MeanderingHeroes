@@ -13,7 +13,7 @@ namespace MeanderingHeroes.Engine.Types
         public ImmutableDictionary<int, Dse> DseById { get; init; }
         public ImmutableHashSet<EntityBehaviour> Behaviours { get; init; }
         protected ImmutableDictionary<int, Entity> _entitiesById;
-        public ImmutableHashSet<LayerItem> FoodItems { get; init; } = [];
+        public ImmutableList<LayerItem> LayerItems { get; init; } = [];
 
         public Option<Entity> this[int index] => _entitiesById.Lookup(index);
 
@@ -42,22 +42,33 @@ namespace MeanderingHeroes.Engine.Types
                 DseById = DseById.Add(behaviour.Dse.Id, behaviour.Dse)
             };
         }
-        public GameState ModifyEntities(IEnumerable<Entity> entities)
+        public GameState UpdateState(IEnumerable<StateChange> updates, IEnumerable<int> completedDSEIds)
         {
-            var newEntitiesById = this._entitiesById.SetItems(entities.Select(e => new KeyValuePair<int, Entity>(e.Id, e)));
-            return this with {
-                _entitiesById = newEntitiesById,
-                _hexEntities = newEntitiesById.Values.Select(e => (e.HexCoords.Round(), e.Id)).ToImmutableHashSet()
-            };
-        }
-        public GameState RemoveBehaviours(IEnumerable<int> DSEIds)
-        {
-            if(!DSEIds.Any()) { return this; }
+            (var updatedLayerItems,var updatedEntityDict) = updates.Aggregate(
+                seed: (LayerItems, EntitiesById: _entitiesById),
+                func: (acc, update) => update switch
+                {
+                    EntityChange ec => acc with { EntitiesById = acc.EntitiesById.SetItem(ec.UpdatedEntity.Id, ec.UpdatedEntity) },
+                    LayerItemChange lic => acc with { LayerItems = acc.LayerItems.Replace(lic.OldItem, lic.NewItem) },
+                    _ => acc
+                });
+
+            var dseById = this.DseById;
+            var behaviours = this.Behaviours;
+
+            if (completedDSEIds.Any())
+            {
+                dseById = dseById.RemoveRange(completedDSEIds);
+                behaviours = behaviours.ExceptBy(completedDSEIds, b => b.DseId).ToImmutableHashSet();
+            }
 
             return this with
             {
-                DseById = this.DseById.RemoveRange(DSEIds),
-                Behaviours = this.Behaviours.ExceptBy(DSEIds, b => b.DseId).ToImmutableHashSet()
+                LayerItems = updatedLayerItems,
+                _entitiesById = updatedEntityDict,
+                _hexEntities = updatedEntityDict.Values.Select(e => (e.HexCoords.Round(), e.Id)).ToImmutableHashSet(),
+                DseById = dseById,
+                Behaviours = behaviours
             };
         }
     }

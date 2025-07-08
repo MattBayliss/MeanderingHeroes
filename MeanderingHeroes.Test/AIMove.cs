@@ -87,7 +87,7 @@ namespace MeanderingHeroes.Test
             var moveBehaviour = BehavioursLibrary.PlayerSetDestination(firstDest);
 
             var heroId = game.CreateEntity(hexStart, speed);
-
+            
             var baseDseIds = game.GetBehavioursForEntity(heroId).Select(dse => dse.Id).ToList();
 
             game.AddBehaviour(heroId, moveBehaviour);

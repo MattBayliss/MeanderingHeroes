@@ -44,7 +44,7 @@ namespace MeanderingHeroes.Engine.Types
         public Option<Entity> this[int entityId] => _gameState[entityId];
         public void SetFoodItems(IEnumerable<LayerItem> foodItems)
         {
-            _gameState = _gameState with { FoodItems = foodItems.ToImmutableHashSet() };
+            _gameState = _gameState with { LayerItems = foodItems.ToImmutableList() };
         }
         private int CreateEntityAndAppendToEntities(Func<Entity> entityCreator)
         {
@@ -70,12 +70,6 @@ namespace MeanderingHeroes.Engine.Types
                     _gameState = _gameState.AddBehaviour(entityId, behaviour);
                     return behaviour.Dse.Id;
                 });
-        
-        public void RemoveBehaviour(int behaviourId)
-        {
-            _gameState = _gameState.RemoveBehaviours([behaviourId]);
-        }
-
         public List<Dse> GetBehavioursForEntity(int entityId)
             => _gameState
                 .Behaviours

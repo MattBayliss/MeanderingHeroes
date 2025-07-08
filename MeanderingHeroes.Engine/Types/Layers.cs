@@ -34,6 +34,7 @@ namespace MeanderingHeroes.Engine.Types
             SubType = subType;
             Quality = quality;
         }
+        public override int GetHashCode() => Id;
     }
     public record Layer<T>(ImmutableHashSet<T> LayerItems);
 }
