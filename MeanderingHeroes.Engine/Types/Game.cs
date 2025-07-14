@@ -41,7 +41,12 @@ namespace MeanderingHeroes.Engine.Types
                 BehavioursLibrary.GatherFood(this)
             ];
         }
+        public void UpdateState(IEnumerable<StateChange> updates, IEnumerable<int> completedDSEIds)
+        {
+            _gameState = _gameState.UpdateState(updates, completedDSEIds);
+        }
         public Option<Entity> this[int entityId] => _gameState[entityId];
+        public Option<LayerItem> GetLayerItem(int layerItemId) => _gameState.GetLayerItem(layerItemId);
         public void SetFoodItems(IEnumerable<LayerItem> foodItems)
         {
             _gameState = _gameState with { LayerItems = foodItems.ToImmutableList() };
@@ -84,6 +89,7 @@ namespace MeanderingHeroes.Engine.Types
             // run each component, updating the state as we go
             _gameState = _utilityAI.Update(this, _gameState);
             _gameState = TheMarchOfTime.Update(_gameState);
+            Blackboard.Clear();
         }
     }
 }

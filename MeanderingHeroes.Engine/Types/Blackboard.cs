@@ -20,6 +20,7 @@ namespace MeanderingHeroes.Engine.Types
 
         public Option<T> Get<T>(BlackboardKey<T> key) where T : struct 
             => _data.TryGetValue(key, out var value) && value is T typedValue ? Some(typedValue) : None;
+        public void Clear() => _data.Clear();
     }
 
     public static class BlackboardKeys

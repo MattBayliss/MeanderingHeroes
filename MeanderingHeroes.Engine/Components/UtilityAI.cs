@@ -44,6 +44,8 @@ namespace MeanderingHeroes.Engine.Components
                             }
                         )
                 );
+            
+            updated.StateChanges.ForEach(change => Logger.LogDebug(change.ToString()));
 
             return state.UpdateState(updated.StateChanges, updated.CompletedDSEs);
         }

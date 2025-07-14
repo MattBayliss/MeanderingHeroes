@@ -29,23 +29,28 @@ namespace MeanderingHeroes.Test
 
 
 
-            List<(float FoodSupply, Utility Hunger)> stateSnapshots = [];
+            List<(float FoodSupply, Utility Hunger, float FoodQuality)> stateSnapshots = [];
 
             for (int i = 0; i < 10; i++)
             {
                 game.Update();
                 var hero = Helpers.AssertIsSome<Entity>(game[heroId]);
-                stateSnapshots.Add((hero.FoodSupply, hero.Hunger));
+                var food = Helpers.AssertIsSome<LayerItem>(game.GetLayerItem(foodItem.Id));
+                stateSnapshots.Add((hero.FoodSupply, hero.Hunger, food.Quality));
             }
 
             Assert.DoesNotContain(stateSnapshots, ss => ss.FoodSupply < 0);
             Assert.Contains(stateSnapshots, ss => ss.FoodSupply > 0);
             Assert.Contains(stateSnapshots, ss => ss.Hunger < startingHunger);
+            Assert.DoesNotContain(stateSnapshots, ss => ss.FoodQuality > foodItem.Quality);
 
             var statePairs = stateSnapshots.Zip(stateSnapshots.Skip(1));
 
             // there should be an instance where the food supply goes up via gathering
             Assert.Contains(statePairs, tuple => tuple.Second.FoodSupply > tuple.First.FoodSupply);
+
+            // there should be an instance where food quality goes down because of eating
+            Assert.Contains(statePairs, tuple => tuple.Second.FoodQuality < tuple.First.FoodQuality);
 
             // there should be an instance where hunger goes down and food supply goes down
             Assert.Contains(statePairs, tuple => tuple.Second.FoodSupply < tuple.First.FoodSupply && tuple.Second.Hunger < tuple.First.Hunger);
@@ -73,6 +78,9 @@ namespace MeanderingHeroes.Test
             var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
             game.SetFoodItems([foodItem]);
 
+            var stateLayerItem = Assert.Single(game.GameState.LayerItems);
+            Assert.Equal(foodItem, stateLayerItem);
+
             List<(FractionalHex Coords, Hex Hex, Utility Hunger)> stateSnapshots = [];
 
             int attempts = 0;
@@ -91,6 +99,53 @@ namespace MeanderingHeroes.Test
             Assert.True(stateSnapshots.Any());
             Assert.Contains(stateSnapshots, s => s.Hex == foodCoords.Round());
             Assert.Contains(stateSnapshots, s => s.Hunger < startingHunger);
+        }
+        [Fact]
+        public void LayerStateChange()
+        {
+            var game = new Game(
+                loggerFactory: output.ToLoggerFactory(),
+                hexMap: Helpers.MakeGrass10x10MapGrid(),
+                transforms: new Transforms(Vector2.Zero, 1f, 2f / MathF.Sqrt(3)),
+                entities: []
+            );
+            var layerItem = new LayerItem((1.2f, 3.4f), LayerItemType.Food, (int)FoodType.Berry, 4f);
+            var different = layerItem with { Quality = 3f };
+
+            Assert.NotEqual(layerItem, different);
+            Assert.Equal(layerItem.HexCoords, different.HexCoords);
+            Assert.Equal(layerItem.ItemType, different.ItemType);
+            Assert.Equal(layerItem.SubType, different.SubType);
+
+            game.SetFoodItems([layerItem]);
+
+            Assert.Single(game.GameState.LayerItems);
+            Assert.Equal(layerItem, game.GameState.LayerItems[0]);
+
+            var layerItemFromGame = Helpers.AssertIsSome<LayerItem>(game.GetLayerItem(layerItem.Id));
+            Assert.Equal(layerItem, layerItemFromGame);
+
+            var layerItemChange = new LayerItemChange(layerItem, different);
+            game.UpdateState([layerItemChange], []);
+            layerItemFromGame = Helpers.AssertIsSome<LayerItem>(game.GetLayerItem(layerItem.Id));
+
+            Assert.Equal(different, layerItemFromGame);
+
+            var nextChange = new LayerItemChange(layerItemFromGame, layerItemFromGame with { Quality = layerItemFromGame.Quality - 0.1f });
+
+            game.UpdateState([nextChange], []);
+
+            var lastLayerItemFromGame = Helpers.AssertIsSome<LayerItem>(game.GetLayerItem(layerItem.Id));
+
+            // make sure these objects are immutable and haven't changed
+            Assert.Equal(different, layerItemFromGame);
+
+            Assert.NotEqual(layerItemFromGame, lastLayerItemFromGame);
+
+            Assert.Equal(layerItemFromGame.Quality - 0.1f, lastLayerItemFromGame.Quality);
+
+
+
         }
         [Fact]
         public void MovesToFoodWhenHungerGetsHigh()
@@ -146,8 +201,9 @@ namespace MeanderingHeroes.Test
                 attempts = 0;
 
                 // try 1000 more updates - should see some gathering and eating?
-                for(int i = 0; i < 1000; i++) { 
-                
+                for (int i = 0; i < 1000; i++)
+                {
+
                     game.Update();
 
                     var hero = Helpers.AssertIsSome<Entity>(game[heroId]);

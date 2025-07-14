@@ -14,7 +14,6 @@ namespace MeanderingHeroes.Engine.Types
         public ImmutableHashSet<EntityBehaviour> Behaviours { get; init; }
         protected ImmutableDictionary<int, Entity> _entitiesById;
         public ImmutableList<LayerItem> LayerItems { get; init; } = [];
-
         public Option<Entity> this[int index] => _entitiesById.Lookup(index);
 
         public GameState(IEnumerable<Entity> entities)
@@ -30,6 +29,7 @@ namespace MeanderingHeroes.Engine.Types
                 .SelectMany(hex => _hexEntities.Where(he => he.Hex == hex))
                 .Bind(he => _entitiesById.Lookup(he.EntityId));
 
+        public Option<LayerItem> GetLayerItem(int layerId) => LayerItems.Find(li => li.Id == layerId);
         public GameState AddEntity(Entity entity) => this with
         {
             _entitiesById = _entitiesById.SetItem(entity.Id, entity),
@@ -37,14 +37,15 @@ namespace MeanderingHeroes.Engine.Types
         };
         public GameState AddBehaviour(int entityId, Behaviour behaviour)
         {
-            return this with {
+            return this with
+            {
                 Behaviours = Behaviours.Add(new(entityId, behaviour.Dse.Id, 0f, behaviour.Command)),
                 DseById = DseById.Add(behaviour.Dse.Id, behaviour.Dse)
             };
         }
         public GameState UpdateState(IEnumerable<StateChange> updates, IEnumerable<int> completedDSEIds)
         {
-            (var updatedLayerItems,var updatedEntityDict) = updates.Aggregate(
+            (var updatedLayerItems, var updatedEntityDict) = updates.Aggregate(
                 seed: (LayerItems, EntitiesById: _entitiesById),
                 func: (acc, update) => update switch
                 {

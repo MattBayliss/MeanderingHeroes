@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MeanderingHeroes.Engine.Types
+﻿namespace MeanderingHeroes.Engine.Types
 {
     public enum LayerItemType
     {
@@ -28,13 +22,13 @@ namespace MeanderingHeroes.Engine.Types
         public float Quality { get; init; }
         public LayerItem(FractionalHex hexCoords, LayerItemType itemType, int subType, float quality)
         {
-            Id = _lastId++;
+            Id = ++_lastId;
             HexCoords = hexCoords;
             ItemType = itemType;
             SubType = subType;
             Quality = quality;
         }
-        public override int GetHashCode() => Id;
+        public override string ToString() => $"[{ItemType.ToString(), 8}: {Id}|{HexCoords}|{SubType}|{Quality:F2}]";
     }
     public record Layer<T>(ImmutableHashSet<T> LayerItems);
 }
