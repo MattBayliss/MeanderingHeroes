@@ -22,7 +22,7 @@ namespace MeanderingHeroes.Engine.Types
     /// <summary>
     /// (Option<Entity> EntityChange, DseStatus Status)
     /// </summary>
-    public record AiResult(Option<Entity> EntityChange, DseStatus Status);
+    public record AiResult(IEnumerable<StateChange> StateChanges, DseStatus Status);
     /// <summary>
     /// (Entity, GameState) => (Option<Entity>, DseStatus)
     /// </summary>

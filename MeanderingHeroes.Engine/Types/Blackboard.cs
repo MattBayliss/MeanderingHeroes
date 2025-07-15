@@ -20,11 +20,12 @@ namespace MeanderingHeroes.Engine.Types
 
         public Option<T> Get<T>(BlackboardKey<T> key) where T : struct 
             => _data.TryGetValue(key, out var value) && value is T typedValue ? Some(typedValue) : None;
+        public void Clear() => _data.Clear();
     }
 
     public static class BlackboardKeys
     {
-        public static BlackboardKey<FractionalHex> ClosestForageFood(Hex hex) => new($"ClosestForageFood.{hex}");
+        public static BlackboardKey<LayerItem> ClosestForageFood(Hex hex) => new($"ClosestForageFood.{hex}");
         public static readonly BlackboardKey<int> PlayerHealth = new("Player.Health");
         public static readonly BlackboardKey<Vector3> PlayerPosition = new("Player.Position");
     }

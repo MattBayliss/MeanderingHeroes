@@ -41,10 +41,15 @@ namespace MeanderingHeroes.Engine.Types
                 BehavioursLibrary.GatherFood(this)
             ];
         }
-        public Option<Entity> this[int entityId] => _gameState[entityId];
-        public void SetFoodItems(IEnumerable<FoodItem> foodItems)
+        public void UpdateState(IEnumerable<StateChange> updates, IEnumerable<int> completedDSEIds)
         {
-            _gameState = _gameState with { FoodItems = foodItems.ToImmutableHashSet() };
+            _gameState = _gameState.UpdateState(updates, completedDSEIds);
+        }
+        public Option<Entity> this[int entityId] => _gameState[entityId];
+        public Option<LayerItem> GetLayerItem(int layerItemId) => _gameState.GetLayerItem(layerItemId);
+        public void SetFoodItems(IEnumerable<LayerItem> foodItems)
+        {
+            _gameState = _gameState with { LayerItems = foodItems.ToImmutableList() };
         }
         private int CreateEntityAndAppendToEntities(Func<Entity> entityCreator)
         {
@@ -70,12 +75,6 @@ namespace MeanderingHeroes.Engine.Types
                     _gameState = _gameState.AddBehaviour(entityId, behaviour);
                     return behaviour.Dse.Id;
                 });
-        
-        public void RemoveBehaviour(int behaviourId)
-        {
-            _gameState = _gameState.RemoveBehaviours([behaviourId]);
-        }
-
         public List<Dse> GetBehavioursForEntity(int entityId)
             => _gameState
                 .Behaviours
@@ -90,6 +89,7 @@ namespace MeanderingHeroes.Engine.Types
             // run each component, updating the state as we go
             _gameState = _utilityAI.Update(this, _gameState);
             _gameState = TheMarchOfTime.Update(_gameState);
+            Blackboard.Clear();
         }
     }
 }

@@ -27,7 +27,7 @@ namespace MeanderingHeroes.Engine.Components
         {
             _considerationContext.SetStateSnapshot();
 
-            (IEnumerable<Entity> UpdatedEntities, IEnumerable<int> CompletedDSEs) initialState = ([], []);
+            (IEnumerable<StateChange> StateChanges, IEnumerable<int> CompletedDSEs) initialState = ([], []);
 
             var updated = state
                 .Entities
@@ -37,17 +37,17 @@ namespace MeanderingHeroes.Engine.Components
                             None: () => runningState,
                             Some: scoreResult => runningState with
                             {
-                                UpdatedEntities = runningState.UpdatedEntities.Concat(scoreResult.Result.EntityChange.AsEnumerable()),
+                                StateChanges = runningState.StateChanges.Concat(scoreResult.Result.StateChanges),
                                 CompletedDSEs = scoreResult.Result.Status.HasFlag(DseStatus.Completed)
                                     ? runningState.CompletedDSEs.Append([scoreResult.Score.DseId])
                                     : runningState.CompletedDSEs
                             }
                         )
                 );
+            
+            updated.StateChanges.ForEach(change => Logger.LogDebug(change.ToString()));
 
-            return state
-                .ModifyEntities(updated.UpdatedEntities)
-                .RemoveBehaviours(updated.CompletedDSEs);
+            return state.UpdateState(updated.StateChanges, updated.CompletedDSEs);
         }
         private Option<(BehaviourScore Score, AiResult Result)> UpdateAgent(GameState state, Entity agent)
         {

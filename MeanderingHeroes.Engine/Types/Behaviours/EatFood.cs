@@ -18,7 +18,7 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
 
         private static Command EatFoodFromSupplyCommand => (pawn, _)
             => new AiResult(
-                EntityChange: Some(pawn with { FoodSupply = pawn.FoodSupply - 0.1f, Hunger = pawn.Hunger - 0.1f }),
+                StateChanges: [new EntityChange(pawn with { FoodSupply = pawn.FoodSupply - 0.1f, Hunger = pawn.Hunger - 0.1f })],
                 Status: DseStatus.Running
                 );
 

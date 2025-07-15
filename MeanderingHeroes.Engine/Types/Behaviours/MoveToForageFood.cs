@@ -28,8 +28,8 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
         private static Command MoveToForageFoodUpdateFunc(Game game) =>
             (entity, state) => game.Blackboard.Get(BlackboardKeys.ClosestForageFood(entity.HexCoords.Round()))
                 .Match(
-                    None: () => new AiResult(None, DseStatus.Aborted),
-                    Some: foodCoords => PathFinding.GeneratePathGoalBehaviour(game, entity.HexCoords, foodCoords, _ => DseStatus.Running)(entity, state)
+                    None: () => new AiResult([], DseStatus.Aborted),
+                    Some: foodItem => PathFinding.GeneratePathGoalBehaviour(game, entity.HexCoords, foodItem.HexCoords, _ => DseStatus.Running)(entity, state)
                 );
     }
 }

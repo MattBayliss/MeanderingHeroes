@@ -31,10 +31,13 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
         private static Command GatherFoodAtLocation(Game game) =>
             (entity, state) => game.Blackboard.Get(BlackboardKeys.ClosestForageFood(entity.HexCoords.Round()))
                 .Match(
-                    None: () => new AiResult(None, DseStatus.Aborted),
+                    None: () => new AiResult([], DseStatus.Aborted),
                     // TODO: actually need to decrease the food supply in that layer
                     Some: ff => new AiResult(
-                            EntityChange: Some(entity with { FoodSupply = entity.FoodSupply + 0.5f }),
+                            StateChanges: [
+                                new EntityChange(entity with { FoodSupply = entity.FoodSupply + 0.5f }),
+                                new LayerItemChange(ff, ff with {Quality = MathF.Max(0f, ff.Quality - 0.2f) })
+                            ],
                             Status: DseStatus.Running
                         )
                     );
