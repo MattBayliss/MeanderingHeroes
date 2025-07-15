@@ -9,14 +9,15 @@ namespace MeanderingHeroes.Engine.Components
 {
     internal static class TheMarchOfTime
     {
+        private const float DRAIN_AMOUNT = 0.01f;
         public static GameState Update(GameState state)
             => state.UpdateState(
                 state.Entities
                     .Select(entity => entity switch
                     {
-                        { Hunger.Value: 1f, Constitution: var con } when con <= 0.001f => entity, // TODO: implement death
-                        { Hunger.Value: 1f, Constitution: var con } => entity with { Constitution = con - 0.001f },
-                        { Hunger: var hunger } => entity with { Hunger = hunger + 0.001f }
+                        { Hunger.Value: 1f, Constitution: var con } when con <= DRAIN_AMOUNT => entity, // TODO: implement death
+                        { Hunger.Value: 1f, Constitution: var con } => entity with { Constitution = con - DRAIN_AMOUNT },
+                        { Hunger: var hunger } => entity with { Hunger = hunger + DRAIN_AMOUNT }
                     })
                     .Select(entity => new EntityChange(entity)), []
                 );
