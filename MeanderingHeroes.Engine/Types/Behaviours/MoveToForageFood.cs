@@ -18,8 +18,6 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
                     [
                         new Decision(ConsiderationType.Hunger, CurveLibrary.BasicLinear),
                         new Decision(ConsiderationType.FoodSupply, CurveLibrary.ReverseLogistic),
-
-                        // TODO: Needs to be 0 when we're at food so that "Forage" DSE can take over
                         new Decision(ConsiderationType.ForageFoodDistance, CurveLibrary.IsNotZero),
                         new Decision(ConsiderationType.ForageFoodDistance, CurveLibrary.LogisticTrailOff)
                     ]

@@ -14,6 +14,7 @@ namespace MeanderingHeroes.Engine.Types
         /// General heartiness - decreases due to starvation, illness, poison. Death occurs at 0
         /// </summary>
         public Utility Constitution { get; init; } = 1F;
+        public Skill Survival { get; init; } = 0F;
         public Utility Hunger { get; init; } = 0F;
         public float FoodSupply { get; init; } = 0F;
         internal Entity(int id, FractionalHex hexCoords, float speed)

@@ -4,29 +4,33 @@ using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Types
 {
-    public readonly record struct BlackboardKey<T>(string Key) where T : struct
+    public readonly record struct BlackboardKey<T>(string Key, bool Persistent) where T : struct
     {
         public static implicit operator string(BlackboardKey<T> key) => key.Key;
+        public static implicit operator bool(BlackboardKey<T> key) => key.Persistent;
     }
 
     public class Blackboard
     {
-        private readonly Dictionary<string, object> _data = [];
+        private readonly Dictionary<string, object> _transientData = [];
+        private readonly Dictionary<string, object> _persistentData = [];
 
         public void Set<T>(BlackboardKey<T> key, T value) where T : struct
         {
-            _data[key] = value;
+            DictionaryForKey(key)[key] = value;
         }
 
-        public Option<T> Get<T>(BlackboardKey<T> key) where T : struct 
-            => _data.TryGetValue(key, out var value) && value is T typedValue ? Some(typedValue) : None;
-        public void Clear() => _data.Clear();
+        private Dictionary<string, object> DictionaryForKey<T>(BlackboardKey<T> key) where T : struct => key.Persistent ? _persistentData : _transientData;
+
+        public Option<T> Get<T>(BlackboardKey<T> key) where T : struct
+            => DictionaryForKey(key).TryGetValue(key, out var value) && value is T typedValue ? Some(typedValue) : None;
+        public void Clear() => _transientData.Clear();
     }
 
     public static class BlackboardKeys
     {
-        public static BlackboardKey<LayerItem> ClosestForageFood(Hex hex) => new($"ClosestForageFood.{hex}");
-        public static readonly BlackboardKey<int> PlayerHealth = new("Player.Health");
-        public static readonly BlackboardKey<Vector3> PlayerPosition = new("Player.Position");
+        public static BlackboardKey<LayerItem> ClosestForageFood(Hex hex) => new($"ClosestForageFood.{hex}", false);
+        public static readonly BlackboardKey<int> PlayerHealth = new("Player.Health", false);
+        public static readonly BlackboardKey<Vector3> PlayerPosition = new("Player.Position", false);
     }
 }

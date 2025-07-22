@@ -1,4 +1,5 @@
 ﻿using MeanderingHeroes.Engine.Types;
+using MeanderingHeroes.Engine.Types.Considerations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,8 +44,8 @@ namespace MeanderingHeroes.Test
 
             Assert.Equal(expectedFoodUtility, ConsiderationContext.FoodSupply(hero));
             Assert.Equal(hunger, ConsiderationContext.PawnHunger(hero));
-            Assert.True(considerationContext.ForageFoodDistance()(hero) > 0f);
-            Assert.True(considerationContext.ForageFoodDistance()(hero) < 1f);
+            Assert.True(considerationContext.ForageFoodDistance.Get(hero) > 0f);
+            Assert.True(considerationContext.ForageFoodDistance.Get(hero) < 1f);
 
         }
     }

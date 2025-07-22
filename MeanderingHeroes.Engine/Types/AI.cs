@@ -79,7 +79,6 @@ namespace MeanderingHeroes.Engine.Types
             Target = target;
         }
     }
-    public record Consideration;
     public enum CurveType
     {
         Quadratic,

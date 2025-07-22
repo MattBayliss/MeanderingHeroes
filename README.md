@@ -2,45 +2,26 @@
 
 ## Overview
 
-Broadly, Meandering Heroes will be a Fantasy Simulation game, crossed with a [Play by Mail game](https://en.wikipedia.org/wiki/Play-by-mail_game) from yesteryear (that I remember fondly). Big goal is that MH will be a living, persistent multi-player world where a player is in control of a guild, and gives their members (Heroes) instructions and goals, and a rich A.I. will determine the success or failure of your Heroes. It will be designed for players to log in, read the reports of what has occurred since their last visit, and give new orders as required. Orders can take days or weeks real-time to resolve.
+Primarily, Meandering Heroes is a fantasy simulation game based on robust game AI to make the world and its inhabitants seem alive, and to promote emergent narrative.
 
-Well, that's the current ultimate goal. It will start a bit less ambitious than that.
+Originally inspired by my nostalgia of [Play by Mail games](https://en.wikipedia.org/wiki/Play-by-mail_game) but also driven by solo roleplaying games and random tools and oracles for generative stories.
 
-**First MVP** - one Hero, random Monsters, see what happens?
+Big goal is that MH will be a living, persistent multi-player world where a player guides one or more heroes as they adventure in a massive fantasy simulation. It will be designed for players to log in, read the reports of what has occurred since their last visit, and give new orders as required. Orders can take days or weeks real-time to resolve (or quicker if it turns out that experience isn't great).
 
-## Why?
+## Architecture
 
-This idea has been kicking around for a while. The project started an an experiment to learn F# (and that abandoned project is here too), but now I'm going to attempt it in C#, using techniques I learnt about in the following books:
+I'm building the game engine in C#, to be used by a client interface built in Godot 4.4. I'm trying to follow functional programming patterns that I've studied and use for my day job, from these two references:
 
 - [Functional Programming with C# by Simon J. Painter](https://www.oreilly.com/library/view/functional-programming-with/9781492097068/)
 - [Functional Programming in C#, Second Edition by Enrico Buonanno](https://www.manning.com/books/functional-programming-in-c-sharp-second-edition)
 
-Assuming I keep at it, perhaps I can rewrite the core engine in F# some day.
+## The Simulation
+
+Inspired by research into how the AI in The Sims franchise works, I've done lots of research into Utility AI
+
+
+**First MVP** - one Hero, random Monsters, see what happens?
+
 
 ## Milestones
 
-I'm trying to be realistic, and breaking it down to small (achievable?) steps in the form of these milestones:
-
-- [x] Make a basic Move test - give a Hero an a destination and see them move to that destination
-- [ ] Make a hunter-prey test - a hero will hunt a deer for food - the deer will try not to be food
-- [ ] Add hunger mechanics - test to see if Hero will try to find food (hunt or forage) to stay alive
-
-utility ai using terminology:
-
-- Evaluation
-    - Consideration (health, armor, distance) : float
-    - Curve
-- Aggregrator: two or more Evaluations
-
-Player set evaluations live on the player entity (agent?)
-    - destinations
-    - selected quests
-
-Advertised Evaluations
-    - resourcees
-    - other entitys' offerings
-
-PlayerEntity.Evaluations { get; }
-NearbyEntities.GetAdverts(PlayerEntity)
-
-UtiltyAI update:

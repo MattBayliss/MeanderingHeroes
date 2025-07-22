@@ -1,4 +1,5 @@
 ﻿using LaYumba.Functional;
+using MeanderingHeroes.Engine.Types.Considerations;
 using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Types
@@ -8,24 +9,25 @@ namespace MeanderingHeroes.Engine.Types
     public class ConsiderationContext
     {
         private readonly Game _game;
-        private GameState _stateSnapshot;
+        public GameState StateSnapshot { get; private set; }
+        public Blackboard Blackboard => _game.Blackboard;
 
         public ConsiderationContext(Game game)
         {
             _game = game;
-            _stateSnapshot = _game.GameState;
+            StateSnapshot = _game.GameState;
         }
         public void SetStateSnapshot()
         {
-            _stateSnapshot = _game.GameState;
+            StateSnapshot = _game.GameState;
         }
         public GetConsideration GetConsideration(Decision forDecision) => forDecision switch
         {
-            { ConsiderationType: ConsiderationType.PawnSpeed } => entity => entity is Entity pawn ? Math.Clamp(pawn.Speed, 0f, 1f) : 0f,
+            { ConsiderationType: ConsiderationType.PawnSpeed } => pawn => Math.Clamp(pawn.Speed, 0f, 1f),
             { ConsiderationType: ConsiderationType.PawnAvarice } => PawnAvarice,
             { ConsiderationType: ConsiderationType.Hunger } => PawnHunger,
             { ConsiderationType: ConsiderationType.FoodSupply } => FoodSupply,
-            { ConsiderationType: ConsiderationType.ForageFoodDistance } => ForageFoodDistance(),
+            { ConsiderationType: ConsiderationType.ForageFoodDistance } => ForageFoodDistance,
             DecisionOnHex { ConsiderationType: ConsiderationType.HexDistance, Target: var hex } => DistanceToHex(hex),
             _ => throw new ArgumentException($"Unexpected ConsiderationType: {forDecision.ConsiderationType.ToString()}")
         };
@@ -36,38 +38,7 @@ namespace MeanderingHeroes.Engine.Types
             => Math.Clamp(hex.Distance(pawn.HexCoords) / 10f, 0f, 1f); // anything over 10 hexes away is considered 1.0
         public static GetConsideration DistanceToTarget(Entity target) => DistanceToHex(target.HexCoords);
 
-        // TODO: make Considerations command classes to better encapsulate each Consideration context and blackboard data
-        public GetConsideration ForageFoodDistance()
-        {
-
-            var getClosestFoodItem = (Entity pawn) => _stateSnapshot
-                .LayerItems
-                .Select(fi => (FoodItem: fi, Distance: DistanceToHex(fi.HexCoords)(pawn)))
-                .OrderByDescending(fi => fi.Distance)
-                .Head();
-
-            return pawn =>
-            {
-                var hex = pawn.HexCoords.Round();
-
-                var bbKey = BlackboardKeys.ClosestForageFood(hex);
-
-                // looks for a value for food distance already on the blackboard, otherwise calculates
-                // distance and returns a new record to add to the blackboard
-                (var cDistance, var bbItem) = _game.Blackboard.Get(bbKey)
-                    .Match(
-                        None: () => getClosestFoodItem(pawn).Match(
-                            None: () => ((Utility)1f, Some(new LayerItem((-1000f,-1000f), LayerItemType.Food, 0, 0))),
-                            Some: fi => (DistanceToHex(fi.FoodItem.HexCoords)(pawn), Some(fi.FoodItem))
-                            ),
-                        Some: bbFoodItem => (DistanceToHex(bbFoodItem.HexCoords)(pawn), None));
-
-                // if there's an item to add to the Blackboard, do it
-                bbItem.ForEach(bb => _game.Blackboard.Set(bbKey, bb));
-
-                return cDistance;
-            };
-        }
+        public Consideration ForageFoodDistance => new ForageFoodDistance(this);
     }
 
     public enum ConsiderationType
@@ -81,5 +52,18 @@ namespace MeanderingHeroes.Engine.Types
         FoodSupply,
         ForageFoodDistance,
         PreyAnimal
+    }
+    public abstract class StatelessConsideration
+    {
+        public abstract GetConsideration Get {get;}
+        public static implicit operator GetConsideration(StatelessConsideration consideration) => consideration.Get;
+    }
+    public abstract class Consideration : StatelessConsideration
+    {
+        protected readonly ConsiderationContext _context;
+        public Consideration(ConsiderationContext context)
+        {
+            _context = context;
+        }
     }
 }

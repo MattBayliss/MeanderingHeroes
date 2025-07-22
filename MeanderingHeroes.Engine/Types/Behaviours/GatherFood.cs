@@ -32,7 +32,6 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
             (entity, state) => game.Blackboard.Get(BlackboardKeys.ClosestForageFood(entity.HexCoords.Round()))
                 .Match(
                     None: () => new AiResult([], DseStatus.Aborted),
-                    // TODO: actually need to decrease the food supply in that layer
                     Some: ff => new AiResult(
                             StateChanges: [
                                 new EntityChange(entity with { FoodSupply = entity.FoodSupply + 0.5f }),

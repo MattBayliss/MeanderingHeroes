@@ -70,8 +70,6 @@ namespace MeanderingHeroes.Engine
 
             logger.LogTrace($"PATH: [{string.Join(",", path.Select(h => $"({h.Q},{h.R})"))}]");
 
-            // TODO: need to separate this out - MoveToForageFood should never Complete
-
             return (entity, _) => 
             {
                 var pathResult = moveAlongPath(path, entity);
