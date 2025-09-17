@@ -27,9 +27,8 @@ namespace MeanderingHeroes.Engine.Types
         public void Clear() => _transientData.Clear();
     }
 
-    public static class BlackboardKeys
+    public static partial class BlackboardKeys
     {
-        public static BlackboardKey<LayerItem> ClosestForageFood(Hex hex) => new($"ClosestForageFood.{hex}", false);
         public static readonly BlackboardKey<int> PlayerHealth = new("Player.Health", false);
         public static readonly BlackboardKey<Vector3> PlayerPosition = new("Player.Position", false);
     }

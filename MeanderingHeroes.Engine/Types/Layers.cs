@@ -1,4 +1,6 @@
-﻿namespace MeanderingHeroes.Engine.Types
+﻿using LaYumba.Functional;
+
+namespace MeanderingHeroes.Engine.Types
 {
     public enum LayerItemType
     {
@@ -30,5 +32,23 @@
         }
         public override string ToString() => $"[{ItemType.ToString(), 8}: {Id}|{HexCoords}|{SubType}|{Quality:F2}]";
     }
-    public record Layer<T>(ImmutableHashSet<T> LayerItems);
+    public record Layer
+    {
+        // TODO: duplicate collections - refactor down to the best one once I know which one
+        // is more used
+        public ImmutableList<LayerItem> Items { get; init; }
+        public ImmutableDictionary<Hex, ImmutableList<LayerItem>> ItemsByHex { get; init;}
+        public Layer(IEnumerable<LayerItem> layerItems)
+        {
+            Items = layerItems.ToImmutableList();
+            ItemsByHex = layerItems
+                .GroupBy(li => li.HexCoords.Round())
+                .ToImmutableDictionary(g => g.Key, g => g.ToImmutableList());
+        }
+        public Layer(IDictionary<Hex, ImmutableList<LayerItem>> layerItems)
+        {
+            Items = layerItems.Values.Flatten().ToImmutableList();
+            ItemsByHex = layerItems.ToImmutableDictionary();
+        }
+    }
 }

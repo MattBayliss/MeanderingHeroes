@@ -2,6 +2,7 @@
 using MeanderingHeroes.Engine.Types;
 using Microsoft.Extensions.Logging;
 using static LaYumba.Functional.F;
+using static MeanderingHeroes.Engine.Functions;
 
 namespace MeanderingHeroes.Engine.Components
 {
@@ -44,14 +45,14 @@ namespace MeanderingHeroes.Engine.Components
                             }
                         )
                 );
-            
+
             updated.StateChanges.ForEach(change => Logger.LogDebug(change.ToString()));
 
             return state.UpdateState(updated.StateChanges, updated.CompletedDSEs);
         }
         private Option<(BehaviourScore Score, AiResult Result)> UpdateAgent(GameState state, Entity agent)
         {
-            Func<Decision, Utility> getConsideration =
+            Func<Decision, Option<Utility>> getConsideration =
                 decision => _considerationContext.GetConsideration(decision)(agent);
 
             var behaviours = state.Behaviours
@@ -87,90 +88,93 @@ namespace MeanderingHeroes.Engine.Components
             );
         }
 
-        private Option<BehaviourScore> GetWinningBehaviour(Func<Decision, Utility> getConsideration, IEnumerable<Dse> decisionEvaluators)
+        private record DsesByWeight(float Weight, float Threshold, IEnumerable<Dse> Dses);
+        private record RunningScores(float Threshold, IEnumerable<BehaviourScore> Scores);
+
+        private Option<BehaviourScore> GetWinningBehaviour(Func<Decision, Option<Utility>> getConsideration, IEnumerable<Dse> decisionEvaluators)
         {
-            // scores have to be able to generate values over the threshold to be considered
-            float threshold = 0f;
-
             // process highest weights first (so we can stop calculating once the threshold can no longer be met)
-            var dsesByWeight = decisionEvaluators.OrderByDescending(dse => dse.Weight).GroupBy(dse => dse.Weight);
+            var dsesByWeights = decisionEvaluators
+                .GroupBy(dse => dse.Weight)
+                .Select(group => new DsesByWeight(group.Key, 0f, group))
+                .OrderByDescending(wd => wd.Weight);
 
-            // setting up the linq selects - nothing is being evaluated.. yet
-            IEnumerable<(float Weight, IEnumerable<DseAndScoreFunc> DseScoreFunc)> scoreFuncsByDseByWeight =
-                dsesByWeight.Select(g => (
-                    Weight: g.Key,
-                    ScoreFuncsByDse: g.Select(
-                        dse => new DseAndScoreFunc(
-                            Dse: dse,
-                            ScoreFunc: () => CalculateScore(
-                                    scores: dse.Decisions.Select
-                                        (d =>
-                                        // TODO: remove extra properties for logging when we've got basic tests to pass
-                                            (
-                                                Decision: d,
-                                                Input: getConsideration(d),
-                                                Curve: d.Curve.ToFunc()
-                                            )
-                                        )
-                                        .Select(dic =>
-                                            (
-                                                dic.Decision,
-                                                dic.Input,
-                                                CurveDescription: dic.Decision.Curve.Description,
-                                                Result: dic.Curve(dic.Input) // TODO: add inertia back in when basics are working
-                                            )
-                                        )
-                                        .Select(ddd => new DecisionResult(
-                                            $"{ddd.Decision.ConsiderationType}:{ddd.Input} => {ddd.CurveDescription} => {ddd.Result}",
-                                            (float)ddd.Result))
-                                )
-                            )
-                        )
-                    )
-                );
+            Func<Dse, BehaviourScore> calculateScoreForDse = dse => CalculateScore(dse, getConsideration);
 
-            // now the evalation begins
-            IEnumerable<BehaviourScore> scores = [];
-            foreach (var weightDseScoreFuncs in scoreFuncsByDseByWeight)
-            {
-                //if (weightDseScoreFuncs.Weight < threshold)
-                //{
-                //    // if the DSE can't possibly meet the threshold, don't bother anymore
-                //    break;
-                //}
+            // group Decision Score Evaluators by Weight,
+            // and as long as the DSE can conceivably beat the threshold
+            // (because the weight is greater than the threshold), keep
+            // evaluating DSEs.
+            // For now, return the DSE with the highest score, but in future
+            // maybe make it choose randomly between the top 3 results?
 
-                // this is where the calculations are run
-                var scoresBatch = weightDseScoreFuncs.DseScoreFunc
-                    .Select(dsf => (
-                            DseId: dsf.Dse.Id,
-                            Name: dsf.Dse.Name,
-                            Result: dsf.ScoreFunc()))
-                    .Select(inr => new BehaviourScore(
-                        DseId: inr.DseId,
-                        Name: $"{inr.Name}::{inr.Result.Description}",
-                        Score: inr.Result.Score))
-                    .Where(bs => bs.Score > 0f)
-                // we only care about the top 3 for each weight tier (for now?)
-                    .OrderByDescending(bs => bs.Score)
-                    .Do(bs => Logger.LogTrace($"{bs.Score:F3}::{bs.Name}"))
-                    .Take(3);
+            (_, var validScores) = dsesByWeights.Aggregate(
+                seed: new RunningScores(0f, []),
+                func: (agg, dbw) =>
+                {
+                    if (dbw.Weight < agg.Threshold)
+                    {
+                        return agg;
+                    }
+                    else
+                    {
+                        var score = dbw.Dses.Select(calculateScoreForDse);
+                        return agg with
+                        {
+                            Threshold = float.Max(agg.Threshold, score.Max(s => s.Score)),
+                            Scores = score
+                        };
+                    }
+                });
+                // Func
+            
+            
 
-                threshold = scoresBatch.Any() ? scoresBatch.Select(bs => bs.Score).Min() : threshold;
-
-                scores = scores.Concat(scoresBatch);
-            }
-
-            return scores.OrderByDescending(ds => ds.Score).Head();
+            return validScores
+                .OrderByDescending(ds => ds.Score).Head();
         }
 
-        private static DecisionResult CalculateScore(IEnumerable<DecisionResult> scores)
-            => scores.Aggregate<DecisionResult, (IEnumerable<string> desc, float totalScore)>(
+        private static BehaviourScore CalculateScore(Dse dse, Func<Decision, Option<Utility>> getConsideration)
+        {
+            var scores = dse.Decisions.Select
+                    (d =>
+                    // TODO: remove extra properties for logging when we've got basic tests to pass
+                        (
+                            Decision: d,
+                            Input: getConsideration(d),
+                            Curve: d.Curve.ToFunc()
+                        )
+                    )
+                    .Select(dic =>
+                        (
+                            dic.Decision,
+                            dic.Input,
+                            CurveDescription: dic.Decision.Curve.Description,
+                            Result: dic.Input.Match
+                            (
+                                // for unknown/None considerations, always return 0 - don't run through
+                                // curve function
+                                None: () => Utility(0f), 
+                                Some: i => dic.Curve(i)
+                            ) // TODO: add inertia back in when basics are working
+                        )
+                    )
+                    .Select(ddd => new DecisionResult(
+                        $"{ddd.Decision.ConsiderationType}:{ddd.Input} => {ddd.CurveDescription} => {ddd.Result}",
+                        ddd.Result.Value));
+
+
+            return scores.Aggregate<DecisionResult, (IEnumerable<string> desc, float totalScore)>(
                 seed: ([], 1f),
-                func: (acc, score) => acc with 
-                    {
-                        desc = acc.desc.Append($"[{score.Description}]"),
-                        totalScore = acc.totalScore *= score.Score, 
-                    })
-            .Pipe(agg => new DecisionResult(string.Join(",", agg.desc), agg.totalScore));
+                func: (acc, score) => acc with
+                {
+                    desc = acc.desc.Append($"[{score.Description}]"),
+                    totalScore = acc.totalScore *= score.Score,
+                })
+            .Pipe(ddd => new BehaviourScore(
+                        DseId: dse.Id,
+                        Name: $"{dse.Name}::{string.Join(",", ddd.desc)}",
+                        Score: ddd.totalScore * dse.Weight));
+        }
     }
 }

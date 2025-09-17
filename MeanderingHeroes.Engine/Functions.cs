@@ -8,6 +8,7 @@ namespace MeanderingHeroes.Engine
 {
     public static partial class Functions
     {
+        public static Utility Utility(float value) => value;
         public static bool WithinMargin(this Vector2 a, Vector2 b, float margin) => Vector2.Subtract(a, b).LengthSquared() < MathF.Pow(margin, 2);
         public static bool EqualsWithMargin(this float @this, float other, float margin) => MathF.Abs(@this - other) <= margin;
 

@@ -40,6 +40,7 @@ namespace MeanderingHeroes.Engine.Types
         public string Description { get; init; }
         public float Weight { get; init; } = 1f;
         public float Inertia { get; init; } = 0f;
+        public long StartTick { get; init; } = Game.Tick;
         public ImmutableList<Decision> Decisions { get; init; }
 
         public Dse(string name, string description, float weight, IEnumerable<Decision> decisions)

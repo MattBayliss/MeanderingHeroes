@@ -13,15 +13,18 @@ namespace MeanderingHeroes.Engine.Types
         public ImmutableDictionary<int, Dse> DseById { get; init; }
         public ImmutableHashSet<EntityBehaviour> Behaviours { get; init; }
         protected ImmutableDictionary<int, Entity> _entitiesById;
-        public ImmutableList<LayerItem> LayerItems { get; init; } = [];
+        public Layer FoodItems { get; init; }
         public Option<Entity> this[int index] => _entitiesById.Lookup(index);
+        public KnowledgeBase KnowledgeBase { get; init; }
 
         public GameState(IEnumerable<Entity> entities)
         {
             Behaviours = [];
+            KnowledgeBase = new KnowledgeBase();
             DseById = ImmutableDictionary.Create<int, Dse>();
             _hexEntities = entities.Select(e => (e.HexCoords.Round(), e.Id)).ToImmutableHashSet();
             _entitiesById = entities.ToImmutableDictionary(e => e.Id, e => e);
+            FoodItems = new Layer([]);
         }
 
         public IEnumerable<Entity> EntitiesInRange(Entity ofEntity)
@@ -29,7 +32,7 @@ namespace MeanderingHeroes.Engine.Types
                 .SelectMany(hex => _hexEntities.Where(he => he.Hex == hex))
                 .Bind(he => _entitiesById.Lookup(he.EntityId));
 
-        public Option<LayerItem> GetLayerItem(int layerId) => LayerItems.Find(li => li.Id == layerId);
+        public Option<LayerItem> GetLayerItem(int layerId) => FoodItems.Items.Find(li => li.Id == layerId);
         public GameState AddEntity(Entity entity) => this with
         {
             _entitiesById = _entitiesById.SetItem(entity.Id, entity),
@@ -46,7 +49,7 @@ namespace MeanderingHeroes.Engine.Types
         public GameState UpdateState(IEnumerable<StateChange> updates, IEnumerable<int> completedDSEIds)
         {
             (var updatedLayerItems, var updatedEntityDict) = updates.Aggregate(
-                seed: (LayerItems, EntitiesById: _entitiesById),
+                seed: (LayerItems: FoodItems.Items, EntitiesById: _entitiesById),
                 func: (acc, update) => update switch
                 {
                     EntityChange ec => acc with { EntitiesById = acc.EntitiesById.SetItem(ec.UpdatedEntity.Id, ec.UpdatedEntity) },
@@ -65,7 +68,7 @@ namespace MeanderingHeroes.Engine.Types
 
             return this with
             {
-                LayerItems = updatedLayerItems,
+                FoodItems = new Layer(updatedLayerItems),
                 _entitiesById = updatedEntityDict,
                 _hexEntities = updatedEntityDict.Values.Select(e => (e.HexCoords.Round(), e.Id)).ToImmutableHashSet(),
                 DseById = dseById,

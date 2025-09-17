@@ -44,8 +44,12 @@ namespace MeanderingHeroes.Test
 
             Assert.Equal(expectedFoodUtility, ConsiderationContext.FoodSupply(hero));
             Assert.Equal(hunger, ConsiderationContext.PawnHunger(hero));
-            Assert.True(considerationContext.ForageFoodDistance.Get(hero) > 0f);
-            Assert.True(considerationContext.ForageFoodDistance.Get(hero) < 1f);
+            var foodDistance = Helpers.AssertIsSome<Utility>(considerationContext.ForageFoodDistance.Get(hero));
+            Assert.True(foodDistance.Value > 0f);
+
+            //TODO: foodDistance is 1.0 here because the hero doesn't have knowledge of where
+            // food is yet - need to add that knowledge
+            Assert.True(foodDistance.Value < 1f);
 
         }
     }

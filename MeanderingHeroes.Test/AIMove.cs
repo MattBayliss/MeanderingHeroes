@@ -250,7 +250,7 @@ namespace MeanderingHeroes.Test
                 Range(0, 9)
                     .Select(r => (
                         Hex: new Hex(r, 0),
-                        Terrain: (Terrain)(r < 5 ? new LandTerrain("grass", 1f) : new LandTerrain("forest", 3f))))
+                        Terrain: (Terrain)(r < 5 ? Terrain.Grass : Terrain.Forest )))
                 );
 
             Hex hexStart = (0, 0); // left-most

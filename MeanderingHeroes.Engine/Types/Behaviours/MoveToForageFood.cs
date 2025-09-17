@@ -16,6 +16,7 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
                 weight: 2f,
                 decisions: 
                     [
+                        // TODO: check to make sure ForageFoodDistance takes into account AwareOfFood
                         new Decision(ConsiderationType.Hunger, CurveLibrary.BasicLinear),
                         new Decision(ConsiderationType.FoodSupply, CurveLibrary.ReverseLogistic),
                         new Decision(ConsiderationType.ForageFoodDistance, CurveLibrary.IsNotZero),
@@ -24,7 +25,7 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
                 );
 
         private static Command MoveToForageFoodUpdateFunc(Game game) =>
-            (entity, state) => game.Blackboard.Get(BlackboardKeys.ClosestForageFood(entity.HexCoords.Round()))
+            (entity, state) => game.Blackboard.Get(BlackboardKeys.ClosestForageFood(entity))
                 .Match(
                     None: () => new AiResult([], DseStatus.Aborted),
                     Some: foodItem => PathFinding.GeneratePathGoalBehaviour(game, entity.HexCoords, foodItem.HexCoords, _ => DseStatus.Running)(entity, state)

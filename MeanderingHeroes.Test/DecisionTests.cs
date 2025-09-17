@@ -33,7 +33,7 @@ namespace MeanderingHeroes.Test
             considerationContext.SetStateSnapshot();
             var dest1Behaviour = BehavioursLibrary.PlayerSetDestination(hexDestination1)(game)(hero);
             var decision = Assert.Single(dest1Behaviour.Dse.Decisions);
-            var distanceConsideration = considerationContext.GetConsideration(decision)(hero);
+            var distanceConsideration = Helpers.AssertIsSome<Utility>(considerationContext.GetConsideration(decision)(hero));
 
             Assert.True(distanceConsideration > 0);
         }

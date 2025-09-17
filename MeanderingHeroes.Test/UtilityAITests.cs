@@ -78,7 +78,7 @@ namespace MeanderingHeroes.Test
             var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
             game.SetFoodItems([foodItem]);
 
-            var stateLayerItem = Assert.Single(game.GameState.LayerItems);
+            var stateLayerItem = Assert.Single(game.GameState.FoodItems.Items);
             Assert.Equal(foodItem, stateLayerItem);
 
             List<(FractionalHex Coords, Hex Hex, Utility Hunger)> stateSnapshots = [];
@@ -119,8 +119,8 @@ namespace MeanderingHeroes.Test
 
             game.SetFoodItems([layerItem]);
 
-            Assert.Single(game.GameState.LayerItems);
-            Assert.Equal(layerItem, game.GameState.LayerItems[0]);
+            Assert.Single(game.GameState.FoodItems.Items);
+            Assert.Equal(layerItem, game.GameState.FoodItems.Items[0]);
 
             var layerItemFromGame = Helpers.AssertIsSome<LayerItem>(game.GetLayerItem(layerItem.Id));
             Assert.Equal(layerItem, layerItemFromGame);

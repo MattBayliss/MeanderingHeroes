@@ -5,14 +5,22 @@ using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Types
 {
-    public abstract record Terrain(string Name, float MovementCost);
+    public abstract record Terrain(string Name, float MovementCost, Utility Fertility)
+    {
+        public static Terrain Forest => new LandTerrain("forest", 3f, 0.8f);
+        public static Terrain Grass => new LandTerrain("grass", 1f, 1f);
+        public static Terrain Hill => new LandTerrain("hill", 2f, 0.6f);
+        public static Terrain Mountain => new LandTerrain("mountain", 10f, 0.2f);
+        public static Terrain Swamp => new LandTerrain("swamp", 5f, 0.8f);
+        public static Terrain Ocean => new WaterTerrain("ocean", 10f, 0.4f);
+    }
     public record LandTerrain : Terrain
     {
-        public LandTerrain(string Name, float MovementCost) : base(Name, MovementCost) { }
+        public LandTerrain(string Name, float MovementCost, Utility Fertility) : base(Name, MovementCost, Fertility) { }
     }
     public record WaterTerrain : Terrain
     {
-        public WaterTerrain(string Name, float MovementCost) : base(Name, MovementCost) { }
+        public WaterTerrain(string Name, float MovementCost, Utility Fertility) : base(Name, MovementCost, Fertility) { }
     }
 
     /// <summary>
@@ -82,6 +90,27 @@ namespace MeanderingHeroes.Engine.Types
                     Range(int.Max(-n, -q - n), int.Min(n, -q + n))
                     .Select(r => new Hex(q, r))
                 ).Select(h => centre + h);
+        }
+
+        public IEnumerable<Hex> Spiral(int radiusLimit)
+        {
+            int distance = 1;
+            // TODO: stop the spiral when we run out of map? Should limit to hexes
+            // neighbouring where the entity has previously travelled
+            while (distance < radiusLimit)
+            {
+                Hex hex = this + (Hex.Directions[4] * distance);
+                // go in each direction (will loop us around the start
+                for (int direction = 0; direction < 6; direction++)
+                {
+                    for (int j = 0; j < distance; j++)
+                    {
+                        yield return hex;
+                        hex = hex.Neighbour(j);
+                    }
+                }
+                distance++;
+            }
         }
 
         public static implicit operator Hex((int, int) tuple) => new Hex(tuple.Item1, tuple.Item2);

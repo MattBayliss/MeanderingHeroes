@@ -10,7 +10,7 @@ namespace MeanderingHeroes.Test
         {
             var terrain = Range(0, 9)
                 .SelectMany(q => Range(0, 9)
-                    .Select(r => (Hex: new Hex(q, r), Terrain: (Terrain)(new LandTerrain("grass", 1)))));
+                    .Select(r => (Hex: new Hex(q, r), Terrain: Terrain.Grass)));
 
             return new Grid(terrain);
         }
@@ -31,13 +31,13 @@ namespace MeanderingHeroes.Test
                             Hex: new Hex(q, r),
                             Terrain: (Terrain)(mapCodes[r][q] switch
                             {
-                                "~" => new WaterTerrain("ocean", 10),
-                                "_" => new LandTerrain("grass", 1),
-                                "^" => new LandTerrain("hill", 2),
-                                "M" => new LandTerrain("mountain", 10),
-                                "v" => new LandTerrain("swamp", 5),
-                                "T" => new LandTerrain("forest", 3),
-                                _ => new LandTerrain("UNEXPECTED", 9999)
+                                "~" => Terrain.Ocean,
+                                "_" => Terrain.Grass,
+                                "^" => Terrain.Hill,
+                                "M" => Terrain.Mountain,
+                                "v" => Terrain.Swamp,
+                                "T" => Terrain.Forest,
+                                _ => new LandTerrain("UNEXPECTED", 9999, 0f)
                             }))
                             )
                         );

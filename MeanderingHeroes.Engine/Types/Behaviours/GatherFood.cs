@@ -12,24 +12,23 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
     {
         public static BehaviourTemplate GatherFood
             => game => pawn => new(
-                GatherFoodDse,
+                GatherFoodDse(pawn.HexCoords),
                 GatherFoodAtLocation(game)
         );
 
-        private static Dse GatherFoodDse => new(
+        private static Dse GatherFoodDse(FractionalHex hexCoords) => new(
                 name: "GatherFood",
                 description: "forage for nearby food",
                 weight: 2f,
                 decisions: 
                     [
-                        new Decision(ConsiderationType.FoodSupply, CurveLibrary.NegativeLinear),
-                        // Needs to be 1 when we're there and 0 otherwise
-                        new Decision(ConsiderationType.ForageFoodDistance, CurveLibrary.IsZero)
+                        new DecisionOnHex(ConsiderationType.HexFood, CurveLibrary.IsNotZero, hexCoords),
+                        new Decision(ConsiderationType.FoodSupply, CurveLibrary.NegativeLinear)
                     ]
                 );
 
         private static Command GatherFoodAtLocation(Game game) =>
-            (entity, state) => game.Blackboard.Get(BlackboardKeys.ClosestForageFood(entity.HexCoords.Round()))
+            (entity, state) => game.Blackboard.Get(BlackboardKeys.ClosestForageFood(entity))
                 .Match(
                     None: () => new AiResult([], DseStatus.Aborted),
                     Some: ff => new AiResult(

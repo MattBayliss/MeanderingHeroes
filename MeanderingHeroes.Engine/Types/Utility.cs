@@ -10,10 +10,10 @@
         {
             Value = Math.Clamp(value, 0f, 1f);
         }
-        public static Utility operator +(Utility first, Utility second) => new Utility(first.Value + second.Value);
-        public static Utility operator -(Utility first, Utility second) => new Utility(first.Value - second.Value);
-        public static Utility operator *(Utility first, Utility second) => new Utility(first.Value * second.Value);
-        public static Utility operator /(Utility first, Utility second) => new Utility(first.Value / second.Value);
+        public static Utility operator +(Utility first, float second) => new Utility(first.Value + second);
+        public static Utility operator -(Utility first, float second) => new Utility(first.Value - second);
+        public static Utility operator *(Utility first, float second) => new Utility(first.Value * second);
+        public static Utility operator /(Utility first, float second) => new Utility(first.Value / second);
 
         public static implicit operator float(Utility utility) => utility.Value;
         public static implicit operator Utility(float value) => new Utility(value);
