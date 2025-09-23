@@ -21,7 +21,7 @@ namespace MeanderingHeroes.Engine.Types
         public FractionalHex CoordsValue => new FractionalHex(this.A, this.B);
         public Hex HexValue => this.CoordsValue.Round();
     }
-    public readonly record struct Knowledge
+    public record Knowledge
     {
         public ImmutableHashSet<Tidbit> Tidbits { get; init; }
         public Knowledge(IEnumerable<Tidbit> tidbits)
@@ -42,25 +42,24 @@ namespace MeanderingHeroes.Engine.Types
     /// Knowledge is stored as Tidbits - currently storing the ConsiderationType and Hex - might creep
     /// into a bigger structure.
     /// </summary>
-    public readonly record struct KnowledgeBase
+    public class KnowledgeBase
     {
-        public ConcurrentDictionary<int, Knowledge> KnowledgeForEntity { get; init; }
+        private ConcurrentDictionary<int, Knowledge> _knowledgeForEntity { get; init; }
+        public Option<Knowledge> this[int entityId] => _knowledgeForEntity.Lookup(entityId);
 
         public KnowledgeBase()
         {
-            KnowledgeForEntity = [];
+            _knowledgeForEntity = [];
         }
 
-        public void AddTidbit(int entityId, Tidbit tidbit)
-        {
-            KnowledgeForEntity.AddOrUpdate
+        public void AddTidbits(int entityId, IEnumerable<Tidbit> tidbits)
+            => tidbits.ForEach(tidbit => _knowledgeForEntity.AddOrUpdate
                 (
                     entityId,
                     _ => new Knowledge([tidbit]),
                     (_, oldKnowledge) => oldKnowledge with { Tidbits = oldKnowledge.Tidbits.Add(tidbit) }
-                );
-        }
+                ));
         public Option<Tidbit> GetTidbit(int entityId, ConsiderationType consideration, Hex hex)
-            => KnowledgeForEntity.TryGetValue(entityId, out var knowledge) ? knowledge.GetTidbit(consideration, hex) : None;
+            => _knowledgeForEntity.TryGetValue(entityId, out var knowledge) ? knowledge.GetTidbit(consideration, hex) : None;
     }
 }

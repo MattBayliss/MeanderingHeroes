@@ -27,7 +27,9 @@ namespace MeanderingHeroes.Test
             var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
             game.SetFoodItems([foodItem]);
 
-
+            // give the hero knowledge of the food (otherwise the hero would have to search for it)
+            var foodTidbit = StateChange.TidbitLearnt(heroId, ConsiderationType.HexFood, foodItem.HexCoords.Round(), foodItem.Quality);
+            game.UpdateState([foodTidbit], []);
 
             List<(float FoodSupply, Utility Hunger, float FoodQuality)> stateSnapshots = [];
 
@@ -77,6 +79,10 @@ namespace MeanderingHeroes.Test
             FractionalHex foodCoords = (3, 4);
             var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
             game.SetFoodItems([foodItem]);
+
+            // give the hero knowledge of the food (otherwise the hero would have to search for it)
+            var foodTidbit = StateChange.TidbitLearnt(heroId, ConsiderationType.HexFood, foodItem.HexCoords.Round(), foodItem.Quality);
+            game.UpdateState([foodTidbit], []);
 
             var stateLayerItem = Assert.Single(game.GameState.FoodItems.Items);
             Assert.Equal(foodItem, stateLayerItem);
@@ -166,6 +172,10 @@ namespace MeanderingHeroes.Test
                 FractionalHex foodCoords = (3, 4);
                 var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
                 game.SetFoodItems([foodItem]);
+
+                // give the hero knowledge of the food (otherwise the hero would have to search for it)
+                var foodTidbit = StateChange.TidbitLearnt(heroId, ConsiderationType.HexFood, foodItem.HexCoords.Round(), foodItem.Quality);
+                game.UpdateState([foodTidbit], []);
 
                 List<(FractionalHex Coords, float FoodSupply, float Hunger)> stateSnapshots = [];
 

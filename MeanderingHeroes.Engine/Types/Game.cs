@@ -110,7 +110,16 @@ namespace MeanderingHeroes.Engine.Types
             _considerationContext.SetStateSnapshot();
             // run each component, updating the state as we go
             _gameState = _utilityAI.Update(this, _gameState);
+
+            // add any knowledge gained through decisions
+            _gameState
+                .KnowledgeGained
+                .GroupBy(kg => kg.EntityId, kg => kg.Tidbit)
+                .ForEach(g => KnowledgeBase.AddTidbits(g.Key, g));
+
+
             _gameState = TheMarchOfTime.Update(_gameState);
+
             Blackboard.Clear();
         }
     }

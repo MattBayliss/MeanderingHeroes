@@ -39,9 +39,11 @@ namespace MeanderingHeroes.Engine.Types
         public static GetConsideration FoodSupply => pawn => Utility(pawn.FoodSupply / 5f);
         public static GetConsideration PawnHunger => pawn => pawn.Hunger;
         public static GetConsideration PawnAvarice => _ => Utility(0.5f); //Math.Clamp(entity.Greed * 1000f / entity.Wealth, 0f, 1f);
-        public static GetConsideration DistanceToHex(FractionalHex hex) => pawn
-            => Utility(hex.Distance(pawn.HexCoords) / 10f); // anything over 10 hexes away is considered 1.0
-        public static GetConsideration DistanceToTarget(Entity target) => DistanceToHex(target.HexCoords);
+        public static GetConsideration DistanceToHex(FractionalHex hex) => pawn => DefaultDistanceUtility(hex, pawn.HexCoords);
+        public static GetConsideration DistanceToTarget(Entity target) => pawn => DefaultDistanceUtility(target.HexCoords, pawn.HexCoords);
+        public static Utility DefaultDistanceUtility(FractionalHex from, FractionalHex to)
+            // anything over 10 hexes away is considered 1.0
+            => from.Distance(to) / 10f;
         public Consideration HexFood(FractionalHex hex) => new HexFood(this, hex.Round());
         public Consideration ForageFoodDistance => new ForageFoodDistance(this);
         public Consideration PotentialFoodAtHex(FractionalHex hex) => new PotentialFoodAtHex(this, hex.Round());

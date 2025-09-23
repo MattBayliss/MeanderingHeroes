@@ -28,16 +28,22 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
                 );
 
         private static Command GatherFoodAtLocation(Game game) =>
-            (entity, state) => game.Blackboard.Get(BlackboardKeys.ClosestForageFood(entity))
-                .Match(
-                    None: () => new AiResult([], DseStatus.Aborted),
-                    Some: ff => new AiResult(
-                            StateChanges: [
-                                new EntityChange(entity with { FoodSupply = entity.FoodSupply + 0.5f }),
-                                new LayerItemChange(ff, ff with {Quality = MathF.Max(0f, ff.Quality - 0.2f) })
-                            ],
-                            Status: DseStatus.Running
-                        )
-                    );
+            (entity, state) 
+                => state
+                    .FoodItems
+                    .ItemsByHex
+                    .Lookup(entity.HexCoords.Round())
+                    .Bind(fs => fs.OrderByDescending(fi => fi.Quality).Head())
+                    .Match(
+                        None: () => new AiResult([], DseStatus.Aborted),
+                        Some: ff => new AiResult(
+                                StateChanges: [
+                                    new EntityChange(entity with { FoodSupply = entity.FoodSupply + 0.5f }),
+                                    new LayerItemChange(ff, ff with {Quality = MathF.Max(0f, ff.Quality - 0.2f) })
+                                ],
+                                Status: DseStatus.Running
+                            )
+                        );
+
     }
 }

@@ -36,6 +36,11 @@ namespace MeanderingHeroes.Test
             var heroId = game.CreateEntity((1.0f, 1.0f), 0.1f, entity => entity with { FoodSupply = foodSupply, Hunger = hunger });
             var hero = Helpers.AssertIsSome<Entity>(game[heroId]);
 
+            // give the hero knowledge of the food (otherwise the hero would have to search for it)
+            var foodTidbit = StateChange.TidbitLearnt(heroId, ConsiderationType.HexFood, foodItem.HexCoords.Round(), foodItem.Quality);
+
+            game.UpdateState([foodTidbit], []);
+
             var distanceToFood = hero.HexCoords.Distance(foodItem.HexCoords);
 
             Assert.True(distanceToFood < 10f);
@@ -47,8 +52,6 @@ namespace MeanderingHeroes.Test
             var foodDistance = Helpers.AssertIsSome<Utility>(considerationContext.ForageFoodDistance.Get(hero));
             Assert.True(foodDistance.Value > 0f);
 
-            //TODO: foodDistance is 1.0 here because the hero doesn't have knowledge of where
-            // food is yet - need to add that knowledge
             Assert.True(foodDistance.Value < 1f);
 
         }
