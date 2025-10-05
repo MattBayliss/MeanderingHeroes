@@ -17,6 +17,7 @@ namespace MeanderingHeroes.Test
                 loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                components: [Game.UtilityAIComponent],
                 entities: []
             );
 

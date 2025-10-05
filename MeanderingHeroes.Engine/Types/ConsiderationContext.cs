@@ -1,5 +1,7 @@
 ﻿using LaYumba.Functional;
 using MeanderingHeroes.Engine.Types.Considerations;
+using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 using static LaYumba.Functional.F;
 using static MeanderingHeroes.Engine.Functions;
 
@@ -10,12 +12,15 @@ namespace MeanderingHeroes.Engine.Types
     public class ConsiderationContext
     {
         private readonly Game _game;
+        public readonly ILogger Logger;
         public GameState StateSnapshot { get; private set; }
         public Blackboard Blackboard => _game.Blackboard;
         public KnowledgeBase KnowledgeBase => _game.KnowledgeBase;
+        
 
         public ConsiderationContext(Game game)
         {
+            Logger = game.LoggerFactory.CreateLogger<ConsiderationContext>();
             _game = game;
             StateSnapshot = _game.GameState;
         }        
@@ -68,14 +73,20 @@ namespace MeanderingHeroes.Engine.Types
         ClosestPotentialFoodHex,
         ConfidenceOfFindingForageFood,
     }
-    public abstract class StatelessConsideration
-    {
-        public abstract GetConsideration Get { get; }
-        public static implicit operator GetConsideration(StatelessConsideration consideration) => consideration.Get;
-    }
-    public abstract class Consideration : StatelessConsideration
+
+    public abstract class Consideration
     {
         protected ConsiderationContext Context { get; init; }
+        public override string ToString() => $"{this.GetType().Name}";
+        public GetConsideration Get 
+            => pawn =>
+                {
+                    var result = this.GetConsideration(pawn);
+                    Context.Logger.LogTrace($"{this.ToString(),-16} [{pawn.Id}]: {result.Match(() => "[NONE]", value => value.ToString())}");
+                    return result;
+                };
+        protected abstract Option<Utility> GetConsideration(Entity pawn);
+        public static implicit operator GetConsideration(Consideration consideration) => consideration.Get;
         public Consideration(ConsiderationContext context)
         {
             Context = context;
@@ -85,5 +96,6 @@ namespace MeanderingHeroes.Engine.Types
     {
         protected Hex Hex { get; init; }
         public HexConsideration(ConsiderationContext context, Hex hex) : base(context) => Hex = hex;
+        public override string ToString() => $"{this.GetType().Name}::{Hex.ToString()}";
     }
 }

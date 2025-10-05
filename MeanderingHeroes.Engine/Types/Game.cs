@@ -7,6 +7,7 @@ using static LaYumba.Functional.F;
 
 namespace MeanderingHeroes.Engine.Types
 {
+    public delegate Func<GameState, GameState> UpdateDelegate(Game game);
     public class Game
     {
         private static long _tick = 0;
@@ -18,10 +19,10 @@ namespace MeanderingHeroes.Engine.Types
         public Transforms Transforms { get; init; }
         public IEnumerable<Entity> Entities => _gameState.Entities;
         private EntityFactory _entityFactory;
-        private UtilityAIComponent _utilityAI;
+        private ImmutableList<Func<GameState, GameState>> _components;
         private GameState _gameState;
         public GameState GameState => _gameState;
-        private ConsiderationContext _considerationContext;
+        internal ConsiderationContext ConsiderationContext;
         private ImmutableList<Func<Entity, Behaviour>> _baseEntityBehaviourTemplates;
         public Blackboard Blackboard { get; init; }
         public KnowledgeBase KnowledgeBase { get; init; }
@@ -35,10 +36,19 @@ namespace MeanderingHeroes.Engine.Types
         public static Utility Random3dDistribution() => RandomXDistribution(3);
 
         public static Utility RandomXDistribution(int x) => Range(1, x).Select(_ => _random.NextSingle()).Sum() / x;
-        #endregion
 
-        public Game(ILoggerFactory? loggerFactory, Grid hexMap, Transforms transforms) : this(loggerFactory, hexMap, transforms, []) { }
-        public Game(ILoggerFactory? loggerFactory, Grid hexMap, Transforms transforms, IEnumerable<Entity> entities)
+        public static UpdateDelegate UtilityAIComponent => game =>
+            {
+                var utilityAI = new UtilityAIComponent(game.LoggerFactory.CreateLogger<UtilityAIComponent>(), game.ConsiderationContext);
+                return state => utilityAI.Update(game, state);
+            };
+        public static UpdateDelegate MarchOfTimeComponent => _ => TheMarchOfTime.Update;
+
+        public static IEnumerable<UpdateDelegate> DefaultComponents = [UtilityAIComponent, MarchOfTimeComponent];
+
+        #endregion
+        public Game(ILoggerFactory? loggerFactory, Grid hexMap, Transforms transforms) : this(loggerFactory, hexMap, transforms, DefaultComponents, []) { }
+        public Game(ILoggerFactory? loggerFactory, Grid hexMap, Transforms transforms, IEnumerable<UpdateDelegate> components, IEnumerable<Entity> entities)
         {
             LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             Logger = LoggerFactory.CreateLogger<Game>();
@@ -50,8 +60,7 @@ namespace MeanderingHeroes.Engine.Types
             Transforms = transforms;
             _gameState = new GameState(entities);
             _entityFactory = new EntityFactory(entities.Select(e => e.Id).Append(0).Max());
-            _considerationContext = new ConsiderationContext(this);
-            _utilityAI = new UtilityAIComponent(LoggerFactory.CreateLogger<UtilityAIComponent>(), _considerationContext);
+            ConsiderationContext = new ConsiderationContext(this);
 
             _baseEntityBehaviourTemplates = [
                 BehavioursLibrary.MoveToForageFood(this),
@@ -60,10 +69,9 @@ namespace MeanderingHeroes.Engine.Types
                 BehavioursLibrary.TravelToSearchForFood(this),
                 BehavioursLibrary.SearchCurrentHexForFood(this)
             ];
-        }
-        public void UpdateState(IEnumerable<StateChange> updates, IEnumerable<int> completedDSEIds)
-        {
-            _gameState = _gameState.UpdateState(updates, completedDSEIds);
+
+            _components = components.Select(c => c(this)).ToImmutableList();
+
         }
         public Option<Entity> this[int entityId] => _gameState[entityId];
         public Option<LayerItem> GetLayerItem(int layerItemId) => _gameState.GetLayerItem(layerItemId);
@@ -107,18 +115,24 @@ namespace MeanderingHeroes.Engine.Types
         {
             Interlocked.Increment(ref _tick);
 
-            _considerationContext.SetStateSnapshot();
+            ConsiderationContext.SetStateSnapshot();
             // run each component, updating the state as we go
-            _gameState = _utilityAI.Update(this, _gameState);
+            _gameState = _components.Aggregate(_gameState, (state, component) => {
+                var newState = component(state);
 
-            // add any knowledge gained through decisions
-            _gameState
-                .KnowledgeGained
-                .GroupBy(kg => kg.EntityId, kg => kg.Tidbit)
-                .ForEach(g => KnowledgeBase.AddTidbits(g.Key, g));
+                // add any knowledge gained through decisions
+                newState
+                    .KnowledgeGained
+                    .GroupBy(kg => kg.EntityId, kg => kg.Tidbit)
+                    .ForEach(g => KnowledgeBase.AddTidbits(g.Key, g));
 
+                newState
+                    .LayerItemsFound
+                    .GroupBy(kg => kg.EntityId, kg => new LayerItemSnapshot(kg.LayerItem))
+                    .ForEach(g => KnowledgeBase.AddOrUpdateFoundLayerItems(g.Key, g));
 
-            _gameState = TheMarchOfTime.Update(_gameState);
+                return newState;
+            });
 
             Blackboard.Clear();
         }

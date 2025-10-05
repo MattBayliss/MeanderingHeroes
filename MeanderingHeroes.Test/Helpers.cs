@@ -81,5 +81,8 @@ _ _ _ _ _ _ _ _ _ _ _ _ v v _ _ _ _ ^ _ _ _ _ _ _ _ _ _ _ _ _ _ ~
             }
             return value.AsEnumerable().Single();
         }
+
+        internal static UpdateDelegate StateChangeEventTestComponent(Func<IEnumerable<StateChange>> getStateChanges) =>
+            _ => state => state.UpdateState(getStateChanges(), []);
     }
 }

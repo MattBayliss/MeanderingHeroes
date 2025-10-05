@@ -13,7 +13,7 @@ namespace MeanderingHeroes.Engine.Types
     /// <param name="Hex"></param>
     /// <param name="A"></param>
     /// <param name="B"></param>
-    public readonly record struct Tidbit(ConsiderationType Consideration, Hex Hex, float A, float B)
+    public readonly record struct Tidbit(ConsiderationType Consideration, Hex Hex, int OtherId, float A, float B)
     {
         public long OnTick { get; init; } = Game.Tick;
         public override string ToString() => $"{OnTick}:{Consideration.ToString()}-{Hex.ToString()}:{A:F3},{B:F3}";
@@ -21,11 +21,33 @@ namespace MeanderingHeroes.Engine.Types
         public FractionalHex CoordsValue => new FractionalHex(this.A, this.B);
         public Hex HexValue => this.CoordsValue.Round();
     }
+    public readonly record struct LayerItemSnapshot
+    {
+        public int Id { get; init; }
+        public long Timestamp { get; init; }
+        public FractionalHex HexCoords { get; init; }
+        public Hex Hex { get; init; }
+        public LayerItemType ItemType { get; init; }
+        public int SubType { get; init; }
+        public float Quality { get; init; }
+        public LayerItemSnapshot(LayerItem layerItem)
+        {
+            Id = layerItem.Id;
+            Timestamp = Game.Tick;
+            HexCoords = layerItem.HexCoords;
+            Hex = HexCoords.Round();
+            ItemType = layerItem.ItemType;
+            SubType = layerItem.SubType;
+            Quality = layerItem.Quality;
+        }
+    }
     public record Knowledge
     {
+        public ImmutableHashSet<LayerItemSnapshot> LayerItems {  get; init; }
         public ImmutableHashSet<Tidbit> Tidbits { get; init; }
-        public Knowledge(IEnumerable<Tidbit> tidbits)
+        public Knowledge(IEnumerable<LayerItemSnapshot> layerItems, IEnumerable<Tidbit> tidbits)
         {
+            LayerItems = layerItems.ToImmutableHashSet();
             Tidbits = tidbits.ToImmutableHashSet();
         }
         public Option<Tidbit> GetTidbit(ConsiderationType consideration, Hex hex)
@@ -51,12 +73,23 @@ namespace MeanderingHeroes.Engine.Types
         {
             _knowledgeForEntity = [];
         }
+        public IEnumerable<LayerItemSnapshot> GetMatchingKnownLayerItems(int entityId, Func<LayerItemSnapshot, bool> predicate)
+            => _knowledgeForEntity.Lookup(entityId)
+                .Bind(kb => kb.LayerItems.Where(predicate));
+
+        public void AddOrUpdateFoundLayerItems(int entityId, IEnumerable<LayerItemSnapshot> layerItems)
+            => layerItems.ForEach(layerItem => _knowledgeForEntity.AddOrUpdate
+                (
+                    entityId,
+                    _ => new Knowledge([layerItem], []),
+                    (_, oldKnowledge) => oldKnowledge with { LayerItems = oldKnowledge.LayerItems.Add(layerItem) }
+                ));
 
         public void AddTidbits(int entityId, IEnumerable<Tidbit> tidbits)
             => tidbits.ForEach(tidbit => _knowledgeForEntity.AddOrUpdate
                 (
                     entityId,
-                    _ => new Knowledge([tidbit]),
+                    _ => new Knowledge([],[tidbit]),
                     (_, oldKnowledge) => oldKnowledge with { Tidbits = oldKnowledge.Tidbits.Add(tidbit) }
                 ));
         public Option<Tidbit> GetTidbit(int entityId, ConsiderationType consideration, Hex hex)

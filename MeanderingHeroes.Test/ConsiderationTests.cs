@@ -15,12 +15,19 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void FoodConsiderationTests()
         {
+
+            List<StateChange> changes = [];
+
+            var stateChangeTestComponent = Helpers.StateChangeEventTestComponent(() => changes);
+
             var game = new Game(
                 loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(Vector2.Zero, 1f, 2f / MathF.Sqrt(3)),
+                components: [stateChangeTestComponent],
                 entities: []
             );
+
 
             // food supply is between 0 and 5.0
             float foodSupply = 4f;
@@ -37,9 +44,12 @@ namespace MeanderingHeroes.Test
             var hero = Helpers.AssertIsSome<Entity>(game[heroId]);
 
             // give the hero knowledge of the food (otherwise the hero would have to search for it)
+            var layerItemFound = StateChange.LayerItemFound(heroId, foodItem);
             var foodTidbit = StateChange.TidbitLearnt(heroId, ConsiderationType.HexFood, foodItem.HexCoords.Round(), foodItem.Quality);
 
-            game.UpdateState([foodTidbit], []);
+            changes = [foodTidbit, layerItemFound];
+
+            game.Update();
 
             var distanceToFood = hero.HexCoords.Distance(foodItem.HexCoords);
 

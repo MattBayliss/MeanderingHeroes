@@ -11,10 +11,15 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void GatherAndEatFoodAtYourFeet()
         {
+            List<StateChange> changes = [];
+
+            var stateChangeTestComponent = Helpers.StateChangeEventTestComponent(() => changes);
+
             var game = new Game(
                 loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(Vector2.Zero, 1f, 2f / MathF.Sqrt(3)),
+                components: [stateChangeTestComponent, Game.UtilityAIComponent],
                 entities: []
             );
 
@@ -28,8 +33,12 @@ namespace MeanderingHeroes.Test
             game.SetFoodItems([foodItem]);
 
             // give the hero knowledge of the food (otherwise the hero would have to search for it)
+            var layerItemFound = StateChange.LayerItemFound(heroId, foodItem);
             var foodTidbit = StateChange.TidbitLearnt(heroId, ConsiderationType.HexFood, foodItem.HexCoords.Round(), foodItem.Quality);
-            game.UpdateState([foodTidbit], []);
+
+            changes = [layerItemFound, foodTidbit];
+            game.Update();
+            changes = [];
 
             List<(float FoodSupply, Utility Hunger, float FoodQuality)> stateSnapshots = [];
 
@@ -60,10 +69,19 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void DetoursForFood()
         {
+            List<StateChange> changes = [];
+
+            var stateChangeTestComponent = Helpers.StateChangeEventTestComponent(() =>
+            {
+                return changes;
+            }
+            );
+
             var game = new Game(
                 loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(Vector2.Zero, 1f, 2f / MathF.Sqrt(3)),
+                components: [stateChangeTestComponent, Game.UtilityAIComponent],
                 entities: []
             );
 
@@ -81,8 +99,12 @@ namespace MeanderingHeroes.Test
             game.SetFoodItems([foodItem]);
 
             // give the hero knowledge of the food (otherwise the hero would have to search for it)
+            var layerItemFound = StateChange.LayerItemFound(heroId, foodItem);
             var foodTidbit = StateChange.TidbitLearnt(heroId, ConsiderationType.HexFood, foodItem.HexCoords.Round(), foodItem.Quality);
-            game.UpdateState([foodTidbit], []);
+
+            changes = [layerItemFound, foodTidbit];
+            game.Update();
+            changes = [];
 
             var stateLayerItem = Assert.Single(game.GameState.FoodItems.Items);
             Assert.Equal(foodItem, stateLayerItem);
@@ -109,10 +131,15 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void LayerStateChange()
         {
+            List<StateChange> changes = [];
+
+            var stateChangeTestComponent = Helpers.StateChangeEventTestComponent(() => changes);
+
             var game = new Game(
                 loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(Vector2.Zero, 1f, 2f / MathF.Sqrt(3)),
+                components: [stateChangeTestComponent],
                 entities: []
             );
             var layerItem = new LayerItem((1.2f, 3.4f), LayerItemType.Food, (int)FoodType.Berry, 4f);
@@ -131,15 +158,15 @@ namespace MeanderingHeroes.Test
             var layerItemFromGame = Helpers.AssertIsSome<LayerItem>(game.GetLayerItem(layerItem.Id));
             Assert.Equal(layerItem, layerItemFromGame);
 
-            var layerItemChange = new LayerItemChange(layerItem, different);
-            game.UpdateState([layerItemChange], []);
+            changes = [new LayerItemChange(layerItem, different)];
+            game.Update();
             layerItemFromGame = Helpers.AssertIsSome<LayerItem>(game.GetLayerItem(layerItem.Id));
 
             Assert.Equal(different, layerItemFromGame);
 
-            var nextChange = new LayerItemChange(layerItemFromGame, layerItemFromGame with { Quality = layerItemFromGame.Quality - 0.1f });
+            changes = [new LayerItemChange(layerItemFromGame, layerItemFromGame with { Quality = layerItemFromGame.Quality - 0.1f })];
 
-            game.UpdateState([nextChange], []);
+            game.Update();
 
             var lastLayerItemFromGame = Helpers.AssertIsSome<LayerItem>(game.GetLayerItem(layerItem.Id));
 
@@ -156,78 +183,86 @@ namespace MeanderingHeroes.Test
         [Fact]
         public void MovesToFoodWhenHungerGetsHigh()
         {
+            List<StateChange> changes = [];
+
+            var stateChangeTestComponent = Helpers.StateChangeEventTestComponent(() => changes);
+
+            var game = new Game(
+                loggerFactory: output.ToLoggerFactory(),
+                hexMap: Helpers.MakeGrass10x10MapGrid(),
+                transforms: new Transforms(Vector2.Zero, 1f, 2f / MathF.Sqrt(3)),
+                components: [stateChangeTestComponent, Game.UtilityAIComponent, Game.MarchOfTimeComponent],
+                entities: []
+            );
+
+            // slow hero, with Hunger set
+            Utility startingHunger = 0.0f;
+            float foodSupply = 0f;
+            var heroId = game.CreateEntity((1.0f, 6.0f), 0.3f, entity => entity with { Hunger = startingHunger, FoodSupply = foodSupply });
+
+            FractionalHex foodCoords = (3, 4);
+            var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
+            game.SetFoodItems([foodItem]);
+
+            // give the hero knowledge of the food (otherwise the hero would have to search for it)
+            var layerItemFound = StateChange.LayerItemFound(heroId, foodItem);
+            var foodTidbit = StateChange.TidbitLearnt(heroId, ConsiderationType.HexFood, foodItem.HexCoords.Round(), foodItem.Quality);
+
+            changes = [layerItemFound, foodTidbit];
+            game.Update();
+            changes = [];
+
+            List<(FractionalHex Coords, float FoodSupply, float Hunger)> stateSnapshots = [];
+
+            int attempts = 0;
+
+            float startingSupply = Helpers.AssertIsSome<Entity>(game[heroId]).FoodSupply;
+
+            do
             {
-                var game = new Game(
-                    loggerFactory: output.ToLoggerFactory(),
-                    hexMap: Helpers.MakeGrass10x10MapGrid(),
-                    transforms: new Transforms(Vector2.Zero, 1f, 2f / MathF.Sqrt(3)),
-                    entities: []
-                );
+                game.Update();
 
-                // slow hero, with Hunger set
-                Utility startingHunger = 0.0f;
-                float foodSupply = 0f;
-                var heroId = game.CreateEntity((1.0f, 6.0f), 0.3f, entity => entity with { Hunger = startingHunger, FoodSupply = foodSupply });
+                var hero = Helpers.AssertIsSome<Entity>(game[heroId]);
+                stateSnapshots.Add((hero.HexCoords, hero.FoodSupply, hero.Hunger));
+                attempts++;
 
-                FractionalHex foodCoords = (3, 4);
-                var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
-                game.SetFoodItems([foodItem]);
+            } while (attempts < 1000 && !game[heroId].Map(hero => hero.HexCoords).GetOrElse((0, 0)).Equals(foodCoords));
 
-                // give the hero knowledge of the food (otherwise the hero would have to search for it)
-                var foodTidbit = StateChange.TidbitLearnt(heroId, ConsiderationType.HexFood, foodItem.HexCoords.Round(), foodItem.Quality);
-                game.UpdateState([foodTidbit], []);
+            Assert.NotEqual(1000, attempts);
+            // should at least be a gather and an eat
+            Assert.True(attempts > 1);
 
-                List<(FractionalHex Coords, float FoodSupply, float Hunger)> stateSnapshots = [];
+            // hero made it to the food - hunger should have gone up
+            Assert.Contains(stateSnapshots, s => s.Hunger > startingHunger);
+            // and not satiated yet
+            Assert.DoesNotContain(stateSnapshots, s => s.Hunger < startingHunger);
+            // food supply should remain unchanged
+            Assert.DoesNotContain(stateSnapshots, s => s.FoodSupply != startingSupply);
 
-                int attempts = 0;
+            float currentHunger = Helpers.AssertIsSome<Entity>(game[heroId]).Hunger;
 
-                float startingSupply = Helpers.AssertIsSome<Entity>(game[heroId]).FoodSupply;
+            stateSnapshots = [];
 
-                do
-                {
-                    game.Update();
+            attempts = 0;
 
-                    var hero = Helpers.AssertIsSome<Entity>(game[heroId]);
-                    stateSnapshots.Add((hero.HexCoords, hero.FoodSupply, hero.Hunger));
-                    attempts++;
+            // try 1000 more updates - should see some gathering and eating?
+            for (int i = 0; i < 1000; i++)
+            {
 
-                } while (attempts < 1000 && !game[heroId].Map(hero => hero.HexCoords).GetOrElse((0, 0)).Equals(foodCoords));
+                game.Update();
 
-                Assert.NotEqual(1000, attempts);
-                // should at least be a gather and an eat
-                Assert.True(attempts > 1);
-
-                // hero made it to the food - hunger should have gone up
-                Assert.Contains(stateSnapshots, s => s.Hunger > startingHunger);
-                // and not satiated yet
-                Assert.DoesNotContain(stateSnapshots, s => s.Hunger < startingHunger);
-                // food supply should remain unchanged
-                Assert.DoesNotContain(stateSnapshots, s => s.FoodSupply != startingSupply);
-
-                float currentHunger = Helpers.AssertIsSome<Entity>(game[heroId]).Hunger;
-
-                stateSnapshots = [];
-
-                attempts = 0;
-
-                // try 1000 more updates - should see some gathering and eating?
-                for (int i = 0; i < 1000; i++)
-                {
-
-                    game.Update();
-
-                    var hero = Helpers.AssertIsSome<Entity>(game[heroId]);
-                    stateSnapshots.Add((hero.HexCoords, hero.FoodSupply, hero.Hunger));
-                    attempts++;
-                }
-
-                Assert.True(stateSnapshots.Any());
-                var snapshotPairs = stateSnapshots.Zip(stateSnapshots.Skip(1));
-                // hunger has gone down (eating happened)
-                Assert.Contains(snapshotPairs, pair => pair.Second.Hunger < pair.First.Hunger);
-                Assert.Contains(stateSnapshots, s => s.FoodSupply > 0f);
-                Assert.DoesNotContain(stateSnapshots, s => s.Coords != foodCoords);
+                var hero = Helpers.AssertIsSome<Entity>(game[heroId]);
+                stateSnapshots.Add((hero.HexCoords, hero.FoodSupply, hero.Hunger));
+                attempts++;
             }
+
+            Assert.True(stateSnapshots.Any());
+            var snapshotPairs = stateSnapshots.Zip(stateSnapshots.Skip(1));
+            // hunger has gone down (eating happened)
+            Assert.Contains(snapshotPairs, pair => pair.Second.Hunger < pair.First.Hunger);
+            Assert.Contains(stateSnapshots, s => s.FoodSupply > 0f);
+            Assert.DoesNotContain(stateSnapshots, s => s.Coords != foodCoords);
         }
     }
 }
+

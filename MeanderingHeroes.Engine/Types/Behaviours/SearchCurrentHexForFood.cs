@@ -22,28 +22,43 @@ namespace MeanderingHeroes.Engine.Types.Behaviours
 
         private static Command SearchForFoodCommand(Hex hex, KnowledgeBase knowledgeBase, long giveUpAtTick) => (entity, state) =>
         {
-            var awareOfFood = state
+            var foodFound = state
                 .FoodItems
                 .ItemsByHex
                 .Lookup(hex)
-                .Map
+                .Bind
                     ( foodItems => 
                         foodItems
-                            .Any(fi => PlayerSkills.ChanceOfFindingFood((FoodType)fi.SubType)(entity).Value > Game.Random2dDistribution().Value)
+                            .Where(fi => PlayerSkills.ChanceOfFindingFood((FoodType)fi.SubType)(entity).Value > Game.Random2dDistribution().Value)
+                            .Head()
                     );
 
-            var attemptResult = awareOfFood.Match(
-                    // if there's no food, got to keep looking anyway
-                    None: () => (Game.Tick >= giveUpAtTick) ? Some(false) : None,
-                    // there is food - return Some(true) if it was found, Some(false) if we gave up, None to keep looking
-                    Some: found => (found || (Game.Tick >= giveUpAtTick)) ? found : None);
+            return foodFound.Match(
+                // nothing found, give up if time limit was reached
+                None: () => Game.Tick >= giveUpAtTick ?
+                    // given up
+                    new AiResult
+                    (
+                        StateChanges: [StateChange.TidbitLearnt(entity.Id, ConsiderationType.HexFood, hex, 0f)],
+                        Status: DseStatus.Completed
+                    ) :
+                    // still going
+                    new AiResult
+                    (
+                        StateChanges: [],
+                        Status: DseStatus.Running
+                    ),
 
-            return attemptResult.Match(
-                // nothing found, and haven't given up yet
-                None: () => new([], DseStatus.Running), 
-
-                // either entity found food, or has given up
-                Some: aware => new AiResult([StateChange.TidbitLearnt(entity.Id, ConsiderationType.HexFood, hex, awareOfFood ? 1f : 0f)], DseStatus.Completed));
+                // food has been found
+                Some: food => new AiResult
+                (
+                    StateChanges: [
+                        // mark knowledge of layer item
+                        StateChange.LayerItemFound(entity.Id, food),
+                        // mark hex as having been searched for food
+                        StateChange.TidbitLearnt(entity.Id, ConsiderationType.HexFood, hex, food.Quality)],
+                    Status: DseStatus.Completed)
+                );
         };
 
         private static Dse SearchCurrentHexForFoodDse(FractionalHex hexCoords) => new(

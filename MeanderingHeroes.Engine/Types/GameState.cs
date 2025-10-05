@@ -16,6 +16,7 @@ namespace MeanderingHeroes.Engine.Types
         public Layer FoodItems { get; init; }
         public Option<Entity> this[int index] => _entitiesById.Lookup(index);
         public ImmutableList<TidbitLearnt> KnowledgeGained { get; init; }
+        public ImmutableList<LayerItemFound> LayerItemsFound { get; init; }
 
         public GameState(IEnumerable<Entity> entities)
         {
@@ -25,6 +26,7 @@ namespace MeanderingHeroes.Engine.Types
             _entitiesById = entities.ToImmutableDictionary(e => e.Id, e => e);
             FoodItems = new Layer([]);
             KnowledgeGained = [];
+            LayerItemsFound = [];
         }
 
         public IEnumerable<Entity> EntitiesInRange(Entity ofEntity)
@@ -48,12 +50,13 @@ namespace MeanderingHeroes.Engine.Types
         }
         public GameState UpdateState(IEnumerable<StateChange> updates, IEnumerable<int> completedDSEIds)
         {            
-            (var updatedLayerItems, var updatedEntityDict, var tidbitsLearnt) = updates.Aggregate(
-                seed: (LayerItems: FoodItems.Items, EntitiesById: _entitiesById, TidbitsLearnt: ImmutableList.Create<TidbitLearnt>()),
+            (var updatedLayerItems, var updatedEntityDict, var layerItemsFound, var tidbitsLearnt) = updates.Aggregate(
+                seed: (LayerItems: FoodItems.Items, EntitiesById: _entitiesById, LayerItemsFound: ImmutableList.Create<LayerItemFound>(), TidbitsLearnt: ImmutableList.Create<TidbitLearnt>()),
                 func: (acc, update) => update switch
                 {
                     EntityChange ec => acc with { EntitiesById = acc.EntitiesById.SetItem(ec.UpdatedEntity.Id, ec.UpdatedEntity) },
                     LayerItemChange lic => acc with { LayerItems = acc.LayerItems.Replace(lic.OldItem, lic.NewItem) },
+                    LayerItemFound lif => acc with { LayerItemsFound = acc.LayerItemsFound.Add(lif)},
                     TidbitLearnt tbl => acc with { TidbitsLearnt = acc.TidbitsLearnt.Add(tbl) },
                     _ => acc
                 });
@@ -74,7 +77,8 @@ namespace MeanderingHeroes.Engine.Types
                 _hexEntities = updatedEntityDict.Values.Select(e => (e.HexCoords.Round(), e.Id)).ToImmutableHashSet(),
                 DseById = dseById,
                 Behaviours = behaviours,
-                KnowledgeGained = tidbitsLearnt
+                KnowledgeGained = tidbitsLearnt,
+                LayerItemsFound = layerItemsFound
             };
         }
     }

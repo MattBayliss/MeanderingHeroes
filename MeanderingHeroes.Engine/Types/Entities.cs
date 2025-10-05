@@ -8,6 +8,7 @@ namespace MeanderingHeroes.Engine.Types
     public readonly record struct Entity
     {
         public FractionalHex HexCoords { get; init; }
+        public Hex Hex => HexCoords.Round();
         public int Id { get; private init; }
         public float Speed { get; init; } = 0F;
         /// <summary>

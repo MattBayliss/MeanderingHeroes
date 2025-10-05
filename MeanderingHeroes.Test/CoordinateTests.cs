@@ -16,6 +16,7 @@ namespace MeanderingHeroes.Test
                 loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                components: [],
                 entities: []
             );
 
@@ -40,6 +41,7 @@ namespace MeanderingHeroes.Test
                 loggerFactory: output.ToLoggerFactory(),
                 hexMap: Helpers.MakeGrass10x10MapGrid(),
                 transforms: new Transforms(offsetZero, 1f, 2f / MathF.Sqrt(3)),
+                components: [],
                 entities: []
             );
 
@@ -59,7 +61,7 @@ namespace MeanderingHeroes.Test
         {
             var hexOriginOffsetInGame = Vector2.Zero;
 
-            var game = new Game(output.ToLoggerFactory(), new Grid([]), new Transforms(hexOriginOffsetInGame,29f,33f), []);
+            var game = new Game(output.ToLoggerFactory(), new Grid([]), new Transforms(hexOriginOffsetInGame,29f,33f), [], []);
 
             // Zero hex should equate to zero
             Assert.Equal(hexOriginOffsetInGame, game.HexCentreXY(new FractionalHex(0, 0)));
@@ -75,7 +77,7 @@ namespace MeanderingHeroes.Test
         {
             var hexOriginOffsetInGame = new Vector2(14.5f, 16.5f);
 
-            var game = new Game(output.ToLoggerFactory(), new Grid([]), new Transforms(hexOriginOffsetInGame, 29f, 33f), []);
+            var game = new Game(output.ToLoggerFactory(), new Grid([]), new Transforms(hexOriginOffsetInGame, 29f, 33f), [], []);
 
             // Zero hex should equate to offset
             Assert.Equal(hexOriginOffsetInGame, game.HexCentreXY(new FractionalHex(0, 0)));

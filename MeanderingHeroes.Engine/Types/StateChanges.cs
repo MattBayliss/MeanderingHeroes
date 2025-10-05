@@ -12,9 +12,15 @@ namespace MeanderingHeroes.Engine.Types
         public override string ToString() => $"{this.GetType().Name, -16}";
         // TODO: add the rest of the factory methods
         public static StateChange TidbitLearnt(int entityId, ConsiderationType considerationType, Hex hex, Utility value) 
-            => new TidbitLearnt(entityId, new(considerationType, hex, value, 0f));
+            => new TidbitLearnt(entityId, new(considerationType, hex, 0, value, 0f));
         public static StateChange TidbitLearnt(int entityId, ConsiderationType considerationType, Hex hex, float a, float b) 
-            => new TidbitLearnt(entityId, new(considerationType, hex, a, b));
+            => new TidbitLearnt(entityId, new(considerationType, hex, 0,a, b));
+        public static StateChange LayerItemFound(int entityId, LayerItem layerItem)
+            => new LayerItemFound(entityId, layerItem);
+    }
+    public record LayerItemFound(int EntityId, LayerItem LayerItem) : StateChange
+    {
+        public override string ToString() => $"[{base.ToString()}: EntityId: {EntityId}, LayerItem: {LayerItem.ToString()}]";
     }
     public record LayerItemChange(LayerItem OldItem, LayerItem NewItem) : StateChange
     {

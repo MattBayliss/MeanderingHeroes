@@ -99,7 +99,7 @@ namespace MeanderingHeroes.Engine.Components
                 .Select(group => new DsesByWeight(group.Key, 0f, group))
                 .OrderByDescending(wd => wd.Weight);
 
-            Func<Dse, BehaviourScore> calculateScoreForDse = dse => CalculateScore(dse, getConsideration);
+            Func<Dse, BehaviourScore> calculateScoreForDse = dse => CalculateScore(Logger, dse, getConsideration);
 
             // group Decision Score Evaluators by Weight,
             // and as long as the DSE can conceivably beat the threshold
@@ -118,11 +118,11 @@ namespace MeanderingHeroes.Engine.Components
                     }
                     else
                     {
-                        var score = dbw.Dses.Select(calculateScoreForDse);
+                        var scores = dbw.Dses.Select(calculateScoreForDse);
                         return agg with
                         {
-                            Threshold = float.Max(agg.Threshold, score.Max(s => s.Score)),
-                            Scores = score
+                            Threshold = float.Max(agg.Threshold, scores.Max(s => s.Score)),
+                            Scores = scores
                         };
                     }
                 });
@@ -134,7 +134,7 @@ namespace MeanderingHeroes.Engine.Components
                 .OrderByDescending(ds => ds.Score).Head();
         }
 
-        private static BehaviourScore CalculateScore(Dse dse, Func<Decision, Option<Utility>> getConsideration)
+        private static BehaviourScore CalculateScore(ILogger logger, Dse dse, Func<Decision, Option<Utility>> getConsideration)
         {
             var scores = dse.Decisions.Select
                     (d =>
@@ -163,6 +163,7 @@ namespace MeanderingHeroes.Engine.Components
                         $"{ddd.Decision.ConsiderationType}:{ddd.Input} => {ddd.CurveDescription} => {ddd.Result}",
                         ddd.Result.Value));
 
+            scores.ForEach(score => logger.LogTrace(score.Description));
 
             return scores.Aggregate<DecisionResult, (IEnumerable<string> desc, float totalScore)>(
                 seed: ([], 1f),
