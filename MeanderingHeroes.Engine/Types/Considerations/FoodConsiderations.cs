@@ -30,9 +30,9 @@ namespace MeanderingHeroes.Engine.Types.Considerations
             => hex
                 => knowledgeBase.GetTidbit(entityId, ConsiderationType.HexFood, hex) == None;
     }
-    public class HexFood : HexConsideration
+    public class HexFood : Consideration
     {
-        public HexFood(ConsiderationContext context, Hex hex) : base(context, hex) { }
+        public HexFood(ConsiderationContext context) : base(context) { }
         protected override Option<Utility> GetConsideration(Entity entity) =>
             Context.KnowledgeBase
                 .GetMatchingKnownLayerItems(

@@ -36,7 +36,7 @@ namespace MeanderingHeroes.Engine.Types
             { ConsiderationType: ConsiderationType.Hunger } => PawnHunger,
             { ConsiderationType: ConsiderationType.FoodSupply } => FoodSupply,
             { ConsiderationType: ConsiderationType.ForageFoodDistance } => ForageFoodDistance,
-            DecisionOnHex { ConsiderationType: ConsiderationType.HexFood, Target: var hex } => HexFood(hex),
+            { ConsiderationType: ConsiderationType.HexFood } => HexFood,
             DecisionOnHex { ConsiderationType: ConsiderationType.PotentialFoodAtHex, Target: var hex } => PotentialFoodAtHex(hex),
             DecisionOnHex { ConsiderationType: ConsiderationType.HexDistance, Target: var hex } => DistanceToHex(hex),
             _ => throw new ArgumentException($"Unexpected ConsiderationType: {forDecision.ConsiderationType.ToString()}")
@@ -49,7 +49,7 @@ namespace MeanderingHeroes.Engine.Types
         public static Utility DefaultDistanceUtility(FractionalHex from, FractionalHex to)
             // anything over 10 hexes away is considered 1.0
             => from.Distance(to) / 10f;
-        public Consideration HexFood(FractionalHex hex) => new HexFood(this, hex.Round());
+        public Consideration HexFood => new HexFood(this);
         public Consideration ForageFoodDistance => new ForageFoodDistance(this);
         public Consideration PotentialFoodAtHex(FractionalHex hex) => new PotentialFoodAtHex(this, hex.Round());
     }
@@ -92,6 +92,7 @@ namespace MeanderingHeroes.Engine.Types
             Context = context;
         }
     }
+
     public abstract class HexConsideration : Consideration
     {
         protected Hex Hex { get; init; }

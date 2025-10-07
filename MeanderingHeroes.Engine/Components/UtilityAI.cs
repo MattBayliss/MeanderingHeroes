@@ -163,7 +163,7 @@ namespace MeanderingHeroes.Engine.Components
                         $"{ddd.Decision.ConsiderationType}:{ddd.Input} => {ddd.CurveDescription} => {ddd.Result}",
                         ddd.Result.Value));
 
-            scores.ForEach(score => logger.LogTrace(score.Description));
+            //scores.ForEach(score => logger.LogTrace(score.Description));
 
             return scores.Aggregate<DecisionResult, (IEnumerable<string> desc, float totalScore)>(
                 seed: ([], 1f),

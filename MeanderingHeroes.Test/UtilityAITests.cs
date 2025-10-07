@@ -200,7 +200,8 @@ namespace MeanderingHeroes.Test
             float foodSupply = 0f;
             var heroId = game.CreateEntity((1.0f, 6.0f), 0.3f, entity => entity with { Hunger = startingHunger, FoodSupply = foodSupply });
 
-            FractionalHex foodCoords = (3, 4);
+            Hex foodHex = (3, 4);
+            FractionalHex foodCoords = foodHex;
             var foodItem = new LayerItem(foodCoords, LayerItemType.Food, (int)FoodType.Berry, 1f);
             game.SetFoodItems([foodItem]);
 
@@ -214,7 +215,7 @@ namespace MeanderingHeroes.Test
 
             List<(FractionalHex Coords, float FoodSupply, float Hunger)> stateSnapshots = [];
 
-            int attempts = 0;
+            int attempts = 0; 
 
             float startingSupply = Helpers.AssertIsSome<Entity>(game[heroId]).FoodSupply;
 
@@ -226,13 +227,13 @@ namespace MeanderingHeroes.Test
                 stateSnapshots.Add((hero.HexCoords, hero.FoodSupply, hero.Hunger));
                 attempts++;
 
-            } while (attempts < 1000 && !game[heroId].Map(hero => hero.HexCoords).GetOrElse((0, 0)).Equals(foodCoords));
+            } while (attempts < 1000 && !game[heroId].Map(hero => hero.Hex).GetOrElse((0, 0)).Equals(foodHex));
 
             Assert.NotEqual(1000, attempts);
             // should at least be a gather and an eat
             Assert.True(attempts > 1);
 
-            // hero made it to the food - hunger should have gone up
+            // hero made it to the food hex - hunger should have gone up
             Assert.Contains(stateSnapshots, s => s.Hunger > startingHunger);
             // and not satiated yet
             Assert.DoesNotContain(stateSnapshots, s => s.Hunger < startingHunger);
@@ -261,7 +262,7 @@ namespace MeanderingHeroes.Test
             // hunger has gone down (eating happened)
             Assert.Contains(snapshotPairs, pair => pair.Second.Hunger < pair.First.Hunger);
             Assert.Contains(stateSnapshots, s => s.FoodSupply > 0f);
-            Assert.DoesNotContain(stateSnapshots, s => s.Coords != foodCoords);
+            Assert.DoesNotContain(stateSnapshots, s => s.Coords.Round() != foodHex);
         }
     }
 }
